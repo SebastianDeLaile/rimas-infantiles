@@ -1,0 +1,519 @@
+<title>Mi Cancionero de Rimas</title>
+<style>
+/* ---------------------------------------------------------------------
+   Base: inlined copy of print-templates/a4-holepunch/a4-holepunch.css
+   Keep this block in sync with the scaffold file if you tune the margins.
+   --------------------------------------------------------------------- */
+:root {
+  --page-w: 210mm;
+  --page-h: 297mm;
+  --punch-margin: 38mm;
+  --edge-margin: 14mm;
+  --hole-spacing: 80mm;
+  --hole-dia: 6mm;
+  --hole-inset: 15mm;
+  --sheet-bg: #fbf6ea;
+  --sheet-ink: #2b2440;
+  --sheet-radius: 0mm;
+  --preview-backdrop: #e7e9ee;
+  --preview-shadow: rgba(20, 20, 30, 0.22);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --preview-backdrop: #15171c; --preview-shadow: rgba(0,0,0,.55); }
+}
+:root[data-theme="dark"] { --preview-backdrop: #15171c; --preview-shadow: rgba(0,0,0,.55); }
+
+.a4-sheet {
+  position: relative;
+  width: var(--page-w);
+  height: var(--page-h);
+  box-sizing: border-box;
+  background: var(--sheet-bg);
+  color: var(--sheet-ink);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--edge-margin) var(--edge-margin) var(--edge-margin) var(--punch-margin);
+}
+.a4-sheet__content { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.a4-punch-guide { position: absolute; inset: 0; pointer-events: none; }
+.a4-punch-guide::before {
+  content: "";
+  position: absolute;
+  top: var(--edge-margin);
+  bottom: var(--edge-margin);
+  left: calc(var(--hole-inset) + var(--hole-dia) / 2);
+  border-left: 1px dashed rgba(43, 36, 64, 0.18);
+}
+.a4-punch-guide__hole {
+  position: absolute;
+  left: var(--hole-inset);
+  width: var(--hole-dia);
+  height: var(--hole-dia);
+  border-radius: 50%;
+  border: 1px dashed rgba(43, 36, 64, 0.3);
+}
+.a4-punch-guide__hole--a { top: calc(50% - var(--hole-spacing) / 2 - var(--hole-dia) / 2); }
+.a4-punch-guide__hole--b { top: calc(50% + var(--hole-spacing) / 2 - var(--hole-dia) / 2); }
+
+.a4-preview { background: var(--preview-backdrop); display: flex; flex-direction: column; align-items: center; gap: 10mm; padding: 10mm 0 16mm; }
+.a4-preview .a4-sheet { box-shadow: 0 6px 24px var(--preview-shadow); }
+
+@media print {
+  @page { size: A4; margin: 0; }
+  html, body { margin: 0; padding: 0; }
+  .no-print { display: none !important; }
+  .a4-preview { background: none; padding: 0; gap: 0; }
+  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; }
+  .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
+}
+
+/* ---------------------------------------------------------------------
+   Content: Mi Cancionero de Rimas — project-specific styling
+   --------------------------------------------------------------------- */
+body {
+  margin: 0;
+  background: var(--preview-backdrop);
+  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+}
+* { text-wrap: pretty; }
+h1, h2, h3, .display {
+  font-family: "Baloo 2", "Arial Rounded MT Bold", "SF Compact Rounded", "Trebuchet MS", sans-serif;
+  font-weight: 700;
+  margin: 0;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 24px;
+  background: #2b2440;
+  color: #fbf6ea;
+  font-family: Georgia, serif;
+  font-size: 14px;
+}
+.toolbar strong { font-family: "Baloo 2", "Trebuchet MS", sans-serif; letter-spacing: .02em; }
+.toolbar button {
+  font: inherit;
+  font-family: "Baloo 2", "Trebuchet MS", sans-serif;
+  background: #e2a13a;
+  color: #2b2440;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  cursor: pointer;
+}
+.toolbar button:focus-visible { outline: 3px solid #fbf6ea; outline-offset: 2px; }
+.toolbar button:hover { background: #edb85e; }
+
+/* header ribbon + scallop trim, accent color set per-sheet via --accent */
+.band {
+  background: var(--accent);
+  color: #fbf6ea;
+  border-radius: 6mm 6mm 0 0;
+  padding: 7mm 9mm 5mm;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6mm;
+}
+.band h2 { font-size: 15mm; line-height: 1; text-wrap: balance; }
+.band .kicker { font-size: 4mm; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.scallop {
+  height: 4mm;
+  background-image: radial-gradient(circle at 5mm 4mm, var(--accent) 5mm, transparent 5.1mm);
+  background-size: 10mm 4mm;
+  background-repeat: repeat-x;
+}
+
+.sheet-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6mm;
+  padding: 8mm 4mm 2mm;
+  text-align: center;
+}
+.illus { width: 92mm; height: auto; }
+.illus.small { width: 60mm; }
+.verse {
+  white-space: pre-line;
+  font-size: 6.6mm;
+  line-height: 1.5;
+  color: #2b2440;
+  max-width: 130mm;
+}
+.combo-row { display: flex; gap: 10mm; width: 100%; align-items: flex-start; justify-content: center; }
+.combo-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4mm; }
+.combo-col .verse { font-size: 5.8mm; }
+
+.sheet-footer {
+  display: flex;
+  align-items: center;
+  gap: 3mm;
+  padding-top: 4mm;
+  font-size: 3.6mm;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: rgba(43,36,64,.55);
+}
+.dot { width: 3mm; height: 3mm; border-radius: 50%; background: var(--accent); flex: none; }
+
+/* cover */
+.cover .sheet-body { justify-content: flex-start; padding-top: 4mm; gap: 8mm; }
+.cover h1 { font-size: 19mm; line-height: 1.02; text-wrap: balance; }
+.cover .subtitle { font-size: 6mm; font-style: italic; color: rgba(43,36,64,.75); }
+.rainbow-rule {
+  height: 3mm;
+  width: 100%;
+  border-radius: 2mm;
+  background: linear-gradient(90deg, #e2a13a, #6c4a86, #c9463a, #2f6690, #1f7f74, #4f8a3d);
+}
+.legend {
+  width: 100%;
+  max-width: 145mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4mm 10mm;
+  text-align: left;
+  font-size: 5mm;
+}
+.legend-item { display: flex; align-items: center; gap: 3mm; }
+.legend-dot { width: 5mm; height: 5mm; border-radius: 50%; flex: none; }
+.howto {
+  width: 100%;
+  max-width: 155mm;
+  border: 1px dashed rgba(43,36,64,.35);
+  border-radius: 4mm;
+  padding: 6mm 8mm;
+  text-align: left;
+  font-size: 4.6mm;
+  line-height: 1.7;
+}
+.howto b { font-family: "Baloo 2", "Trebuchet MS", sans-serif; }
+.howto ol { margin: 2mm 0 0; padding-left: 5mm; }
+</style>
+
+<div class="toolbar no-print">
+  <span><strong>Mi Cancionero de Rimas</strong> — vista previa de 7 hojas A4</span>
+  <button onclick="window.print()">Imprimir</button>
+</div>
+
+<div class="a4-preview">
+
+  <!-- COVER -->
+  <section class="a4-sheet cover" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content sheet-body">
+      <h1>Mi Cancionero<br>de Rimas</h1>
+      <p class="subtitle">rimas y versos en español, para leer, cantar y guardar</p>
+      <div class="rainbow-rule"></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:#e2a13a"></span>Los pollitos dicen</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#2f6690"></span>Debajo de un botón</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#6c4a86"></span>Cinco lobitos</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#1f7f74"></span>Pin Pon</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#c9463a"></span>Arroz con leche</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#4f8a3d"></span>Sana, sana &amp; Que llueva</div>
+      </div>
+      <div class="howto">
+        <b>Cómo armar la carpeta</b>
+        <ol>
+          <li>Imprime a tamaño real (100&nbsp;%, no "ajustar a la página"), en A4.</li>
+          <li>Plastifica cada hoja.</li>
+          <li>Perfora por el margen ancho marcado con líneas punteadas — ahí no hay texto ni dibujos.</li>
+          <li>Archívalas en orden en tu carpeta de anillas.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot" style="background:#2b2440"></span>Portada · colección inicial de 6 rimas</div>
+  </section>
+
+  <!-- 1. LOS POLLITOS DICEN -->
+  <section class="a4-sheet" style="--accent:#e2a13a" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Los pollitos dicen</h2><span class="kicker">Rima 1</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <g stroke="#8a6d2f" stroke-width="2" fill="#e2a13a">
+            <line x1="30" y1="150" x2="30" y2="95"/>
+            <ellipse cx="30" cy="95" rx="4" ry="7"/>
+            <ellipse cx="24" cy="105" rx="4" ry="7" transform="rotate(-30 24 105)"/>
+            <ellipse cx="36" cy="105" rx="4" ry="7" transform="rotate(30 36 105)"/>
+            <ellipse cx="24" cy="118" rx="4" ry="7" transform="rotate(-30 24 118)"/>
+            <ellipse cx="36" cy="118" rx="4" ry="7" transform="rotate(30 36 118)"/>
+          </g>
+          <ellipse cx="150" cy="115" rx="58" ry="42" fill="#c9463a"/>
+          <ellipse cx="150" cy="118" rx="46" ry="32" fill="#e2a13a"/>
+          <ellipse cx="140" cy="120" rx="20" ry="26" fill="#c9463a" opacity=".55"/>
+          <path d="M205 95 Q225 80 220 60 Q210 85 200 95 Z" fill="#c9463a"/>
+          <path d="M200 90 Q218 70 210 50 Q202 78 192 92 Z" fill="#e2a13a"/>
+          <circle cx="196" cy="82" r="20" fill="#c9463a"/>
+          <path d="M188 64 q-4 -10 2 -12 q2 6 4 4 q1 -8 6 -8 q0 7 3 6 q3 -6 7 -2 q-4 6 -8 8 q3 4 -2 6 z" fill="#8a2b2b"/>
+          <path d="M214 84 l12 -3 l-12 8 z" fill="#e2a13a"/>
+          <circle cx="200" cy="80" r="2.4" fill="#2b2440"/>
+          <line x1="140" y1="150" x2="140" y2="164" stroke="#c98a2a" stroke-width="3"/>
+          <line x1="160" y1="150" x2="160" y2="164" stroke="#c98a2a" stroke-width="3"/>
+          <circle cx="70" cy="150" r="14" fill="#f2c14e"/>
+          <circle cx="70" cy="133" r="10" fill="#f2c14e"/>
+          <path d="M79 132 l9 -2 l-8 6 z" fill="#d98a2a"/>
+          <circle cx="73" cy="131" r="1.6" fill="#2b2440"/>
+          <circle cx="98" cy="155" r="12" fill="#f2c14e"/>
+          <circle cx="98" cy="140" r="9" fill="#f2c14e"/>
+          <path d="M106 139 l8 -2 l-7 5 z" fill="#d98a2a"/>
+          <circle cx="100" cy="138" r="1.4" fill="#2b2440"/>
+        </svg>
+        <div class="verse">Los pollitos dicen
+pío, pío, pío
+cuando tienen hambre,
+cuando tienen frío.
+
+La gallina busca
+el maíz y el trigo,
+les da la comida
+y les presta abrigo.
+
+Bajo de sus alas,
+acurrucaditos,
+hasta el otro día
+duermen los pollitos.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 1 de 6</div>
+  </section>
+
+  <!-- 2. CINCO LOBITOS -->
+  <section class="a4-sheet" style="--accent:#6c4a86" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Cinco lobitos</h2><span class="kicker">Rima 2</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <path d="M194 40 a20 20 0 1 0 10 37 a15 15 0 1 1 -10 -37 z" fill="#e7d9a8"/>
+          <line x1="120" y1="170" x2="120" y2="70" stroke="#8a6d2f" stroke-width="5" stroke-linecap="round"/>
+          <g stroke="#c9a227" stroke-width="3" stroke-linecap="round">
+            <line x1="120" y1="170" x2="95" y2="150"/>
+            <line x1="120" y1="170" x2="107" y2="150"/>
+            <line x1="120" y1="170" x2="120" y2="148"/>
+            <line x1="120" y1="170" x2="133" y2="150"/>
+            <line x1="120" y1="170" x2="145" y2="150"/>
+          </g>
+          <g fill="#6c4a86">
+            <path d="M34 115 l6 -18 l10 10 z"/><path d="M66 115 l-6 -18 l-10 10 z"/>
+            <circle cx="50" cy="122" r="16"/><ellipse cx="50" cy="128" rx="7" ry="5" fill="#a98fc4"/>
+            <circle cx="44" cy="118" r="1.6" fill="#2b2440"/><circle cx="56" cy="118" r="1.6" fill="#2b2440"/>
+          </g>
+          <g fill="#6c4a86">
+            <path d="M69 115 l6 -18 l10 10 z"/><path d="M101 115 l-6 -18 l-10 10 z"/>
+            <circle cx="85" cy="122" r="16"/><ellipse cx="85" cy="128" rx="7" ry="5" fill="#a98fc4"/>
+            <circle cx="79" cy="118" r="1.6" fill="#2b2440"/><circle cx="91" cy="118" r="1.6" fill="#2b2440"/>
+          </g>
+          <g fill="#6c4a86">
+            <path d="M104 115 l6 -18 l10 10 z"/><path d="M136 115 l-6 -18 l-10 10 z"/>
+            <circle cx="120" cy="122" r="16"/><ellipse cx="120" cy="128" rx="7" ry="5" fill="#a98fc4"/>
+            <circle cx="114" cy="118" r="1.6" fill="#2b2440"/><circle cx="126" cy="118" r="1.6" fill="#2b2440"/>
+          </g>
+          <g fill="#6c4a86">
+            <path d="M139 115 l6 -18 l10 10 z"/><path d="M171 115 l-6 -18 l-10 10 z"/>
+            <circle cx="155" cy="122" r="16"/><ellipse cx="155" cy="128" rx="7" ry="5" fill="#a98fc4"/>
+            <circle cx="149" cy="118" r="1.6" fill="#2b2440"/><circle cx="161" cy="118" r="1.6" fill="#2b2440"/>
+          </g>
+          <g fill="#6c4a86">
+            <path d="M174 115 l6 -18 l10 10 z"/><path d="M206 115 l-6 -18 l-10 10 z"/>
+            <circle cx="190" cy="122" r="16"/><ellipse cx="190" cy="128" rx="7" ry="5" fill="#a98fc4"/>
+            <circle cx="184" cy="118" r="1.6" fill="#2b2440"/><circle cx="196" cy="118" r="1.6" fill="#2b2440"/>
+          </g>
+        </svg>
+        <div class="verse">Cinco lobitos
+tiene la loba,
+cinco lobitos
+detrás de una escoba.
+
+Cinco tenía,
+cinco criaba,
+y a todos ellos
+teta les daba.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 2 de 6</div>
+  </section>
+
+  <!-- 3. ARROZ CON LECHE -->
+  <section class="a4-sheet" style="--accent:#c9463a" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Arroz con leche</h2><span class="kicker">Rima 3</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <ellipse cx="120" cy="150" rx="60" ry="6" fill="rgba(43,36,64,.08)"/>
+          <path d="M55 100 q65 55 130 0 l-8 30 q-57 40 -114 0 z" fill="#c9463a"/>
+          <ellipse cx="120" cy="100" rx="65" ry="20" fill="#f6ead0"/>
+          <ellipse cx="120" cy="98" rx="55" ry="15" fill="#fbf6ea"/>
+          <path d="M100 96 q6 -10 16 -6 q10 4 4 12 q-6 8 -14 2" fill="none" stroke="#8a5a2f" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="145" cy="92" r="2" fill="#c9862f"/>
+          <circle cx="150" cy="98" r="1.6" fill="#c9862f"/>
+          <circle cx="95" cy="90" r="1.6" fill="#c9862f"/>
+          <path d="M120 55 c-6 -10 -22 -4 -14 8 c5 7 14 13 14 13 s9 -6 14 -13 c8 -12 -8 -18 -14 -8 z" fill="#c9463a"/>
+        </svg>
+        <div class="verse">Arroz con leche,
+me quiero casar
+con una señorita
+de San Nicolás.
+
+Que sepa coser,
+que sepa bordar,
+que sepa abrir la puerta
+para ir a jugar.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 3 de 6</div>
+  </section>
+
+  <!-- 4. DEBAJO DE UN BOTÓN -->
+  <section class="a4-sheet" style="--accent:#2f6690" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Debajo de un botón</h2><span class="kicker">Rima 4</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <ellipse cx="120" cy="160" rx="70" ry="5" fill="rgba(43,36,64,.06)"/>
+          <circle cx="130" cy="95" r="55" fill="#2f6690"/>
+          <circle cx="130" cy="95" r="46" fill="#437fac"/>
+          <circle cx="112" cy="82" r="6" fill="#1d4a68"/>
+          <circle cx="148" cy="82" r="6" fill="#1d4a68"/>
+          <circle cx="112" cy="108" r="6" fill="#1d4a68"/>
+          <circle cx="148" cy="108" r="6" fill="#1d4a68"/>
+          <g stroke="#e7d9a8" stroke-width="3">
+            <line x1="112" y1="82" x2="148" y2="108"/>
+            <line x1="148" y1="82" x2="112" y2="108"/>
+          </g>
+          <ellipse cx="55" cy="145" rx="28" ry="18" fill="#8a8a99"/>
+          <circle cx="30" cy="132" r="14" fill="#8a8a99"/>
+          <circle cx="20" cy="120" r="6" fill="#8a8a99"/>
+          <circle cx="34" cy="118" r="6" fill="#8a8a99"/>
+          <circle cx="20" cy="120" r="3" fill="#c98fae"/>
+          <circle cx="34" cy="118" r="3" fill="#c98fae"/>
+          <circle cx="25" cy="130" r="1.8" fill="#2b2440"/>
+          <path d="M78 148 q20 6 26 -6" fill="none" stroke="#8a8a99" stroke-width="3"/>
+        </svg>
+        <div class="verse">Debajo de un botón, ton, ton,
+que encontró Martín, tín, tín,
+había un ratón, ton, ton,
+¡ay, qué chiquitín, tín, tín!
+
+Ay, qué chiquitín, tín, tín,
+era aquel ratón, ton, ton,
+que encontró Martín, tín, tín,
+debajo de un botón, ton, ton.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 4 de 6</div>
+  </section>
+
+  <!-- 5. PIN PON -->
+  <section class="a4-sheet" style="--accent:#1f7f74" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Pin Pon</h2><span class="kicker">Rima 5</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <rect x="90" y="95" width="60" height="65" rx="8" fill="#1f7f74"/>
+          <rect x="98" y="103" width="44" height="49" rx="5" fill="#2fa093"/>
+          <circle cx="120" cy="70" r="30" fill="#f2c9a0"/>
+          <path d="M92 60 q28 -32 56 0 q-6 -6 -28 -6 q-22 0 -28 6 z" fill="#4a3524"/>
+          <circle cx="110" cy="70" r="2" fill="#2b2440"/>
+          <circle cx="130" cy="70" r="2" fill="#2b2440"/>
+          <path d="M112 82 q8 6 16 0" fill="none" stroke="#2b2440" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="60" cy="55" r="8" fill="none" stroke="#bfe3df" stroke-width="2"/>
+          <circle cx="75" cy="40" r="5" fill="none" stroke="#bfe3df" stroke-width="2"/>
+          <circle cx="180" cy="60" r="7" fill="none" stroke="#bfe3df" stroke-width="2"/>
+          <path d="M170 90 q6 10 0 16 q-6 -6 0 -16 z" fill="#6fc6bb"/>
+          <path d="M160 105 q5 8 0 13 q-5 -5 0 -13 z" fill="#6fc6bb"/>
+          <g stroke="#8a5a2f" stroke-width="2">
+            <line x1="170" y1="130" x2="200" y2="130"/>
+            <line x1="172" y1="130" x2="172" y2="120"/>
+            <line x1="178" y1="130" x2="178" y2="120"/>
+            <line x1="184" y1="130" x2="184" y2="120"/>
+            <line x1="190" y1="130" x2="190" y2="120"/>
+            <line x1="196" y1="130" x2="196" y2="120"/>
+          </g>
+        </svg>
+        <div class="verse">Pin Pon es un muñeco
+muy guapo y de cartón,
+se lava su carita
+con agua y con jabón.
+
+Se desenreda el pelo
+con peine de marfil,
+y aunque se da tirones
+no llora ni hace así.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 5 de 6</div>
+  </section>
+
+  <!-- 6. SANA SANA + QUE LLUEVA -->
+  <section class="a4-sheet" style="--accent:#4f8a3d" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Sana, sana &amp; Que llueva</h2><span class="kicker">Rima 6</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <div class="combo-row">
+          <div class="combo-col">
+            <svg class="illus small" viewBox="0 0 140 140">
+              <ellipse cx="70" cy="90" rx="42" ry="28" fill="#4f8a3d"/>
+              <circle cx="45" cy="60" r="14" fill="#4f8a3d"/>
+              <circle cx="90" cy="60" r="14" fill="#4f8a3d"/>
+              <circle cx="45" cy="60" r="6" fill="#fbf6ea"/>
+              <circle cx="90" cy="60" r="6" fill="#fbf6ea"/>
+              <circle cx="45" cy="60" r="3" fill="#2b2440"/>
+              <circle cx="90" cy="60" r="3" fill="#2b2440"/>
+              <path d="M50 100 q18 12 36 0" fill="none" stroke="#2b2440" stroke-width="2.4" stroke-linecap="round"/>
+              <path d="M32 110 q-14 6 -20 20" fill="none" stroke="#4f8a3d" stroke-width="10" stroke-linecap="round"/>
+              <path d="M108 110 q14 6 20 20" fill="none" stroke="#4f8a3d" stroke-width="10" stroke-linecap="round"/>
+            </svg>
+            <div class="verse">Sana, sana,
+colita de rana,
+si no sana hoy
+sanará mañana.</div>
+          </div>
+          <div class="combo-col">
+            <svg class="illus small" viewBox="0 0 140 140">
+              <ellipse cx="45" cy="45" rx="22" ry="16" fill="#89a8c9"/>
+              <ellipse cx="70" cy="40" rx="26" ry="19" fill="#89a8c9"/>
+              <ellipse cx="95" cy="48" rx="18" ry="14" fill="#89a8c9"/>
+              <path d="M40 68 q4 10 0 16 q-4 -6 0 -16 z" fill="#4f8a3d"/>
+              <path d="M68 72 q4 10 0 16 q-4 -6 0 -16 z" fill="#4f8a3d"/>
+              <path d="M96 68 q4 10 0 16 q-4 -6 0 -16 z" fill="#4f8a3d"/>
+              <path d="M40 95 q4 10 0 16 q-4 -6 0 -16 z" fill="#4f8a3d"/>
+              <path d="M68 100 q4 10 0 16 q-4 -6 0 -16 z" fill="#4f8a3d"/>
+              <path d="M96 95 q4 10 0 16 q-4 -6 0 -16 z" fill="#4f8a3d"/>
+            </svg>
+            <div class="verse">Que llueva, que llueva,
+la Virgen de la Cueva,
+los pajaritos cantan,
+las nubes se levantan.
+¡Que sí, que no,
+que caiga un chaparrón!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rimas tradicionales españolas · 6 de 6</div>
+  </section>
+
+</div>
