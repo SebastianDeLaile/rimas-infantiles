@@ -1,4 +1,9 @@
-<title>Mi Cancionero de Rimas</title>
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mi Cancionero Bilingüe</title>
 <style>
 /* ---------------------------------------------------------------------
    Base: inlined copy of print-templates/a4-holepunch/a4-holepunch.css
@@ -74,11 +79,11 @@
 body {
   margin: 0;
   background: var(--preview-backdrop);
-  font-family: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  font-family: "Avenir Next", Avenir, "Nunito Sans", system-ui, sans-serif;
 }
 * { text-wrap: pretty; }
 h1, h2, h3, .display {
-  font-family: "Baloo 2", "Arial Rounded MT Bold", "SF Compact Rounded", "Trebuchet MS", sans-serif;
+  font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", "SF Pro Rounded", "Trebuchet MS", sans-serif;
   font-weight: 700;
   margin: 0;
 }
@@ -122,7 +127,7 @@ h1, h2, h3, .display {
   justify-content: space-between;
   gap: 6mm;
 }
-.band h2 { font-size: 15mm; line-height: 1; text-wrap: balance; }
+.band h2 { font-size: 13.5mm; line-height: 1.04; text-wrap: balance; }
 .band .kicker { font-size: 4mm; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
 .scallop {
   height: 4mm;
@@ -137,22 +142,80 @@ h1, h2, h3, .display {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6mm;
-  padding: 8mm 4mm 2mm;
+  gap: 5mm;
+  padding: 7mm 5mm 2mm;
   text-align: center;
 }
-.illus { width: 92mm; height: auto; }
+.illus { width: 86mm; height: auto; max-height: 86mm; object-fit: contain; }
+.illus.painting { width: 112mm; border-radius: 4mm; mix-blend-mode: multiply; }
 .illus.small { width: 60mm; }
 .verse {
   white-space: pre-line;
-  font-size: 6.6mm;
-  line-height: 1.5;
+  font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", "SF Pro Rounded", "Trebuchet MS", sans-serif;
+  font-size: 6.9mm;
+  line-height: 1.42;
   color: #2b2440;
   max-width: 130mm;
 }
 .combo-row { display: flex; gap: 10mm; width: 100%; align-items: flex-start; justify-content: center; }
 .combo-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4mm; }
 .combo-col .verse { font-size: 5.8mm; }
+
+/* The reverse of every rhyme sheet. The punch gutter mirrors to the right,
+   so duplex printing can flip on the long edge. */
+.a4-sheet[data-punch="right"] { padding: var(--edge-margin) var(--punch-margin) var(--edge-margin) var(--edge-margin); }
+.a4-sheet[data-punch="right"] .a4-punch-guide::before {
+  left: auto;
+  right: calc(var(--hole-inset) + var(--hole-dia) / 2);
+}
+.a4-sheet[data-punch="right"] .a4-punch-guide__hole { left: auto; right: var(--hole-inset); }
+.translation { --sheet-bg: #fffdf7; }
+.translation .band { background: transparent; color: var(--sheet-ink); padding: 6mm 8mm 3mm; border-bottom: 1.2mm solid var(--accent); }
+.translation .band h2 { font-size: 11.5mm; }
+.translation .band .kicker { color: var(--accent); opacity: 1; font-weight: 800; }
+.translation .scallop { display: none; }
+.translation .sheet-body { padding-top: 6mm; }
+.translation .illus { width: 70mm; max-height: 65mm; opacity: .94; }
+.translation .verse { font-size: 6.7mm; line-height: 1.44; }
+.translation-note { font-size: 3.5mm; color: rgba(43,36,64,.56); font-style: italic; margin: 0; }
+.sheet-body.long-verse { gap: 3.5mm; }
+.sheet-body.long-verse .illus { width: 68mm; max-height: 62mm; }
+.sheet-body.long-verse .verse { font-size: 6.15mm; line-height: 1.35; }
+.movement-body { justify-content: flex-start; gap: 3.5mm; padding-top: 5mm; }
+.movement-body .illus { width: 92mm; max-height: 57mm; }
+.movement-body .chorus { font-size: 6mm; line-height: 1.25; }
+.movement-intro { margin: 0; font-size: 3.7mm; color: rgba(43,36,64,.65); }
+.movement-list {
+  width: 116mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2mm 4mm;
+  text-align: left;
+  counter-reset: move;
+}
+.movement {
+  counter-increment: move;
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  padding: 2.2mm 3mm;
+  border-radius: 3mm;
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", sans-serif;
+  font-size: 4.2mm;
+}
+.movement::before {
+  content: counter(move);
+  display: grid;
+  place-items: center;
+  width: 7mm;
+  height: 7mm;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fffdf7;
+  font-size: 3.5mm;
+}
 
 .sheet-footer {
   display: flex;
@@ -200,9 +263,11 @@ h1, h2, h3, .display {
 .howto b { font-family: "Baloo 2", "Trebuchet MS", sans-serif; }
 .howto ol { margin: 2mm 0 0; padding-left: 5mm; }
 </style>
+</head>
+<body>
 
 <div class="toolbar no-print">
-  <span><strong>Mi Cancionero de Rimas</strong> — vista previa de 7 hojas A4</span>
+  <span><strong>Mi Cancionero bilingüe</strong> — 10 hojas a doble cara + portada</span>
   <button onclick="window.print()">Imprimir</button>
 </div>
 
@@ -212,8 +277,8 @@ h1, h2, h3, .display {
   <section class="a4-sheet cover" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content sheet-body">
-      <h1>Mi Cancionero<br>de Rimas</h1>
-      <p class="subtitle">rimas y versos en español, para leer, cantar y guardar</p>
+      <h1>Mi Cancionero<br>Bilingüe</h1>
+      <p class="subtitle">Spanish on the front · English on the back</p>
       <div class="rainbow-rule"></div>
       <div class="legend">
         <div class="legend-item"><span class="legend-dot" style="background:#e2a13a"></span>Los pollitos dicen</div>
@@ -222,6 +287,10 @@ h1, h2, h3, .display {
         <div class="legend-item"><span class="legend-dot" style="background:#1f7f74"></span>Pin Pon</div>
         <div class="legend-item"><span class="legend-dot" style="background:#c9463a"></span>Arroz con leche</div>
         <div class="legend-item"><span class="legend-dot" style="background:#4f8a3d"></span>Sana, sana &amp; Que llueva</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#d27a52"></span>Un elefante</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#668b4d"></span>Cucú cantaba la rana</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#aa7449"></span>Caracol, col, col</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#b45273"></span>Chuchuwa</div>
       </div>
       <div class="howto">
         <b>Cómo armar la carpeta</b>
@@ -229,11 +298,12 @@ h1, h2, h3, .display {
           <li>Imprime a tamaño real (100&nbsp;%, no "ajustar a la página"), en A4.</li>
           <li>Plastifica cada hoja.</li>
           <li>Perfora por el margen ancho marcado con líneas punteadas — ahí no hay texto ni dibujos.</li>
-          <li>Archívalas en orden en tu carpeta de anillas.</li>
+          <li>Imprime a doble cara, volteando por el borde largo.</li>
+          <li>Archívalas en orden en tu carpeta de anillas: español delante, inglés detrás.</li>
         </ol>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot" style="background:#2b2440"></span>Portada · colección inicial de 6 rimas</div>
+    <div class="sheet-footer"><span class="dot" style="background:#2b2440"></span>11 canciones · 10 hojas bilingües</div>
   </section>
 
   <!-- 1. LOS POLLITOS DICEN -->
@@ -288,7 +358,7 @@ hasta el otro día
 duermen los pollitos.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 1 de 6</div>
+    <div class="sheet-footer"><span class="dot"></span>Letra de Ismael Parraguez (Chile) · 1 de 10</div>
   </section>
 
   <!-- 2. CINCO LOBITOS -->
@@ -345,7 +415,7 @@ y a todos ellos
 teta les daba.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 2 de 6</div>
+    <div class="sheet-footer"><span class="dot"></span>Rima infantil tradicional · 2 de 10</div>
   </section>
 
   <!-- 3. ARROZ CON LECHE -->
@@ -377,7 +447,7 @@ que sepa abrir la puerta
 para ir a jugar.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 3 de 6</div>
+    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 3 de 10</div>
   </section>
 
   <!-- 4. DEBAJO DE UN BOTÓN -->
@@ -419,7 +489,7 @@ que encontró Martín, tín, tín,
 debajo de un botón, ton, ton.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 4 de 6</div>
+    <div class="sheet-footer"><span class="dot"></span>Rima infantil tradicional · 4 de 10</div>
   </section>
 
   <!-- 5. PIN PON -->
@@ -462,7 +532,7 @@ y aunque se da tirones
 no llora ni hace así.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima tradicional española · 5 de 6</div>
+    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 5 de 10</div>
   </section>
 
   <!-- 6. SANA SANA + QUE LLUEVA -->
@@ -513,7 +583,260 @@ que caiga un chaparrón!</div>
         </div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rimas tradicionales españolas · 6 de 6</div>
+    <div class="sheet-footer"><span class="dot"></span>Rimas infantiles tradicionales · 6 de 10</div>
+  </section>
+
+  <!-- 7. UN ELEFANTE SE BALANCEABA -->
+  <section class="a4-sheet" style="--accent:#d27a52" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Un elefante</h2><span class="kicker">Rima 7</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <img class="illus painting" src="assets/un-elefante.png" alt="Un elefante pequeño balanceándose sobre una telaraña">
+        <div class="verse">Un elefante se balanceaba
+sobre la tela de una araña.
+Como veía que resistía,
+fue a llamar a otro elefante.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 7 de 10</div>
+  </section>
+
+  <!-- 8. CUCÚ CANTABA LA RANA -->
+  <section class="a4-sheet" style="--accent:#668b4d" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Cucú cantaba la rana</h2><span class="kicker">Rima 8</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <img class="illus painting" src="assets/cucu-rana.png" alt="Una rana verde cantando junto a un estanque">
+        <div class="verse">Cucú, cucú,
+cantaba la rana.
+Cucú, cucú,
+debajo del agua.
+
+Cucú, cucú,
+pasó un caballero.
+Cucú, cucú,
+con capa y sombrero.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 8 de 10</div>
+  </section>
+
+  <!-- 9. CARACOL, COL, COL -->
+  <section class="a4-sheet" style="--accent:#aa7449" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Caracol, col, col</h2><span class="kicker">Rima 9</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <img class="illus painting" src="assets/caracol.png" alt="Un caracol sonriente debajo de una hoja">
+        <div class="verse">Caracol, col, col,
+saca los cuernos al sol,
+que tu padre y tu madre
+también los sacó.</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Rima infantil tradicional · 9 de 10</div>
+  </section>
+
+  <!-- 10. CHUCHUWA -->
+  <section class="a4-sheet" style="--accent:#b45273" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Chuchuwa</h2><span class="kicker">Movimiento 10</span></div>
+      <div class="scallop"></div>
+      <div class="sheet-body movement-body">
+        <img class="illus painting" src="assets/chuchuwa.png" alt="Cuatro niños haciendo movimientos divertidos juntos">
+        <div class="verse chorus">Chuchuwa, chuchuwa
+Chuchuwa-wa-wa</div>
+        <p class="movement-intro"><b>¡Compañía!</b> Repite el coro y suma un movimiento cada vez.</p>
+        <div class="movement-list" aria-label="Movimientos de Chuchuwa">
+          <div class="movement">Brazo extendido</div>
+          <div class="movement">Puño cerrado</div>
+          <div class="movement">Dedo hacia arriba</div>
+          <div class="movement">Hombro fruncido</div>
+          <div class="movement">Cabeza hacia atrás</div>
+          <div class="movement">Cola hacia atrás</div>
+          <div class="movement">Pie de pingüino</div>
+          <div class="movement">Lengua afuera</div>
+        </div>
+        <div class="verse chorus">Ta-ta-ta, ta-ta-ta
+Ta-ta-ta-ta-ta</div>
+      </div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Letra proporcionada por la familia · 10 de 10</div>
   </section>
 
 </div>
+
+<script>
+const translations = [
+  {
+    title: "The little chicks say",
+    verse: `The little chicks say,
+“Peep, peep, peep,”
+when they are hungry,
+when they feel cold.
+
+Mother Hen goes looking
+for wheat and corn;
+she gives them their dinner
+and keeps them warm.
+
+Tucked beneath her wings,
+snuggled up so tight,
+all the little chickens
+sleep until daylight.`
+  },
+  {
+    title: "Five little wolf cubs",
+    verse: `Five little wolf cubs
+belong to Mother Wolf,
+five little wolf cubs
+behind a broom.
+
+Five she had,
+five she raised,
+and every little one
+she nursed with care.`
+  },
+  {
+    title: "Rice pudding",
+    verse: `Rice pudding,
+I would like to marry
+a young lady
+from San Nicolás.
+
+She knows how to sew,
+she knows how to stitch,
+she knows how to open the door
+so we can go and play.`
+  },
+  {
+    title: "Underneath a button",
+    verse: `Underneath a button—ton, ton—
+that Martín had found—tín, tín—
+there was a mouse—ton, ton—
+oh, so tiny and round—tín, tín!
+
+Oh, so tiny and round—tín, tín—
+was that little mouse—ton, ton—
+that Martín had found—tín, tín—
+underneath a button—ton, ton.`
+  },
+  {
+    title: "Pin Pon",
+    verse: `Pin Pon is a doll,
+so handsome, made of card;
+he washes his little face
+with soap and water.
+
+He combs out his hair
+with an ivory comb,
+and though it sometimes pulls,
+he never cries at all.`
+  },
+  {
+    title: "Heal, heal & Let it rain",
+    verse: `Heal, heal,
+little frog’s tail;
+if it doesn’t heal today,
+tomorrow it will.
+
+Let it rain, let it rain,
+the Virgin of the Cave;
+the little birds are singing,
+the clouds begin to rise.
+Yes or no—what do you say?
+Let a shower fall today!`
+  },
+  {
+    title: "One elephant",
+    verse: `One elephant was balancing
+upon a spider’s web.
+And when he saw how strong it was,
+he called another elephant.`
+  },
+  {
+    title: "Cuckoo sang the frog",
+    verse: `Cuckoo, cuckoo,
+the little frog was singing.
+Cuckoo, cuckoo,
+underneath the water.
+
+Cuckoo, cuckoo,
+a gentleman walked by.
+Cuckoo, cuckoo,
+in a cape and hat.`
+  },
+  {
+    title: "Little snail",
+    verse: `Little snail, snail, snail,
+show your feelers to the sun;
+your father and your mother
+used to show them too.`
+  },
+  {
+    title: "Chuchuwa",
+    verse: `Chuchuwa, chuchuwa
+Chuchuwa-wa-wa
+
+Company!
+Repeat the chorus and add
+one movement each time.
+
+1. Arm stretched out
+2. Fist closed
+3. Finger pointing up
+4. Shoulders shrugged
+5. Head leaning back
+6. Bottom pushed back
+7. Penguin feet
+8. Tongue sticking out
+
+Ta-ta-ta, ta-ta-ta
+Ta-ta-ta-ta-ta`
+  }
+];
+
+const preview = document.querySelector(".a4-preview");
+const fronts = [...preview.querySelectorAll(':scope > .a4-sheet:not(.cover)')];
+fronts.forEach((front, index) => {
+  const frontVerse = front.querySelector(".verse");
+  if (frontVerse && frontVerse.textContent.trim().split(/\n/).length > 10) {
+    front.querySelector(".sheet-body")?.classList.add("long-verse");
+  }
+  const copy = translations[index];
+  if (!copy) return;
+  const accent = front.style.getPropertyValue("--accent");
+  const art = front.querySelector(".illus")?.cloneNode(true);
+  const back = document.createElement("section");
+  back.className = "a4-sheet translation";
+  back.dataset.punch = "right";
+  back.style.setProperty("--accent", accent);
+  back.innerHTML = `
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>${copy.title}</h2><span class="kicker">English</span></div>
+      <div class="sheet-body"></div>
+    </div>
+    <div class="sheet-footer"><span class="dot"></span>Read-aloud translation · ${index + 1} of ${fronts.length}</div>`;
+  const body = back.querySelector(".sheet-body");
+  if (art) body.append(art);
+  const verse = document.createElement("div");
+  verse.className = "verse";
+  verse.textContent = copy.verse;
+  body.append(verse);
+  if (copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
+  const note = document.createElement("p");
+  note.className = "translation-note";
+  note.textContent = "A natural English version for reading aloud—not a word-for-word translation.";
+  body.append(note);
+  front.after(back);
+});
+</script>
+</body>
+</html>
