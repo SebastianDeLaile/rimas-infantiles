@@ -71,6 +71,9 @@
   .a4-preview { background: none; padding: 0; gap: 0; }
   .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; }
   .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
+  .site-shell { display: block; }
+  .browser-sidebar { display: none !important; }
+  .a4-preview.browse-mode > .a4-sheet { display: flex !important; }
 }
 
 /* ---------------------------------------------------------------------
@@ -115,6 +118,40 @@ h1, h2, h3, .display {
 }
 .toolbar button:focus-visible { outline: 3px solid #fbf6ea; outline-offset: 2px; }
 .toolbar button:hover { background: #edb85e; }
+
+.site-shell { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: calc(100vh - 57px); }
+.browser-sidebar {
+  position: sticky; top: 57px; height: calc(100vh - 57px); box-sizing: border-box;
+  padding: 22px 16px; overflow-y: auto; background: #fffdf7;
+  border-right: 1px solid rgba(43,36,64,.14); color: #2b2440;
+}
+.browser-sidebar h2 { margin: 0 0 12px; color: rgba(43,36,64,.55); font: 700 12px/1.2 "Avenir Next", sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.sidebar-toggle { width: 30px; height: 30px; margin-bottom: 18px; border: 1px solid rgba(43,36,64,.18); border-radius: 5px; background: #f4efe4; color: #2b2440; cursor: pointer; }
+.site-shell.sidebar-collapsed { grid-template-columns: 48px minmax(0, 1fr); }
+.site-shell.sidebar-collapsed .browser-sidebar { padding-inline: 9px; }
+.site-shell.sidebar-collapsed .sidebar-content { display: none; }
+.rhyme-search { width: 100%; box-sizing: border-box; margin-bottom: 9px; padding: 8px 10px; border: 1px solid rgba(43,36,64,.18); border-radius: 5px; background: #fff; font: inherit; }
+.category-pills { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 14px; scrollbar-width: none; }
+.category-pills::-webkit-scrollbar { display: none; }
+.category-pill { flex: none; padding: 5px 10px; border: 1px solid rgba(43,36,64,.18); border-radius: 999px; background: transparent; color: #2b2440; font: 600 12px/1.2 inherit; cursor: pointer; }
+.category-pill.active { background: #2b2440; border-color: #2b2440; color: #fffdf7; }
+.rhyme-list { display: flex; flex-direction: column; gap: 5px; }
+.rhyme-button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 9px; border: 1px solid transparent; border-radius: 5px; background: #f4efe4; color: #2b2440; text-align: left; font: 600 13px/1.25 inherit; cursor: pointer; }
+.rhyme-button::before { content: ""; width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--item-accent); }
+.rhyme-button.active { background: #2b2440; color: #fffdf7; }
+.rhyme-empty { color: rgba(43,36,64,.5); font-size: 13px; }
+.preview-main { min-width: 0; }
+.a4-preview.browse-mode > .a4-sheet { display: none; }
+.a4-preview.browse-mode > .a4-sheet.is-selected { display: flex; }
+
+@media (max-width: 760px) {
+  .site-shell { grid-template-columns: 1fr; }
+  .browser-sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid rgba(43,36,64,.14); }
+  .site-shell.sidebar-collapsed { grid-template-columns: 1fr; }
+  .site-shell.sidebar-collapsed .browser-sidebar { padding: 8px 12px; }
+  .sidebar-toggle { margin: 0; }
+  .a4-preview { align-items: flex-start; overflow-x: auto; padding-inline: 12px; }
+}
 
 /* header ribbon + scallop trim, accent color set per-sheet via --accent */
 .band {
@@ -271,7 +308,18 @@ h1, h2, h3, .display {
   <button onclick="window.print()">Imprimir</button>
 </div>
 
-<div class="a4-preview">
+<div class="site-shell">
+<aside class="browser-sidebar no-print" aria-label="Rhyme browser">
+  <button class="sidebar-toggle" type="button" aria-label="Collapse rhyme browser">&laquo;</button>
+  <div class="sidebar-content">
+    <h2>Rimas</h2>
+    <input class="rhyme-search" type="search" placeholder="Buscar…" autocomplete="off">
+    <div class="category-pills" aria-label="Categories"></div>
+    <nav class="rhyme-list" aria-label="Choose a rhyme"></nav>
+  </div>
+</aside>
+<main class="preview-main">
+<div class="a4-preview browse-mode">
 
   <!-- COVER -->
   <section class="a4-sheet cover" data-punch="left">
@@ -671,6 +719,8 @@ Ta-ta-ta-ta-ta</div>
   </section>
 
 </div>
+</main>
+</div>
 
 <script>
 const translations = [
@@ -837,6 +887,73 @@ fronts.forEach((front, index) => {
   body.append(note);
   front.after(back);
 });
+
+const rhymeCategories = [
+  "Animales", "Números", "Juegos", "Juegos", "Rutinas",
+  "Tradicionales", "Números", "Animales", "Animales", "Movimiento"
+];
+const shell = document.querySelector(".site-shell");
+const cover = preview.querySelector(".cover");
+const search = document.querySelector(".rhyme-search");
+const pills = document.querySelector(".category-pills");
+const list = document.querySelector(".rhyme-list");
+const sidebarToggle = document.querySelector(".sidebar-toggle");
+let selectedRhyme = -1;
+let activeCategory = "Todas";
+
+function selectRhyme(index) {
+  selectedRhyme = index;
+  preview.querySelectorAll(":scope > .a4-sheet").forEach(sheet => sheet.classList.remove("is-selected"));
+  if (index < 0) {
+    cover.classList.add("is-selected");
+  } else {
+    fronts[index].classList.add("is-selected");
+    fronts[index].nextElementSibling?.classList.add("is-selected");
+  }
+  renderRhymeList();
+}
+
+function renderPills() {
+  const categories = ["Todas", ...new Set(rhymeCategories)];
+  pills.innerHTML = categories.map(category =>
+    `<button type="button" class="category-pill${category === activeCategory ? " active" : ""}" data-category="${category}">${category}</button>`
+  ).join("");
+  pills.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
+    activeCategory = button.dataset.category;
+    renderPills();
+    renderRhymeList();
+  }));
+}
+
+function renderRhymeList() {
+  const query = search.value.trim().toLocaleLowerCase("es");
+  const items = fronts.map((front, index) => ({
+    index,
+    title: front.querySelector("h2").textContent,
+    category: rhymeCategories[index],
+    accent: front.style.getPropertyValue("--accent")
+  })).filter(item =>
+    (activeCategory === "Todas" || item.category === activeCategory) &&
+    item.title.toLocaleLowerCase("es").includes(query)
+  );
+  const coverButton = !query && activeCategory === "Todas"
+    ? `<button type="button" class="rhyme-button${selectedRhyme < 0 ? " active" : ""}" data-index="-1" style="--item-accent:#e2a13a">Portada</button>`
+    : "";
+  list.innerHTML = coverButton + items.map(item =>
+    `<button type="button" class="rhyme-button${selectedRhyme === item.index ? " active" : ""}" data-index="${item.index}" style="--item-accent:${item.accent}">${item.title}</button>`
+  ).join("");
+  if (!coverButton && !items.length) list.innerHTML = `<div class="rhyme-empty">No se encontraron rimas.</div>`;
+  list.querySelectorAll("button").forEach(button => button.addEventListener("click", () => selectRhyme(Number(button.dataset.index))));
+}
+
+search.addEventListener("input", renderRhymeList);
+sidebarToggle.addEventListener("click", () => {
+  const collapsed = shell.classList.toggle("sidebar-collapsed");
+  sidebarToggle.innerHTML = collapsed ? "&raquo;" : "&laquo;";
+  sidebarToggle.setAttribute("aria-label", collapsed ? "Expand rhyme browser" : "Collapse rhyme browser");
+});
+renderPills();
+selectRhyme(-1);
 </script>
 </body>
 </html>
