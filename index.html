@@ -74,11 +74,18 @@
 
 .a4-preview { background: var(--preview-backdrop); display: flex; flex-direction: column; align-items: center; gap: 10mm; padding: 10mm 0 16mm; }
 .a4-preview .a4-sheet { box-shadow: 0 6px 24px var(--preview-shadow); }
-/* On screen the preview card stays a constant size no matter the format —
-   it's not shown at true physical scale anyway, so shrinking it just makes
-   it harder to look at. Only the hole count changes on screen. The real
-   A5 shrink (page size + proportional content scale) only applies when
-   actually printing, scoped inside @media print below. */
+/* The A5 card actually shrinks on screen too, not just at print time — the
+   hole stays a real, unscaled 6mm throughout (it's outside this transform),
+   so on the smaller A5 card it correctly reads as proportionally bigger
+   relative to the page, matching what a real 6mm hole looks like on a
+   smaller sheet of paper. 148/210, not 1/sqrt(2) (0.70711) — ISO sizes
+   round to whole mm, so A4->A5 isn't perfectly self-similar (148/210 =
+   0.70476 vs 210/297 = 0.70707). The width ratio guarantees the content
+   never overflows A5's actual width; the height comes out ~0.7mm short
+   instead, which just leaves a sliver of blank page rather than clipping
+   anything. */
+.a4-preview[data-format="a5"] { --content-scale: 0.70476; }
+.a4-preview[data-format="a5"] .a4-sheet { --page-w: 148mm; --page-h: 210mm; }
 .a4-preview[data-format="a5"] .a4-punch-guide__hole--a,
 .a4-preview[data-format="a5"] .a4-punch-guide__hole--d { display: none; }
 
@@ -92,13 +99,6 @@
   .site-shell { display: block; }
   .browser-sidebar { display: none !important; }
   .a4-preview.browse-mode > .a4-sheet { display: flex !important; }
-  /* 148/210, not 1/sqrt(2) (0.70711) — ISO sizes round to whole mm, so A4's
-     297mm doesn't scale to exactly A5's 210mm at the "pure" ratio. Using the
-     width ratio guarantees the content never overflows A5's actual width;
-     the height comes out ~0.7mm short instead, which just leaves a sliver
-     of blank page rather than clipping anything. */
-  .a4-preview[data-format="a5"] { --content-scale: 0.70476; }
-  .a4-preview[data-format="a5"] .a4-sheet { --page-w: 148mm; --page-h: 210mm; }
 }
 
 /* ---------------------------------------------------------------------
