@@ -92,7 +92,12 @@
   .site-shell { display: block; }
   .browser-sidebar { display: none !important; }
   .a4-preview.browse-mode > .a4-sheet { display: flex !important; }
-  .a4-preview[data-format="a5"] { --content-scale: 0.70711; }
+  /* 148/210, not 1/sqrt(2) (0.70711) — ISO sizes round to whole mm, so A4's
+     297mm doesn't scale to exactly A5's 210mm at the "pure" ratio. Using the
+     width ratio guarantees the content never overflows A5's actual width;
+     the height comes out ~0.7mm short instead, which just leaves a sliver
+     of blank page rather than clipping anything. */
+  .a4-preview[data-format="a5"] { --content-scale: 0.70476; }
   .a4-preview[data-format="a5"] .a4-sheet { --page-w: 148mm; --page-h: 210mm; }
 }
 
