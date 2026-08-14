@@ -42,14 +42,6 @@
 }
 .a4-sheet__content { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .a4-punch-guide { position: absolute; inset: 0; pointer-events: none; }
-.a4-punch-guide::before {
-  content: "";
-  position: absolute;
-  top: var(--edge-margin);
-  bottom: var(--edge-margin);
-  left: calc(var(--hole-inset) + var(--hole-dia) / 2);
-  border-left: 1px dashed rgba(43, 36, 64, 0.18);
-}
 .a4-punch-guide__hole {
   position: absolute;
   left: var(--hole-inset);
@@ -161,11 +153,8 @@ h1, h2, h3, .display {
   padding: 7mm 9mm 5mm;
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 6mm;
 }
 .band h2 { font-size: 13.5mm; line-height: 1.04; text-wrap: balance; }
-.band .kicker { font-size: 4mm; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
 .scallop {
   height: 4mm;
   background-image: radial-gradient(circle at 5mm 4mm, var(--accent) 5mm, transparent 5.1mm);
@@ -201,20 +190,7 @@ h1, h2, h3, .display {
 /* The reverse of every rhyme sheet. The punch gutter mirrors to the right,
    so duplex printing can flip on the long edge. */
 .a4-sheet[data-punch="right"] { padding: var(--edge-margin) var(--punch-margin) var(--edge-margin) var(--edge-margin); }
-.a4-sheet[data-punch="right"] .a4-punch-guide::before {
-  left: auto;
-  right: calc(var(--hole-inset) + var(--hole-dia) / 2);
-}
 .a4-sheet[data-punch="right"] .a4-punch-guide__hole { left: auto; right: var(--hole-inset); }
-.translation { --sheet-bg: #fffdf7; }
-.translation .band { background: transparent; color: var(--sheet-ink); padding: 6mm 8mm 3mm; border-bottom: 1.2mm solid var(--accent); }
-.translation .band h2 { font-size: 11.5mm; }
-.translation .band .kicker { color: var(--accent); opacity: 1; font-weight: 800; }
-.translation .scallop { display: none; }
-.translation .sheet-body { padding-top: 6mm; }
-.translation .illus { width: 70mm; max-height: 65mm; opacity: .94; }
-.translation .verse { font-size: 6.7mm; line-height: 1.44; }
-.translation-note { font-size: 3.5mm; color: rgba(43,36,64,.56); font-style: italic; margin: 0; }
 .sheet-body.long-verse { gap: 3.5mm; }
 .sheet-body.long-verse .illus { width: 68mm; max-height: 62mm; }
 .sheet-body.long-verse .verse { font-size: 6.15mm; line-height: 1.35; }
@@ -254,57 +230,13 @@ h1, h2, h3, .display {
   font-size: 3.5mm;
 }
 
-.sheet-footer {
-  display: flex;
-  align-items: center;
-  gap: 3mm;
-  padding-top: 4mm;
-  font-size: 3.6mm;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: rgba(43,36,64,.55);
-}
-.dot { width: 3mm; height: 3mm; border-radius: 50%; background: var(--accent); flex: none; }
 
-/* cover */
-.cover .sheet-body { justify-content: flex-start; padding-top: 4mm; gap: 8mm; }
-.cover h1 { font-size: 19mm; line-height: 1.02; text-wrap: balance; }
-.cover .subtitle { font-size: 6mm; font-style: italic; color: rgba(43,36,64,.75); }
-.rainbow-rule {
-  height: 3mm;
-  width: 100%;
-  border-radius: 2mm;
-  background: linear-gradient(90deg, #e2a13a, #6c4a86, #c9463a, #2f6690, #1f7f74, #4f8a3d);
-}
-.legend {
-  width: 100%;
-  max-width: 145mm;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4mm 10mm;
-  text-align: left;
-  font-size: 5mm;
-}
-.legend-item { display: flex; align-items: center; gap: 3mm; }
-.legend-dot { width: 5mm; height: 5mm; border-radius: 50%; flex: none; }
-.howto {
-  width: 100%;
-  max-width: 155mm;
-  border: 1px dashed rgba(43,36,64,.35);
-  border-radius: 4mm;
-  padding: 6mm 8mm;
-  text-align: left;
-  font-size: 4.6mm;
-  line-height: 1.7;
-}
-.howto b { font-family: "Baloo 2", "Trebuchet MS", sans-serif; }
-.howto ol { margin: 2mm 0 0; padding-left: 5mm; }
 </style>
 </head>
 <body>
 
 <div class="toolbar no-print">
-  <span><strong>Mi Cancionero bilingüe</strong> — 11 hojas a doble cara + portada</span>
+  <span><strong>Mi Cancionero bilingüe</strong> — 16 hojas a doble cara</span>
   <button onclick="window.print()">Imprimir</button>
 </div>
 
@@ -321,44 +253,11 @@ h1, h2, h3, .display {
 <main class="preview-main">
 <div class="a4-preview browse-mode">
 
-  <!-- COVER -->
-  <section class="a4-sheet cover" data-punch="left">
-    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
-    <div class="a4-sheet__content sheet-body">
-      <h1>Mi Cancionero<br>Bilingüe</h1>
-      <p class="subtitle">Spanish on the front · English on the back</p>
-      <div class="rainbow-rule"></div>
-      <div class="legend">
-        <div class="legend-item"><span class="legend-dot" style="background:#e2a13a"></span>Los pollitos dicen</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#2f6690"></span>Debajo de un botón</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#6c4a86"></span>Cinco lobitos</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#1f7f74"></span>Pin Pon</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#c9463a"></span>Arroz con leche</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#4f8a3d"></span>Sana, sana &amp; Que llueva</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#d27a52"></span>Un elefante</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#668b4d"></span>Cucú cantaba la rana</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#aa7449"></span>Caracol, col, col</div>
-        <div class="legend-item"><span class="legend-dot" style="background:#b45273"></span>Chuchuwa</div>
-      </div>
-      <div class="howto">
-        <b>Cómo armar la carpeta</b>
-        <ol>
-          <li>Imprime a tamaño real (100&nbsp;%, no "ajustar a la página"), en A4.</li>
-          <li>Plastifica cada hoja.</li>
-          <li>Perfora por el margen ancho marcado con líneas punteadas — ahí no hay texto ni dibujos.</li>
-          <li>Imprime a doble cara, volteando por el borde largo.</li>
-          <li>Archívalas en orden en tu carpeta de anillas: español delante, inglés detrás.</li>
-        </ol>
-      </div>
-    </div>
-    <div class="sheet-footer"><span class="dot" style="background:#2b2440"></span>12 canciones · 11 hojas bilingües</div>
-  </section>
-
   <!-- 1. LOS POLLITOS DICEN -->
   <section class="a4-sheet" style="--accent:#e2a13a" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Los pollitos dicen</h2><span class="kicker">Rima 1</span></div>
+      <div class="band"><h2>Los pollitos dicen</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
@@ -406,14 +305,13 @@ hasta el otro día
 duermen los pollitos.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Letra de Ismael Parraguez (Chile) · 1 de 11</div>
   </section>
 
   <!-- 2. CINCO LOBITOS -->
   <section class="a4-sheet" style="--accent:#6c4a86" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Cinco lobitos</h2><span class="kicker">Rima 2</span></div>
+      <div class="band"><h2>Cinco lobitos</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
@@ -463,14 +361,13 @@ y a todos ellos
 teta les daba.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima infantil tradicional · 2 de 11</div>
   </section>
 
   <!-- 3. ARROZ CON LECHE -->
   <section class="a4-sheet" style="--accent:#c9463a" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Arroz con leche</h2><span class="kicker">Rima 3</span></div>
+      <div class="band"><h2>Arroz con leche</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
@@ -495,14 +392,13 @@ que sepa abrir la puerta
 para ir a jugar.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 3 de 11</div>
   </section>
 
   <!-- 4. DEBAJO DE UN BOTÓN -->
   <section class="a4-sheet" style="--accent:#2f6690" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Debajo de un botón</h2><span class="kicker">Rima 4</span></div>
+      <div class="band"><h2>Debajo de un botón</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
@@ -537,14 +433,13 @@ que encontró Martín, tín, tín,
 debajo de un botón, ton, ton.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima infantil tradicional · 4 de 11</div>
   </section>
 
   <!-- 5. PIN PON -->
   <section class="a4-sheet" style="--accent:#1f7f74" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Pin Pon</h2><span class="kicker">Rima 5</span></div>
+      <div class="band"><h2>Pin Pon</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
@@ -580,14 +475,13 @@ y aunque se da tirones
 no llora ni hace así.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 5 de 11</div>
   </section>
 
   <!-- 6. SANA SANA + QUE LLUEVA -->
   <section class="a4-sheet" style="--accent:#4f8a3d" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Sana, sana &amp; Que llueva</h2><span class="kicker">Rima 6</span></div>
+      <div class="band"><h2>Sana, sana &amp; Que llueva</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <div class="combo-row">
@@ -631,14 +525,13 @@ que caiga un chaparrón!</div>
         </div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rimas infantiles tradicionales · 6 de 11</div>
   </section>
 
   <!-- 7. UN ELEFANTE SE BALANCEABA -->
   <section class="a4-sheet" style="--accent:#d27a52" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Un elefante</h2><span class="kicker">Rima 7</span></div>
+      <div class="band"><h2>Un elefante</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <img class="illus painting" src="assets/un-elefante.png" alt="Un elefante pequeño balanceándose sobre una telaraña">
@@ -648,14 +541,13 @@ Como veía que resistía,
 fue a llamar a otro elefante.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 7 de 11</div>
   </section>
 
   <!-- 8. CUCÚ CANTABA LA RANA -->
   <section class="a4-sheet" style="--accent:#668b4d" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Cucú cantaba la rana</h2><span class="kicker">Rima 8</span></div>
+      <div class="band"><h2>Cucú cantaba la rana</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <img class="illus painting" src="assets/cucu-rana.png" alt="Una rana verde cantando junto a un estanque">
@@ -670,14 +562,13 @@ Cucú, cucú,
 con capa y sombrero.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 8 de 11</div>
   </section>
 
   <!-- 9. CARACOL, COL, COL -->
   <section class="a4-sheet" style="--accent:#aa7449" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Caracol, col, col</h2><span class="kicker">Rima 9</span></div>
+      <div class="band"><h2>Caracol, col, col</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <img class="illus painting" src="assets/caracol.png" alt="Un caracol sonriente debajo de una hoja">
@@ -687,14 +578,13 @@ que tu padre y tu madre
 también los sacó.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Rima infantil tradicional · 9 de 11</div>
   </section>
 
   <!-- 10. CHUCHUWA -->
   <section class="a4-sheet" style="--accent:#b45273" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Chuchuwa</h2><span class="kicker">Movimiento 10</span></div>
+      <div class="band"><h2>Chuchuwa</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body movement-body">
         <img class="illus painting" src="assets/chuchuwa.png" alt="Cuatro niños haciendo movimientos divertidos juntos">
@@ -715,14 +605,13 @@ Chuchuwa-wa-wa</div>
 Ta-ta-ta-ta-ta</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Letra proporcionada por la familia · 10 de 11</div>
   </section>
 
   <!-- 11. ESTRELLITA / TWINKLE, TWINKLE -->
   <section class="a4-sheet" style="--accent:#334b78" data-punch="left">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>Estrellita, ¿dónde estás?</h2><span class="kicker">Rima 11</span></div>
+      <div class="band"><h2>Estrellita, ¿dónde estás?</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
         <img class="illus painting" src="assets/estrellita.png" alt="Un conejito mirando una estrella dorada desde una ventana">
@@ -734,7 +623,219 @@ Estrellita, ¿dónde estás?
 Me pregunto qué serás.</div>
       </div>
     </div>
-    <div class="sheet-footer"><span class="dot"></span>Canción infantil tradicional · 11 de 11</div>
+  </section>
+
+  <!-- 12. EL PATIO DE MI CASA -->
+  <section class="a4-sheet" style="--accent:#d9b23c" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>El patio de mi casa</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <ellipse cx="70" cy="35" rx="26" ry="16" fill="#9fb8c4"/>
+          <ellipse cx="95" cy="30" rx="20" ry="14" fill="#9fb8c4"/>
+          <g stroke="#d9b23c" stroke-width="3" stroke-linecap="round">
+            <line x1="55" y1="55" x2="50" y2="68"/>
+            <line x1="75" y1="55" x2="70" y2="68"/>
+            <line x1="95" y1="55" x2="90" y2="68"/>
+          </g>
+          <polygon points="90,110 150,70 210,110" fill="#c9463a"/>
+          <rect x="100" y="110" width="100" height="60" fill="#d9b23c"/>
+          <rect x="135" y="130" width="30" height="40" fill="#8a5a2f"/>
+          <rect x="180" y="120" width="16" height="16" fill="#fbf6ea"/>
+          <line x1="188" y1="120" x2="188" y2="136" stroke="#8a5a2f" stroke-width="1.5"/>
+          <line x1="180" y1="128" x2="196" y2="128" stroke="#8a5a2f" stroke-width="1.5"/>
+          <ellipse cx="150" cy="172" rx="55" ry="6" fill="#89a8c9" opacity=".6"/>
+          <g fill="#c9527a"><circle cx="70" cy="160" r="4"/><circle cx="78" cy="158" r="4"/><circle cx="74" cy="152" r="4"/></g>
+          <line x1="74" y1="160" x2="74" y2="172" stroke="#4f8a3d" stroke-width="2"/>
+        </svg>
+        <div class="verse">El patio de mi casa
+es particular,
+cuando llueve se moja
+como los demás.
+
+Agáchate,
+y vuélvete a agachar,
+que los agachaditos
+no saben bailar.
+
+H, I, J, K, L, M, N, A,
+que si tú no me quieres,
+otro amiguito me querrá.
+
+Chocolate, molinillo,
+¡corre, corre que te pillo!</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13. HABÍA UNA VEZ UN BARCO CHIQUITITO -->
+  <section class="a4-sheet" style="--accent:#5c7a8a" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Barco chiquitito</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <g stroke="#5c7a8a" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M10 140 q15 -10 30 0 q15 10 30 0 q15 -10 30 0 q15 10 30 0 q15 -10 30 0 q15 10 30 0 q15 -10 30 0"/>
+            <path d="M10 156 q15 -8 30 0 q15 8 30 0 q15 -8 30 0 q15 8 30 0 q15 -8 30 0 q15 8 30 0 q15 -8 30 0" opacity=".5"/>
+          </g>
+          <path d="M95 130 l50 0 l-8 18 l-34 0 z" fill="#a8672e"/>
+          <line x1="120" y1="130" x2="120" y2="80" stroke="#8a5a2f" stroke-width="3"/>
+          <path d="M121 82 l32 30 l-32 10 z" fill="#d1327a"/>
+          <path d="M119 88 l-22 24 l22 6 z" fill="#5c7a8a"/>
+          <path d="M170 60 a20 20 0 1 1 -6 -14" fill="none" stroke="#a8672e" stroke-width="3" stroke-linecap="round"/>
+          <path d="M160 42 l6 6 l8 -3" fill="none" stroke="#a8672e" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <div class="verse">Había una vez un barco chiquitito,
+había una vez un barco chiquitito,
+que no podía, que no podía,
+que no podía navegar.
+
+Pasaron un, dos, tres,
+pasaron un, dos, tres,
+pasaron un, dos, tres,
+cuatro, cinco, seis semanas,
+
+y el barquito, y el barquito,
+y el barquito no podía navegar.
+
+Y si esta historia no les parece larga,
+y si esta historia no les parece larga,
+volveremos, volveremos,
+volveremos a empezar.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14. A LA VÍBORA DE LA MAR -->
+  <section class="a4-sheet" style="--accent:#1f9bab" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>A la víbora de la mar</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <path d="M60 150 q0 -80 60 -80" fill="none" stroke="#1f9bab" stroke-width="14" stroke-linecap="round"/>
+          <path d="M180 150 q0 -80 -60 -80" fill="none" stroke="#a8672e" stroke-width="14" stroke-linecap="round"/>
+          <circle cx="60" cy="150" r="10" fill="#f2c9a0"/>
+          <circle cx="180" cy="150" r="10" fill="#f2c9a0"/>
+          <g fill="#4a3d8a">
+            <circle cx="90" cy="150" r="8"/>
+            <circle cx="112" cy="150" r="8"/>
+            <circle cx="134" cy="150" r="8"/>
+            <circle cx="156" cy="150" r="8"/>
+          </g>
+          <path d="M40 175 a30 30 0 0 1 60 0 z" fill="#4f8a3d"/>
+          <path d="M45 175 a25 25 0 0 1 50 0 z" fill="#fbf6ea"/>
+          <path d="M50 175 a20 20 0 0 1 40 0 z" fill="#c9463a"/>
+          <circle cx="60" cy="170" r="1.6" fill="#2b2440"/>
+          <circle cx="70" cy="172" r="1.6" fill="#2b2440"/>
+          <circle cx="65" cy="166" r="1.6" fill="#2b2440"/>
+        </svg>
+        <div class="verse">A la víbora, víbora de la mar, de la mar,
+por aquí pueden pasar.
+Los de adelante corren mucho,
+los de atrás se quedarán.
+
+Una mexicana que fruta vendía,
+ciruela, chabacano, melón o sandía.
+
+Verbena, verbena,
+jardín de matatena,
+verbena, verbena,
+campanita de oro,
+
+dejen pasar a toda la familia,
+menos al de atrás,
+tras, tras, tras.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15. NARANJA DULCE, LIMÓN PARTIDO -->
+  <section class="a4-sheet" style="--accent:#8aad3a" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Naranja dulce</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <circle cx="80" cy="90" r="42" fill="#e2a13a"/>
+          <g stroke="#c9862f" stroke-width="1.5">
+            <line x1="80" y1="90" x2="80" y2="48"/>
+            <line x1="80" y1="90" x2="112" y2="65"/>
+            <line x1="80" y1="90" x2="118" y2="100"/>
+            <line x1="80" y1="90" x2="100" y2="125"/>
+            <line x1="80" y1="90" x2="60" y2="128"/>
+            <line x1="80" y1="90" x2="42" y2="100"/>
+            <line x1="80" y1="90" x2="48" y2="65"/>
+          </g>
+          <path d="M150 95 a38 38 0 0 1 76 0 z" fill="#8aad3a"/>
+          <g stroke="#5f7a26" stroke-width="1.4">
+            <line x1="188" y1="95" x2="165" y2="60"/>
+            <line x1="188" y1="95" x2="188" y2="57"/>
+            <line x1="188" y1="95" x2="211" y2="60"/>
+          </g>
+          <path d="M138 152 c-6 -10 -22 -4 -14 8 c5 7 14 13 14 13 s9 -6 14 -13 c8 -12 -8 -18 -14 -8 z" fill="#c9527a"/>
+        </svg>
+        <div class="verse">Naranja dulce,
+limón partido,
+dame un abrazo
+que yo te pido.
+
+Si fueran falsos
+mis juramentos,
+en otros tiempos
+se olvidarán.
+
+Toca la marcha,
+mi pecho llora,
+adiós, señora,
+yo ya me voy.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16. ANTÓN PIRULERO -->
+  <section class="a4-sheet" style="--accent:#4a3d8a" data-punch="left">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Antón Pirulero</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180">
+          <ellipse cx="120" cy="90" rx="55" ry="20" fill="#f2c9a0"/>
+          <rect x="65" y="90" width="110" height="40" fill="#4a3d8a"/>
+          <ellipse cx="120" cy="130" rx="55" ry="20" fill="#3a2f6e"/>
+          <g stroke="#a8672e" stroke-width="2">
+            <line x1="70" y1="93" x2="70" y2="127"/>
+            <line x1="90" y1="96" x2="90" y2="130"/>
+            <line x1="110" y1="98" x2="110" y2="132"/>
+            <line x1="130" y1="98" x2="130" y2="132"/>
+            <line x1="150" y1="96" x2="150" y2="130"/>
+            <line x1="170" y1="93" x2="170" y2="127"/>
+          </g>
+          <line x1="60" y1="60" x2="95" y2="85" stroke="#c98a4e" stroke-width="5" stroke-linecap="round"/>
+          <line x1="180" y1="60" x2="145" y2="85" stroke="#c98a4e" stroke-width="5" stroke-linecap="round"/>
+          <g fill="#4a3d8a">
+            <circle cx="35" cy="45" r="6"/>
+            <line x1="41" y1="45" x2="41" y2="20" stroke="#4a3d8a" stroke-width="2.5"/>
+            <circle cx="205" cy="40" r="6"/>
+            <line x1="211" y1="40" x2="211" y2="15" stroke="#4a3d8a" stroke-width="2.5"/>
+          </g>
+        </svg>
+        <div class="verse">Antón, Antón,
+Antón Pirulero,
+cada cual, cada cual,
+atiende su juego,
+y el que no lo atienda,
+pagará, pagará
+una prenda.</div>
+      </div>
+    </div>
   </section>
 
 </div>
@@ -877,11 +978,97 @@ Up above the world so high,
 Like a diamond in the sky.
 Twinkle, twinkle, little star,
 How I wonder what you are!`
+  },
+  {
+    title: "The Patio of My House",
+    verse: `My house's patio
+is one of a kind—
+when it rains, it gets wet
+just like everyone else's.
+
+Crouch down,
+and crouch down again,
+because little crouchers
+don't know how to dance.
+
+H, I, J, K, L, M, N, A,
+if you don't love me,
+another friend will.
+
+Chocolate, little whisk,
+run, run, I'll catch you!`
+  },
+  {
+    title: "Once There Was a Tiny Little Boat",
+    verse: `Once there was a tiny little boat,
+once there was a tiny little boat,
+that couldn't, that couldn't,
+that couldn't sail at all.
+
+One, two, three weeks went by,
+one, two, three weeks went by,
+one, two, three weeks went by,
+four, five, six weeks went by,
+
+and the little boat, and the little boat,
+and the little boat still couldn't sail.
+
+And if this story doesn't seem long enough,
+and if this story doesn't seem long enough,
+we'll start it over, we'll start it over,
+we'll start it over again.`
+  },
+  {
+    title: "To the Sea Serpent",
+    verse: `To the serpent, serpent of the sea, of the sea,
+this way you may pass through.
+Those in front run on ahead,
+those at the back will be left behind.
+
+A Mexican lady sold fruit,
+plums, apricots, melon, or watermelon.
+
+Verbena, verbena,
+garden of jacks,
+verbena, verbena,
+little golden bell,
+
+let the whole family pass by,
+all except the one at the back,
+back, back, back.`
+  },
+  {
+    title: "Sweet Orange, Cut Lime",
+    verse: `Sweet orange,
+lime cut in two,
+give me a hug,
+that's all I ask of you.
+
+If my promises
+should turn out false,
+in times to come
+they will be forgotten.
+
+Strike up the march,
+my heart is crying,
+goodbye, my lady,
+now I must go.`
+  },
+  {
+    title: "Antón Pirulero",
+    verse: `Antón, Antón,
+Antón Pirulero,
+everyone, everyone,
+tend to their own game,
+and whoever doesn't
+will have to pay,
+will have to pay,
+a forfeit.`
   }
 ];
 
 const preview = document.querySelector(".a4-preview");
-const fronts = [...preview.querySelectorAll(':scope > .a4-sheet:not(.cover)')];
+const fronts = [...preview.querySelectorAll(':scope > .a4-sheet')];
 fronts.forEach((front, index) => {
   const frontVerse = front.querySelector(".verse");
   if (frontVerse && frontVerse.textContent.trim().split(/\n/).length > 10) {
@@ -898,10 +1085,9 @@ fronts.forEach((front, index) => {
   back.innerHTML = `
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span></div>
     <div class="a4-sheet__content">
-      <div class="band"><h2>${copy.title}</h2><span class="kicker">English</span></div>
+      <div class="band"><h2>${copy.title}</h2></div>
       <div class="sheet-body"></div>
-    </div>
-    <div class="sheet-footer"><span class="dot"></span>Read-aloud translation · ${index + 1} of ${fronts.length}</div>`;
+    </div>`;
   const body = back.querySelector(".sheet-body");
   if (art) body.append(art);
   const verse = document.createElement("div");
@@ -909,35 +1095,27 @@ fronts.forEach((front, index) => {
   verse.textContent = copy.verse;
   body.append(verse);
   if (copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
-  const note = document.createElement("p");
-  note.className = "translation-note";
-  note.textContent = "A natural English version for reading aloud—not a word-for-word translation.";
-  body.append(note);
   front.after(back);
 });
 
 const rhymeCategories = [
   "Animales", "Números", "Juegos", "Juegos", "Rutinas",
-  "Tradicionales", "Números", "Animales", "Animales", "Movimiento", "Dormir"
+  "Tradicionales", "Números", "Animales", "Animales", "Movimiento", "Dormir",
+  "Juegos", "Tradicionales", "Juegos", "Tradicionales", "Juegos"
 ];
 const shell = document.querySelector(".site-shell");
-const cover = preview.querySelector(".cover");
 const search = document.querySelector(".rhyme-search");
 const pills = document.querySelector(".category-pills");
 const list = document.querySelector(".rhyme-list");
 const sidebarToggle = document.querySelector(".sidebar-toggle");
-let selectedRhyme = -1;
+let selectedRhyme = 0;
 let activeCategory = "Todas";
 
 function selectRhyme(index) {
   selectedRhyme = index;
   preview.querySelectorAll(":scope > .a4-sheet").forEach(sheet => sheet.classList.remove("is-selected"));
-  if (index < 0) {
-    cover.classList.add("is-selected");
-  } else {
-    fronts[index].classList.add("is-selected");
-    fronts[index].nextElementSibling?.classList.add("is-selected");
-  }
+  fronts[index].classList.add("is-selected");
+  fronts[index].nextElementSibling?.classList.add("is-selected");
   renderRhymeList();
 }
 
@@ -964,13 +1142,10 @@ function renderRhymeList() {
     (activeCategory === "Todas" || item.category === activeCategory) &&
     item.title.toLocaleLowerCase("es").includes(query)
   );
-  const coverButton = !query && activeCategory === "Todas"
-    ? `<button type="button" class="rhyme-button${selectedRhyme < 0 ? " active" : ""}" data-index="-1" style="--item-accent:#e2a13a">Portada</button>`
-    : "";
-  list.innerHTML = coverButton + items.map(item =>
+  list.innerHTML = items.map(item =>
     `<button type="button" class="rhyme-button${selectedRhyme === item.index ? " active" : ""}" data-index="${item.index}" style="--item-accent:${item.accent}">${item.title}</button>`
   ).join("");
-  if (!coverButton && !items.length) list.innerHTML = `<div class="rhyme-empty">No se encontraron rimas.</div>`;
+  if (!items.length) list.innerHTML = `<div class="rhyme-empty">No se encontraron rimas.</div>`;
   list.querySelectorAll("button").forEach(button => button.addEventListener("click", () => selectRhyme(Number(button.dataset.index))));
 }
 
@@ -981,7 +1156,7 @@ sidebarToggle.addEventListener("click", () => {
   sidebarToggle.setAttribute("aria-label", collapsed ? "Expand rhyme browser" : "Collapse rhyme browser");
 });
 renderPills();
-selectRhyme(-1);
+selectRhyme(0);
 </script>
 </body>
 </html>
