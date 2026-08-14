@@ -28,29 +28,37 @@
 }
 :root[data-theme="dark"] { --preview-backdrop: #15171c; --preview-shadow: rgba(0,0,0,.55); }
 
-/* .a4-sheet is the real physical page — its true mm size (--page-w/h) is
-   what print uses, always. .a4-sheet__content is authored at A4's logical
-   210x297mm and scaled down uniformly for A5 (ISO 216 sizes share one
-   aspect ratio) to fit that true size — no separate A5 typography needed.
-   The punch guide lives outside that scale, in real unscaled mm, because a
-   binder's ring positions are fixed hardware, not proportional to the page:
-   a real 6mm hole is objectively bigger relative to a smaller sheet.
-   On screen only, --screen-zoom (via the `zoom` property, which — unlike
-   `transform` — affects layout size too, so cards don't overlap) blows the
-   whole A5 card back up to A4's footprint, so the preview always occupies
-   the same space on screen; the hole correctly ends up looking bigger
-   relative to the page, same as it would on a real shrunk-and-enlarged
-   printout. Print resets the zoom to 1 since real paper needs no such
-   compensation. */
+/* .a4-sheet is the on-screen card slot: a plain, fixed A4-sized box so
+   flexbox centers it exactly the same way regardless of format — no zoom
+   or calc() on this element, nothing for the browser to get creative with.
+   .a4-page inside it is the real physical page, at its true mm size
+   (--page-w/h); .a4-sheet__content is authored at A4's logical 210x297mm
+   and scaled down uniformly for A5 (ISO 216 sizes share one aspect ratio)
+   to fit that true size — no separate A5 typography needed. The punch
+   guide lives outside that inner scale, in real unscaled mm, because a
+   binder's ring positions are fixed hardware, not proportional to the
+   page: a real 6mm hole is objectively bigger relative to a smaller sheet.
+   On screen, .a4-page is transform-scaled up by --screen-zoom to fill the
+   fixed A4-sized slot, so a real 6mm hole on the (now visually enlarged)
+   A5 page correctly looks bigger than on A4 — same as it would on a real
+   shrunk-and-enlarged printout. Print resets the zoom to 1 and lets
+   .a4-sheet take on the true page size instead, since real paper needs no
+   such compensation. */
 .a4-sheet {
   position: relative;
-  width: var(--page-w);
-  height: var(--page-h);
+  width: 210mm;
+  height: 297mm;
   box-sizing: border-box;
   background: var(--sheet-bg);
   color: var(--sheet-ink);
   overflow: hidden;
-  zoom: var(--screen-zoom, 1);
+}
+.a4-page {
+  position: relative;
+  width: var(--page-w);
+  height: var(--page-h);
+  transform: scale(var(--screen-zoom, 1));
+  transform-origin: top left;
 }
 .a4-sheet__content {
   width: 210mm;
@@ -87,8 +95,8 @@
    0.70707). The width ratio guarantees the content never overflows A5's
    actual width; the height comes out ~0.7mm short instead, which just
    leaves a sliver of blank page rather than clipping anything.
-   --screen-zoom is content-scale's reciprocal, so the zoomed-up A5 card's
-   width lands back on exactly A4's 210mm. */
+   --screen-zoom is content-scale's reciprocal, so the zoomed-up A5 page's
+   width lands back on exactly A4's 210mm, filling its fixed-size slot. */
 .a4-preview[data-format="a5"] {
   --page-w: 148mm;
   --page-h: 210mm;
@@ -103,7 +111,7 @@
   html, body { margin: 0; padding: 0; }
   .no-print { display: none !important; }
   .a4-preview { background: none; padding: 0; gap: 0; }
-  .a4-sheet { box-shadow: none; page-break-after: always; break-after: page; }
+  .a4-sheet { box-shadow: none; width: var(--page-w); height: var(--page-h); page-break-after: always; break-after: page; }
   .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
   .site-shell { display: block; }
   .browser-sidebar { display: none !important; }
@@ -310,6 +318,7 @@ h1, h2, h3, .display {
 
   <!-- 1. LOS POLLITOS DICEN -->
   <section class="a4-sheet" style="--accent:#e2a13a" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Los pollitos dicen</h2></div>
@@ -360,10 +369,12 @@ hasta el otro día
 duermen los pollitos.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 2. CINCO LOBITOS -->
   <section class="a4-sheet" style="--accent:#6c4a86" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Cinco lobitos</h2></div>
@@ -416,10 +427,12 @@ y a todos ellos
 teta les daba.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 3. ARROZ CON LECHE -->
   <section class="a4-sheet" style="--accent:#c9463a" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Arroz con leche</h2></div>
@@ -447,10 +460,12 @@ que sepa abrir la puerta
 para ir a jugar.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 4. DEBAJO DE UN BOTÓN -->
   <section class="a4-sheet" style="--accent:#2f6690" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Debajo de un botón</h2></div>
@@ -488,10 +503,12 @@ que encontró Martín, tín, tín,
 debajo de un botón, ton, ton.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 5. PIN PON -->
   <section class="a4-sheet" style="--accent:#1f7f74" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Pin Pon</h2></div>
@@ -530,10 +547,12 @@ y aunque se da tirones
 no llora ni hace así.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 6. SANA SANA + QUE LLUEVA -->
   <section class="a4-sheet" style="--accent:#4f8a3d" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Sana, sana &amp; Que llueva</h2></div>
@@ -580,10 +599,12 @@ que caiga un chaparrón!</div>
         </div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 7. UN ELEFANTE SE BALANCEABA -->
   <section class="a4-sheet" style="--accent:#d27a52" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Un elefante</h2></div>
@@ -596,10 +617,12 @@ Como veía que resistía,
 fue a llamar a otro elefante.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 8. CUCÚ CANTABA LA RANA -->
   <section class="a4-sheet" style="--accent:#668b4d" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Cucú cantaba la rana</h2></div>
@@ -617,10 +640,12 @@ Cucú, cucú,
 con capa y sombrero.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 9. CARACOL, COL, COL -->
   <section class="a4-sheet" style="--accent:#aa7449" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Caracol, col, col</h2></div>
@@ -633,10 +658,12 @@ que tu padre y tu madre
 también los sacó.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 10. CHUCHUWA -->
   <section class="a4-sheet" style="--accent:#b45273" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Chuchuwa</h2></div>
@@ -660,10 +687,12 @@ Chuchuwa-wa-wa</div>
 Ta-ta-ta-ta-ta</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 11. ESTRELLITA / TWINKLE, TWINKLE -->
   <section class="a4-sheet" style="--accent:#334b78" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Estrellita, ¿dónde estás?</h2></div>
@@ -678,10 +707,12 @@ Estrellita, ¿dónde estás?
 Me pregunto qué serás.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 12. EL PATIO DE MI CASA -->
   <section class="a4-sheet" style="--accent:#d9b23c" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>El patio de mi casa</h2></div>
@@ -723,10 +754,12 @@ Chocolate, molinillo,
 ¡corre, corre que te pillo!</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 13. HABÍA UNA VEZ UN BARCO CHIQUITITO -->
   <section class="a4-sheet" style="--accent:#5c7a8a" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Barco chiquitito</h2></div>
@@ -763,10 +796,12 @@ volveremos, volveremos,
 volveremos a empezar.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 14. A LA VÍBORA DE LA MAR -->
   <section class="a4-sheet" style="--accent:#1f9bab" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>A la víbora de la mar</h2></div>
@@ -808,10 +843,12 @@ menos al de atrás,
 tras, tras, tras.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 15. NARANJA DULCE, LIMÓN PARTIDO -->
   <section class="a4-sheet" style="--accent:#8aad3a" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Naranja dulce</h2></div>
@@ -852,10 +889,12 @@ adiós, señora,
 yo ya me voy.</div>
       </div>
     </div>
+    </div>
   </section>
 
   <!-- 16. ANTÓN PIRULERO -->
   <section class="a4-sheet" style="--accent:#4a3d8a" data-punch="left">
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Antón Pirulero</h2></div>
@@ -890,6 +929,7 @@ y el que no lo atienda,
 pagará, pagará
 una prenda.</div>
       </div>
+    </div>
     </div>
   </section>
 
@@ -1138,10 +1178,12 @@ fronts.forEach((front, index) => {
   back.dataset.punch = "right";
   back.style.setProperty("--accent", accent);
   back.innerHTML = `
+    <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>${copy.title}</h2></div>
       <div class="sheet-body"></div>
+    </div>
     </div>`;
   const body = back.querySelector(".sheet-body");
   if (art) body.append(art);
