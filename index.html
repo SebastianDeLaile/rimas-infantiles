@@ -74,8 +74,11 @@
 
 .a4-preview { background: var(--preview-backdrop); display: flex; flex-direction: column; align-items: center; gap: 10mm; padding: 10mm 0 16mm; }
 .a4-preview .a4-sheet { box-shadow: 0 6px 24px var(--preview-shadow); }
-.a4-preview[data-format="a5"] { --content-scale: 0.70711; }
-.a4-preview[data-format="a5"] .a4-sheet { --page-w: 148mm; --page-h: 210mm; }
+/* On screen the preview card stays a constant size no matter the format —
+   it's not shown at true physical scale anyway, so shrinking it just makes
+   it harder to look at. Only the hole count changes on screen. The real
+   A5 shrink (page size + proportional content scale) only applies when
+   actually printing, scoped inside @media print below. */
 .a4-preview[data-format="a5"] .a4-punch-guide__hole--a,
 .a4-preview[data-format="a5"] .a4-punch-guide__hole--d { display: none; }
 
@@ -89,6 +92,8 @@
   .site-shell { display: block; }
   .browser-sidebar { display: none !important; }
   .a4-preview.browse-mode > .a4-sheet { display: flex !important; }
+  .a4-preview[data-format="a5"] { --content-scale: 0.70711; }
+  .a4-preview[data-format="a5"] .a4-sheet { --page-w: 148mm; --page-h: 210mm; }
 }
 
 /* ---------------------------------------------------------------------
