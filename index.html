@@ -28,13 +28,20 @@
 }
 :root[data-theme="dark"] { --preview-backdrop: #15171c; --preview-shadow: rgba(0,0,0,.55); }
 
-/* .a4-sheet is the real physical page — its size is the only thing that
-   changes between A4 and A5. .a4-sheet__content is always authored at A4's
-   logical 210x297mm and scaled down uniformly for A5 (ISO 216 sizes share
-   one aspect ratio, so a straight 1/sqrt(2) scale reproduces the A4 layout
-   exactly, just smaller — no separate A5 typography/spacing needed). The
-   punch guide lives outside that scale, in real unscaled mm, because a
-   binder's ring positions are fixed hardware, not proportional to the page. */
+/* .a4-sheet is the real physical page — its true mm size (--page-w/h) is
+   what print uses, always. .a4-sheet__content is authored at A4's logical
+   210x297mm and scaled down uniformly for A5 (ISO 216 sizes share one
+   aspect ratio) to fit that true size — no separate A5 typography needed.
+   The punch guide lives outside that scale, in real unscaled mm, because a
+   binder's ring positions are fixed hardware, not proportional to the page:
+   a real 6mm hole is objectively bigger relative to a smaller sheet.
+   On screen only, --screen-zoom (via the `zoom` property, which — unlike
+   `transform` — affects layout size too, so cards don't overlap) blows the
+   whole A5 card back up to A4's footprint, so the preview always occupies
+   the same space on screen; the hole correctly ends up looking bigger
+   relative to the page, same as it would on a real shrunk-and-enlarged
+   printout. Print resets the zoom to 1 since real paper needs no such
+   compensation. */
 .a4-sheet {
   position: relative;
   width: var(--page-w);
@@ -43,6 +50,7 @@
   background: var(--sheet-bg);
   color: var(--sheet-ink);
   overflow: hidden;
+  zoom: var(--screen-zoom, 1);
 }
 .a4-sheet__content {
   width: 210mm;
@@ -74,18 +82,19 @@
 
 .a4-preview { background: var(--preview-backdrop); display: flex; flex-direction: column; align-items: center; gap: 10mm; padding: 10mm 0 16mm; }
 .a4-preview .a4-sheet { box-shadow: 0 6px 24px var(--preview-shadow); }
-/* The A5 card actually shrinks on screen too, not just at print time — the
-   hole stays a real, unscaled 6mm throughout (it's outside this transform),
-   so on the smaller A5 card it correctly reads as proportionally bigger
-   relative to the page, matching what a real 6mm hole looks like on a
-   smaller sheet of paper. 148/210, not 1/sqrt(2) (0.70711) — ISO sizes
-   round to whole mm, so A4->A5 isn't perfectly self-similar (148/210 =
-   0.70476 vs 210/297 = 0.70707). The width ratio guarantees the content
-   never overflows A5's actual width; the height comes out ~0.7mm short
-   instead, which just leaves a sliver of blank page rather than clipping
-   anything. */
-.a4-preview[data-format="a5"] { --content-scale: 0.70476; }
-.a4-preview[data-format="a5"] .a4-sheet { --page-w: 148mm; --page-h: 210mm; }
+/* 148/210, not 1/sqrt(2) (0.70711) — ISO sizes round to whole mm, so
+   A4->A5 isn't perfectly self-similar (148/210 = 0.70476 vs 210/297 =
+   0.70707). The width ratio guarantees the content never overflows A5's
+   actual width; the height comes out ~0.7mm short instead, which just
+   leaves a sliver of blank page rather than clipping anything.
+   --screen-zoom is content-scale's reciprocal, so the zoomed-up A5 card's
+   width lands back on exactly A4's 210mm. */
+.a4-preview[data-format="a5"] {
+  --page-w: 148mm;
+  --page-h: 210mm;
+  --content-scale: 0.70476;
+  --screen-zoom: calc(1 / 0.70476);
+}
 .a4-preview[data-format="a5"] .a4-punch-guide__hole--a,
 .a4-preview[data-format="a5"] .a4-punch-guide__hole--d { display: none; }
 
@@ -98,6 +107,7 @@
   .a4-sheet:last-child { page-break-after: auto; break-after: auto; }
   .site-shell { display: block; }
   .browser-sidebar { display: none !important; }
+  .a4-preview[data-format="a5"] { --screen-zoom: 1; }
   .a4-preview.browse-mode > .a4-sheet { display: flex !important; }
 }
 
