@@ -12,7 +12,7 @@
 :root {
   --page-w: 210mm;
   --page-h: 297mm;
-  --punch-margin: 38mm;
+  --punch-margin: 22mm;
   --edge-margin: 14mm;
   --hole-spacing: 80mm;
   --hole-dia: 6mm;
@@ -146,10 +146,6 @@ h1, h2, h3, .display {
 .site-shell.sidebar-collapsed .browser-sidebar { padding-inline: 9px; }
 .site-shell.sidebar-collapsed .sidebar-content { display: none; }
 .rhyme-search { width: 100%; box-sizing: border-box; margin-bottom: 9px; padding: 8px 10px; border: 1px solid rgba(43,36,64,.18); border-radius: 5px; background: #fff; font: inherit; }
-.category-pills { display: flex; gap: 5px; overflow-x: auto; margin-bottom: 14px; scrollbar-width: none; }
-.category-pills::-webkit-scrollbar { display: none; }
-.category-pill { flex: none; padding: 5px 10px; border: 1px solid rgba(43,36,64,.18); border-radius: 999px; background: transparent; color: #2b2440; font: 600 12px/1.2 inherit; cursor: pointer; }
-.category-pill.active { background: #2b2440; border-color: #2b2440; color: #fffdf7; }
 .rhyme-list { display: flex; flex-direction: column; gap: 5px; }
 .rhyme-button { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 9px; border: 1px solid transparent; border-radius: 5px; background: #f4efe4; color: #2b2440; text-align: left; font: 600 13px/1.25 inherit; cursor: pointer; }
 .rhyme-button::before { content: ""; width: 9px; height: 9px; flex: none; border-radius: 50%; background: var(--item-accent); }
@@ -175,9 +171,9 @@ h1, h2, h3, .display {
   border-radius: 6mm 6mm 0 0;
   padding: 7mm 9mm 5mm;
   display: flex;
-  align-items: baseline;
+  justify-content: center;
 }
-.band h2 { font-size: 13.5mm; line-height: 1.04; text-wrap: balance; }
+.band h2 { font-size: 13.5mm; line-height: 1.04; text-align: center; text-wrap: balance; }
 .scallop {
   height: 4mm;
   background-image: radial-gradient(circle at 5mm 4mm, var(--accent) 5mm, transparent 5.1mm);
@@ -286,7 +282,6 @@ h1, h2, h3, .display {
     </div>
     <h2>Rimas</h2>
     <input class="rhyme-search" type="search" placeholder="Buscar…" autocomplete="off">
-    <div class="category-pills" aria-label="Categories"></div>
     <nav class="rhyme-list" aria-label="Choose a rhyme"></nav>
   </div>
 </aside>
@@ -1138,18 +1133,11 @@ fronts.forEach((front, index) => {
   front.after(back);
 });
 
-const rhymeCategories = [
-  "Animales", "Números", "Juegos", "Juegos", "Rutinas",
-  "Tradicionales", "Números", "Animales", "Animales", "Movimiento", "Dormir",
-  "Juegos", "Tradicionales", "Juegos", "Tradicionales", "Juegos"
-];
 const shell = document.querySelector(".site-shell");
 const search = document.querySelector(".rhyme-search");
-const pills = document.querySelector(".category-pills");
 const list = document.querySelector(".rhyme-list");
 const sidebarToggle = document.querySelector(".sidebar-toggle");
 let selectedRhyme = 0;
-let activeCategory = "Todas";
 
 function selectRhyme(index) {
   selectedRhyme = index;
@@ -1159,29 +1147,13 @@ function selectRhyme(index) {
   renderRhymeList();
 }
 
-function renderPills() {
-  const categories = ["Todas", ...new Set(rhymeCategories)];
-  pills.innerHTML = categories.map(category =>
-    `<button type="button" class="category-pill${category === activeCategory ? " active" : ""}" data-category="${category}">${category}</button>`
-  ).join("");
-  pills.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
-    activeCategory = button.dataset.category;
-    renderPills();
-    renderRhymeList();
-  }));
-}
-
 function renderRhymeList() {
   const query = search.value.trim().toLocaleLowerCase("es");
   const items = fronts.map((front, index) => ({
     index,
     title: front.querySelector("h2").textContent,
-    category: rhymeCategories[index],
     accent: front.style.getPropertyValue("--accent")
-  })).filter(item =>
-    (activeCategory === "Todas" || item.category === activeCategory) &&
-    item.title.toLocaleLowerCase("es").includes(query)
-  );
+  })).filter(item => item.title.toLocaleLowerCase("es").includes(query));
   list.innerHTML = items.map(item =>
     `<button type="button" class="rhyme-button${selectedRhyme === item.index ? " active" : ""}" data-index="${item.index}" style="--item-accent:${item.accent}">${item.title}</button>`
   ).join("");
@@ -1208,7 +1180,6 @@ document.querySelectorAll(".format-option").forEach(button => button.addEventLis
   pageSizeOverride.textContent = format === "a5" ? "@media print { @page { size: A5; margin: 0; } }" : "";
 }));
 
-renderPills();
 selectRhyme(0);
 </script>
 </body>
