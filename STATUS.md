@@ -41,6 +41,11 @@ use the existing `.illus.painting` layout. Continue in coherent batches,
 prioritising favourite cards and the most visibly geometric SVGs. Keep all
 art free of lettering so the same image can be cloned onto the English back.
 
+Second completed batch: **Los pollitos dicen**, **Debajo de un botón**,
+**El sapo no se lava el pie**, **Vamos a contar mentiras**, **¿Dónde estabas
+tú, periquito?**, and **Tortuguita Concha**. After this batch, 59 cards still
+use inline SVG illustrations.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
