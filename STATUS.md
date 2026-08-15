@@ -29,6 +29,18 @@ catalog), Mexico, Argentina, Uruguay, Bolivia, Chile, Colombia, Peru,
 Ecuador, Guatemala, Costa Rica, Puerto Rico, Cuba, Dominican Republic,
 Panama, Honduras.
 
+## Illustration consistency pass — started August 2026
+
+The original collection mixed richly textured storybook PNGs with much
+simpler flat inline SVGs. The chosen direction is the warm coloured-pencil,
+gouache and pastel look established by *Estrellita*, *Caracol* and *Cucú*.
+
+First completed batch: **Las estrellitas**, **Sale el sol**, **Doña Ana**, and
+**La pájara pinta**. Their new 4:3 bitmap illustrations live in `assets/` and
+use the existing `.illus.painting` layout. Continue in coherent batches,
+prioritising favourite cards and the most visibly geometric SVGs. Keep all
+art free of lettering so the same image can be cloned onto the English back.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
