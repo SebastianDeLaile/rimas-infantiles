@@ -183,13 +183,58 @@ h1, h2, h3, .display {
 .a4-preview.browse-mode > .a4-sheet { display: none; }
 .a4-preview.browse-mode > .a4-sheet.is-selected { display: flex; }
 
-@media (max-width: 760px) {
+@media screen and (max-width: 760px) {
+  .toolbar {
+    gap: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  .toolbar > span { min-width: 0; }
+  .toolbar strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-count { display: none; }
+  .toolbar button { flex: none; min-height: 40px; padding: 8px 15px; }
   .site-shell { grid-template-columns: 1fr; }
-  .browser-sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid rgba(43,36,64,.14); }
+  .browser-sidebar {
+    position: sticky;
+    top: 56px;
+    z-index: 4;
+    height: auto;
+    padding: 10px 12px 12px;
+    overflow: hidden;
+    border-right: 0;
+    border-bottom: 1px solid rgba(43,36,64,.14);
+    box-shadow: 0 3px 10px rgba(43,36,64,.08);
+  }
+  .browser-sidebar h2 { margin-bottom: 7px; }
   .site-shell.sidebar-collapsed { grid-template-columns: 1fr; }
   .site-shell.sidebar-collapsed .browser-sidebar { padding: 8px 12px; }
-  .sidebar-toggle { margin: 0; }
-  .a4-preview { align-items: flex-start; overflow-x: auto; padding-inline: 12px; }
+  .sidebar-toggle {
+    float: right;
+    width: 40px;
+    height: 40px;
+    margin: -3px 0 5px 10px;
+    font-size: 20px;
+  }
+  .rhyme-search { min-height: 40px; margin-bottom: 8px; font-size: 16px; }
+  .rhyme-list {
+    flex-direction: row;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+    overscroll-behavior-inline: contain;
+  }
+  .rhyme-button { flex: none; width: auto; min-height: 40px; padding: 8px 12px; white-space: nowrap; }
+  .a4-preview {
+    align-items: center;
+    gap: calc(10mm * var(--phone-zoom, 1));
+    padding: 12px 0 24px;
+    overflow: hidden;
+  }
+  .a4-preview .a4-sheet {
+    zoom: var(--phone-zoom, 1);
+    box-shadow: 0 3px 14px var(--preview-shadow);
+  }
 }
 
 /* header ribbon + scallop trim, accent color set per-sheet via --accent */
@@ -199,9 +244,22 @@ h1, h2, h3, .display {
   border-radius: 6mm 6mm 0 0;
   padding: 7mm 9mm 5mm;
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 1.5mm;
 }
 .band h2 { font-size: 13.5mm; line-height: 1.04; text-align: center; text-wrap: balance; }
+.country-tag {
+  padding: 0.8mm 2.5mm;
+  border: 0.35mm solid rgba(255,255,255,.62);
+  border-radius: 999px;
+  background: rgba(43,36,64,.16);
+  color: #fffdf7;
+  font: 700 2.7mm/1.1 "Avenir Next", Avenir, sans-serif;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
 .scallop {
   height: 4mm;
   background-image: radial-gradient(circle at 5mm 4mm, var(--accent) 5mm, transparent 5.1mm);
@@ -295,7 +353,7 @@ h1, h2, h3, .display {
 <body>
 
 <div class="toolbar no-print">
-  <span><strong>Mi Cancionero bilingüe</strong> — 16 hojas a doble cara</span>
+  <span><strong>Mi Cancionero bilingüe</strong><span class="card-count"></span></span>
   <button onclick="window.print()">Imprimir</button>
 </div>
 
@@ -373,7 +431,7 @@ duermen los pollitos.</div>
   </section>
 
   <!-- 2. CINCO LOBITOS -->
-  <section class="a4-sheet" style="--accent:#6c4a86" data-punch="left">
+  <section class="a4-sheet" style="--accent:#6c4a86" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -464,7 +522,7 @@ para ir a jugar.</div>
   </section>
 
   <!-- 4. DEBAJO DE UN BOTÓN -->
-  <section class="a4-sheet" style="--accent:#2f6690" data-punch="left">
+  <section class="a4-sheet" style="--accent:#2f6690" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -621,7 +679,7 @@ fue a llamar a otro elefante.</div>
   </section>
 
   <!-- 8. CUCÚ CANTABA LA RANA -->
-  <section class="a4-sheet" style="--accent:#668b4d" data-punch="left">
+  <section class="a4-sheet" style="--accent:#668b4d" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -644,7 +702,7 @@ con capa y sombrero.</div>
   </section>
 
   <!-- 9. CARACOL, COL, COL -->
-  <section class="a4-sheet" style="--accent:#aa7449" data-punch="left">
+  <section class="a4-sheet" style="--accent:#aa7449" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -711,7 +769,7 @@ Me pregunto qué serás.</div>
   </section>
 
   <!-- 12. EL PATIO DE MI CASA -->
-  <section class="a4-sheet" style="--accent:#d9b23c" data-punch="left">
+  <section class="a4-sheet" style="--accent:#d9b23c" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -800,7 +858,7 @@ volveremos a empezar.</div>
   </section>
 
   <!-- 14. A LA VÍBORA DE LA MAR -->
-  <section class="a4-sheet" style="--accent:#1f9bab" data-punch="left">
+  <section class="a4-sheet" style="--accent:#1f9bab" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -847,7 +905,7 @@ tras, tras, tras.</div>
   </section>
 
   <!-- 15. NARANJA DULCE, LIMÓN PARTIDO -->
-  <section class="a4-sheet" style="--accent:#8aad3a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#8aad3a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -893,7 +951,7 @@ yo ya me voy.</div>
   </section>
 
   <!-- 16. ANTÓN PIRULERO -->
-  <section class="a4-sheet" style="--accent:#4a3d8a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#4a3d8a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -934,7 +992,7 @@ una prenda.</div>
   </section>
 
   <!-- 17. HUACHÍ TORITÓ -->
-  <section class="a4-sheet" style="--accent:#8a2035" data-punch="left">
+  <section class="a4-sheet" style="--accent:#8a2035" data-punch="left" data-country="Bolivia · Perú · Chile · Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -983,7 +1041,7 @@ torito del corralito.</div>
   </section>
 
   <!-- 18. BUENOS DÍAS SU SEÑORÍA -->
-  <section class="a4-sheet" style="--accent:#9a5fa8" data-punch="left">
+  <section class="a4-sheet" style="--accent:#9a5fa8" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1027,7 +1085,7 @@ mantantirulirulá.</div>
   </section>
 
   <!-- 19. MI GALLITO -->
-  <section class="a4-sheet" style="--accent:#2f6b4f" data-punch="left">
+  <section class="a4-sheet" style="--accent:#2f6b4f" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1119,7 +1177,7 @@ regresaron todos a jugar.</div>
   </section>
 
   <!-- 21. DOÑA BLANCA -->
-  <section class="a4-sheet" style="--accent:#c07a8a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#c07a8a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1163,7 +1221,7 @@ Cuando alguien responde «¡de papel!»… ¡todos a correr!)</div>
   </section>
 
   <!-- 22. TORTILLITAS PARA MAMÁ -->
-  <section class="a4-sheet" style="--accent:#d98a6a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#d98a6a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1190,7 +1248,7 @@ las quemaditas para papá.</div>
   </section>
 
   <!-- 23. ASERRÍN, ASERRÁN -->
-  <section class="a4-sheet" style="--accent:#7a5230" data-punch="left">
+  <section class="a4-sheet" style="--accent:#7a5230" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1229,7 +1287,7 @@ en las puertas del zaguán,
   </section>
 
   <!-- 24. TENGO UNA MUÑECA -->
-  <section class="a4-sheet" style="--accent:#4a6fa5" data-punch="left">
+  <section class="a4-sheet" style="--accent:#4a6fa5" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1267,7 +1325,7 @@ que le dé jarabe con el tenedor.</div>
   </section>
 
   <!-- 25. AL CORRO DE LA PATATA -->
-  <section class="a4-sheet" style="--accent:#a8973a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#a8973a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1303,7 +1361,7 @@ sentadita me quedé!</div>
   </section>
 
   <!-- 26. LA ARAÑA PEQUEÑITA -->
-  <section class="a4-sheet" style="--accent:#5a4a6a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#5a4a6a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1349,7 +1407,7 @@ subió, subió, subió.</div>
   </section>
 
   <!-- 27. VAMOS A CONTAR MENTIRAS -->
-  <section class="a4-sheet" style="--accent:#e0637a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#e0637a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1388,7 +1446,7 @@ y me cayeron avellanas, ¡tralará!</div>
   </section>
 
   <!-- 28. PINTO, PINTO, GORGORITO -->
-  <section class="a4-sheet" style="--accent:#6a6fc4" data-punch="left">
+  <section class="a4-sheet" style="--accent:#6a6fc4" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1421,7 +1479,7 @@ pim, pam, pum,
   </section>
 
   <!-- 29. LOS DIEZ PERRITOS -->
-  <section class="a4-sheet" style="--accent:#b8834a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#b8834a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1471,7 +1529,7 @@ enseguida los llamé,
   </section>
 
   <!-- 30. SAN SERENÍN -->
-  <section class="a4-sheet" style="--accent:#2a7a8a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#2a7a8a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1544,7 +1602,7 @@ que lo guarde con mucho primor.
   </section>
 
   <!-- 32. A LA RUEDA RUEDA -->
-  <section class="a4-sheet" style="--accent:#5aa876" data-punch="left">
+  <section class="a4-sheet" style="--accent:#5aa876" data-punch="left" data-country="Cuba · Hispanoamérica">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1588,7 +1646,7 @@ y en el toronjil.</div>
   </section>
 
   <!-- 33. LOBO, ¿ESTÁS? -->
-  <section class="a4-sheet" style="--accent:#4a4a5a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#4a4a5a" data-punch="left" data-country="Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1632,7 +1690,7 @@ a todos nos comerá.
   </section>
 
   <!-- 34. MARTÍN PESCADOR -->
-  <section class="a4-sheet" style="--accent:#3a7ca5" data-punch="left">
+  <section class="a4-sheet" style="--accent:#3a7ca5" data-punch="left" data-country="Uruguay">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1673,7 +1731,7 @@ pera o manzana?</div>
   </section>
 
   <!-- 35. LA FAROLERA -->
-  <section class="a4-sheet" style="--accent:#c98a2a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#c98a2a" data-punch="left" data-country="Argentina · Uruguay · Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1711,7 +1769,7 @@ y enciende el farol!</div>
   </section>
 
   <!-- 36. LA MAR ESTABA SERENA -->
-  <section class="a4-sheet" style="--accent:#3a8fa8" data-punch="left">
+  <section class="a4-sheet" style="--accent:#3a8fa8" data-punch="left" data-country="Perú">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1753,7 +1811,7 @@ Lu mur ustubu surunu…</div>
   </section>
 
   <!-- 37. EL SAPO NO SE LAVA EL PIE -->
-  <section class="a4-sheet" style="--accent:#5a8a4f" data-punch="left">
+  <section class="a4-sheet" style="--accent:#5a8a4f" data-punch="left" data-country="Colombia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1793,7 +1851,7 @@ y no se lava el pie porque no quiere.
   </section>
 
   <!-- 38. CABALLITO BLANCO -->
-  <section class="a4-sheet" style="--accent:#a8672e" data-punch="left">
+  <section class="a4-sheet" style="--accent:#a8672e" data-punch="left" data-country="Chile">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1837,7 +1895,7 @@ para la semana.</div>
   </section>
 
   <!-- 39. FRAY JACOBO -->
-  <section class="a4-sheet" style="--accent:#6a5a8a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#6a5a8a" data-punch="left" data-country="Chile">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1872,7 +1930,7 @@ din, don, dan.
   </section>
 
   <!-- 40. SEÑORA SANTA ANA -->
-  <section class="a4-sheet" style="--accent:#8a5a9a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#8a5a9a" data-punch="left" data-country="Chile · México · Cuba">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1906,7 +1964,7 @@ y otra para vos.</div>
   </section>
 
   <!-- 41. UN, DOS, TRES, MOMIA ES -->
-  <section class="a4-sheet" style="--accent:#7a8a4a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#7a8a4a" data-punch="left" data-country="Chile">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1938,7 +1996,7 @@ vuelve a la línea de salida.)</div>
   </section>
 
   <!-- 42. ARRIBA JUAN -->
-  <section class="a4-sheet" style="--accent:#d9784a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#d9784a" data-punch="left" data-country="Ecuador">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1985,7 +2043,7 @@ ya estoy levantado.</div>
   </section>
 
   <!-- 43. UNA ROSA CAYÓ DEL CIELO -->
-  <section class="a4-sheet" style="--accent:#c9698a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#c9698a" data-punch="left" data-country="Ecuador">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2022,7 +2080,7 @@ se la puso en la cabeza,
   </section>
 
   <!-- 44. PAJARITO DEL CIELO -->
-  <section class="a4-sheet" style="--accent:#6a9fc4" data-punch="left">
+  <section class="a4-sheet" style="--accent:#6a9fc4" data-punch="left" data-country="Guatemala">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2053,7 +2111,7 @@ ir a ver a mamá.</div>
   </section>
 
   <!-- 45. LOS ESQUELETOS -->
-  <section class="a4-sheet" style="--accent:#4a3a5a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#4a3a5a" data-punch="left" data-country="Costa Rica">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2096,7 +2154,7 @@ se duermen otra vez!)</div>
   </section>
 
   <!-- 46. LAS MAÑANITAS -->
-  <section class="a4-sheet" style="--accent:#d4a72e" data-punch="left">
+  <section class="a4-sheet" style="--accent:#d4a72e" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2181,7 +2239,7 @@ o por la Trinidad.</div>
   </section>
 
   <!-- 48. EL SEÑOR DON GATO -->
-  <section class="a4-sheet" style="--accent:#4a4a4a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#4a4a4a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2235,7 +2293,7 @@ siete vidas tiene un gato.</div>
   </section>
 
   <!-- 49. GALLINITA CIEGA -->
-  <section class="a4-sheet" style="--accent:#c9a468" data-punch="left">
+  <section class="a4-sheet" style="--accent:#c9a468" data-punch="left" data-country="Puerto Rico">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2269,7 +2327,7 @@ y trata de atrapar a los demás guiándose solo por sus voces.)</div>
   </section>
 
   <!-- 50. CABEZA, HOMBROS, RODILLAS Y PIES -->
-  <section class="a4-sheet" style="--accent:#2f9f8a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#2f9f8a" data-punch="left" data-country="República Dominicana">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2311,7 +2369,7 @@ rodillas y pies.
   </section>
 
   <!-- 51. RATÓN QUE TE PILLA EL GATO -->
-  <section class="a4-sheet" style="--accent:#8a7a6a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#8a7a6a" data-punch="left" data-country="Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2349,7 +2407,7 @@ y el otro de ratón. ¡A correr!)</div>
   </section>
 
   <!-- 52. LA CUCARACHA -->
-  <section class="a4-sheet" style="--accent:#5a4530" data-punch="left">
+  <section class="a4-sheet" style="--accent:#5a4530" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2381,7 +2439,7 @@ una patica para andar.</div>
   </section>
 
   <!-- 53. EL COQUÍ -->
-  <section class="a4-sheet" style="--accent:#4fa863" data-punch="left">
+  <section class="a4-sheet" style="--accent:#4fa863" data-punch="left" data-country="Puerto Rico">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2419,7 +2477,7 @@ qui, qui, qui!</div>
   </section>
 
   <!-- 54. TIN MARÍN -->
-  <section class="a4-sheet" style="--accent:#d9553a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#d9553a" data-punch="left" data-country="República Dominicana">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2453,7 +2511,7 @@ al que fue.</div>
   </section>
 
   <!-- 55. SACO UNA MANITA -->
-  <section class="a4-sheet" style="--accent:#e0b23a" data-punch="left">
+  <section class="a4-sheet" style="--accent:#e0b23a" data-punch="left" data-country="Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2492,6 +2550,217 @@ y las vuelvo a guardar.</div>
       </div>
     </div>
     </div>
+  </section>
+
+  <!-- 56. KHARWITACHA PASASKI -->
+  <section class="a4-sheet" style="--accent:#4e79a7" data-punch="left" data-country="Bolivia">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Kharwitacha pasaski</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180" aria-label="A little llama on a hillside">
+          <path d="M20 145 Q65 95 112 130 T220 110 V165 H20Z" fill="#d9e8ee"/>
+          <path d="M146 66 l18-25 8 25" fill="#ead8b8" stroke="#2b2440" stroke-width="2"/>
+          <path d="M106 83 q33-26 64 0 v39 q-31 18-64 0z" fill="#ead8b8" stroke="#2b2440" stroke-width="2"/>
+          <circle cx="153" cy="80" r="2.6" fill="#2b2440"/>
+          <path d="M117 115 v30 M153 118 v27 M126 113 l7 30 M163 111 l8 29" stroke="#2b2440" stroke-width="4" stroke-linecap="round"/>
+          <path d="M20 64 q18-18 36 0t36 0" fill="none" stroke="#4e79a7" stroke-width="4"/>
+          <circle cx="45" cy="40" r="15" fill="#f4c95d"/>
+        </svg>
+        <div class="verse">¿Ma kharwitacha pasaski?<br>—Rosas pata.<br><br>¿Ma kharwitacha pasaski?<br>—Chappi calle.<br><br>Juego de llamitas:<br>todos hacen una fila.<br>La última llamita corre<br>por el camino contrario<br>para que no la atrapen.</div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- 57. TUNUPAN SAMIRIPA -->
+  <section class="a4-sheet" style="--accent:#b06a3c" data-punch="left" data-country="Bolivia">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Tunupan samiripa</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body long-verse">
+        <svg class="illus" viewBox="0 0 240 180" aria-label="A weaver at a loom beneath Mount Tunupa">
+          <path d="M18 150 L92 55 L150 126 L195 77 L224 150Z" fill="#d5a07a"/>
+          <circle cx="185" cy="42" r="17" fill="#f3ca64"/>
+          <rect x="54" y="100" width="105" height="38" rx="4" fill="#8b5234"/>
+          <path d="M68 101 v37 M86 101 v37 M104 101 v37 M122 101 v37 M140 101 v37" stroke="#f6e6c7" stroke-width="4"/>
+          <path d="M58 111 h96 M58 122 h96" stroke="#4e79a7" stroke-width="5"/>
+          <circle cx="46" cy="96" r="15" fill="#7a482f"/>
+          <path d="M32 114 q14-13 28 0 v35 H32z" fill="#4e79a7"/>
+        </svg>
+        <div class="verse">Sawt’ir, sawt’ir, sumax imilla,<br>thaya luman, thaya pampana,<br>lupi lupina uñar sawt’iri,<br>sawt’ir, sawt’ir, sumax imillita.<br><br>Suni luman pinkill tuqht’iri,<br>wichhu pampam suma khuyt’iri,<br>qarwa awatiri, q’uraw k’antiri,<br>taqi fistan sumax thuqt’asiri.<br><br>Qaputamasa, sawutamasa,<br>taqi munkañaway,<br>mismitamasa, k’anatamasa,<br>taqi munkañaway.<br><br>Sumax kullak, sumax jilata,<br>taqiw, taqiw irnaqañani,<br>sumax Bolivia markasata.</div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- 58. NIÑO MANUELITO -->
+  <section class="a4-sheet" style="--accent:#6c9a72" data-punch="left" data-country="Bolivia">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Niño Manuelito</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body long-verse">
+        <svg class="illus" viewBox="0 0 240 180" aria-label="A little cradle beneath a star">
+          <path d="M48 126 q72 40 144 0" fill="none" stroke="#6c9a72" stroke-width="9" stroke-linecap="round"/>
+          <path d="M56 89 h128 v33 q-64 34-128 0z" fill="#d9b67a" stroke="#2b2440" stroke-width="2"/>
+          <path d="M80 100 q40-23 80 0" fill="none" stroke="#f7eee0" stroke-width="15" stroke-linecap="round"/>
+          <circle cx="120" cy="92" r="12" fill="#f2c9a0"/>
+          <path d="M187 30 l5 12 13 1 -10 8 3 13 -11-7 -11 7 3-13 -10-8 13-1z" fill="#f3ca64"/>
+          <circle cx="56" cy="43" r="3" fill="#6c9a72"/><circle cx="80" cy="29" r="2" fill="#6c9a72"/><circle cx="155" cy="37" r="3" fill="#6c9a72"/>
+        </svg>
+        <div class="verse">Niño Manuelito qué bonito sois,<br>junto a tu cunita grano de oro sois.<br>Ya viene la vaca con el carretón,<br>trayendo la leche para el niño Dios.<br><br>María lloraba, perdió su pañal,<br>San Juan lo tenía en el romeral.<br>Destrencen las trenzas, vuelvan a trenzar,<br>que el rey de los cielos se ha de coronar.</div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- 59. PASARÁ, PASARÁ MI BARQUITO -->
+  <section class="a4-sheet" style="--accent:#8b5b9e" data-punch="left" data-country="Bolivia">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Pasará, pasará mi barquito</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180" aria-label="A little boat passing under a bridge">
+          <path d="M20 127 q42-15 80 0t120 0 v32 H20z" fill="#a8d5e2"/>
+          <path d="M66 121 V75 q54-54 108 0 v46" fill="none" stroke="#8b5b9e" stroke-width="10" stroke-linecap="round"/>
+          <path d="M88 125 h65 l-12 22 h-40z" fill="#f1b55b" stroke="#2b2440" stroke-width="2"/>
+          <path d="M120 124 V84 l28 21z" fill="#f7eee0" stroke="#2b2440" stroke-width="2"/>
+          <circle cx="52" cy="55" r="12" fill="#f3ca64"/>
+          <path d="M31 79 q14-12 28 0 M180 50 q13-11 26 0" fill="none" stroke="#8b5b9e" stroke-width="3"/>
+        </svg>
+        <div class="verse">Pasará, pasará mi barquito,<br>el último se quedará.<br><br>Dos niños hacen un puente<br>y eligen en secreto dos nombres:<br>frutas, colores o lugares.<br><br>La fila canta al pasar por debajo.<br>El último escoge un nombre<br>y se une a ese lado.</div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- 60. SURI SIKURI -->
+  <section class="a4-sheet" style="--accent:#257b78" data-punch="left" data-country="Bolivia">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content">
+      <div class="band"><h2>Suri sikuri</h2></div>
+      <div class="scallop"></div>
+      <div class="sheet-body">
+        <svg class="illus" viewBox="0 0 240 180" aria-label="A dancer with a feathered headdress">
+          <path d="M105 74 q15-46 30 0" fill="none" stroke="#257b78" stroke-width="7"/>
+          <path d="M116 76 q-26-40-25-65 M122 76 q0-48 5-68 M128 76 q27-38 38-58" fill="none" stroke="#d69346" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="120" cy="83" r="15" fill="#f2c9a0"/>
+          <path d="M96 108 q24-16 48 0 v44 H96z" fill="#257b78"/>
+          <path d="M101 113 L65 139 M139 113 l37 20 M109 151 l-17 21 M132 151 l20 21" fill="none" stroke="#2b2440" stroke-width="7" stroke-linecap="round"/>
+          <path d="M32 161 q24-13 48 0t48 0t48 0t36 0" fill="none" stroke="#d69346" stroke-width="4"/>
+        </svg>
+        <div class="verse">Danza andina de Bolivia<br><br>Suri sikuri acompaña los sikus<br>y evoca el paso cadencioso del suri,<br>el ñandú andino.<br><br>Prueba estos movimientos:<br>pasos pequeños, suaves y atentos;<br>un brazo sostiene el tocado<br>y el otro dibuja formas en el aire.<br><br>Esta es una tarjeta de movimiento,<br>no una transcripción de canción.</div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- 61. EL SEBUCÁN -->
+  <section class="a4-sheet" style="--accent:#c25b45" data-punch="left" data-country="Venezuela">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>El sebucán</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="Colourful ribbons woven around a pole"><path d="M120 24v132" stroke="#8b5b3e" stroke-width="8"/><path d="M120 28 C55 58 68 112 112 151 M120 28 C190 57 176 112 128 151" fill="none" stroke="#c25b45" stroke-width="8"/><path d="M120 28 C88 60 176 104 130 151 M120 28 C153 63 64 110 110 151" fill="none" stroke="#f0bd48" stroke-width="8"/><circle cx="120" cy="20" r="12" fill="#4e79a7"/></svg>
+      <div class="verse">Nosotros somos los indios,<br>los indios de Pariaguán,<br>que venimos a bailar<br>este lindo sebucán.<br><br>Aquí estamos las guarichas<br>tejiendo este sebucán,<br>y si nos equivocamos,<br>mal tejido quedará.<br><br>Con cintas de colores,<br>se trenza y se destrenza<br>alrededor del palo.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 62. TAMBORÉ -->
+  <section class="a4-sheet" style="--accent:#8f4f86" data-punch="left" data-country="Venezuela · Isla de Margarita">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Tamboré</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="Children dancing in two lines with a drum"><ellipse cx="120" cy="137" rx="43" ry="19" fill="#d78c45" stroke="#2b2440" stroke-width="3"/><path d="M77 137h86" stroke="#f7e3bd" stroke-width="4"/><circle cx="68" cy="65" r="14" fill="#f2c9a0"/><circle cx="172" cy="65" r="14" fill="#f2c9a0"/><path d="M52 117V83 q16-14 32 0v34 M156 117V83 q16-14 32 0v34" fill="#8f4f86"/><path d="M85 91l20 22 M155 91l-20 22" stroke="#2b2440" stroke-width="5" stroke-linecap="round"/></svg>
+      <div class="verse">Que cante la niña, tamboré,<br>que cante el niñito, tamboré,<br>que cante la rana, tamboré,<br>que cante la mona, tamboré…<br><br>Dos filas se miran de frente.<br>Con cada verso intercambian lugar;<br>cuando nombran un animal,<br>lo imitan al caminar.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 63. LOS CHIMICHIMITOS -->
+  <section class="a4-sheet" style="--accent:#4b7f66" data-punch="left" data-country="Venezuela · Isla de Margarita">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Los Chimichimitos</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="Children dancing in a circle"><circle cx="120" cy="94" r="43" fill="none" stroke="#4b7f66" stroke-width="8" stroke-dasharray="7 8"/><g fill="#f2c9a0"><circle cx="120" cy="39" r="12"/><circle cx="176" cy="94" r="12"/><circle cx="120" cy="149" r="12"/><circle cx="64" cy="94" r="12"/></g><path d="M111 56v23 M159 101h-23 M129 132v-23 M81 87h23" stroke="#d78c45" stroke-width="7" stroke-linecap="round"/></svg>
+      <div class="verse">Los chimichimitos<br>estaban bailando<br>el coro corito:<br>¡Tamboré!<br><br>Que baile la niña,<br>¡Tamboré!<br>Que baile el niñito,<br>¡Tamboré!<br><br>En el corro, la pareja nombrada<br>sale al centro para bailar.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 64. ¿DÓNDE ESTABAS TÚ, PERIQUITO? -->
+  <section class="a4-sheet" style="--accent:#2f8d9e" data-punch="left" data-country="Venezuela">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>¿Dónde estabas tú, periquito?</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="A little green parakeet playing a violin"><ellipse cx="112" cy="86" rx="37" ry="29" fill="#67af62"/><circle cx="139" cy="65" r="18" fill="#77c66c"/><path d="M151 65l30 7-30 8z" fill="#e4b54b"/><circle cx="145" cy="61" r="3" fill="#2b2440"/><path d="M83 115l61-36 M101 104l14 30 M111 96l20 29" stroke="#8b5b3e" stroke-width="4"/><path d="M72 129q29 12 59 0" fill="none" stroke="#2f8d9e" stroke-width="5"/></svg>
+      <div class="verse">¿Dónde estabas tú, periquito?<br>En el botiquín.<br>¿Y qué hacías tú, periquito?<br>Tocando el violín.<br>¿Cómo lo tocabas, perico?<br><br>Juiqui, juiqui, juin,<br>juiqui, juiqui, juiqui,<br>juiqui, juiqui, juin.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 65. AREPITA DE MANTECA -->
+  <section class="a4-sheet" style="--accent:#d39a38" data-punch="left" data-country="Venezuela">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Arepita de manteca</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="A golden arepa on a plate"><ellipse cx="120" cy="126" rx="70" ry="18" fill="#d7e4e8"/><circle cx="120" cy="96" r="52" fill="#e9bd4b" stroke="#b87924" stroke-width="5"/><circle cx="106" cy="82" r="3" fill="#c68c2d"/><circle cx="137" cy="101" r="3" fill="#c68c2d"/><circle cx="113" cy="119" r="3" fill="#c68c2d"/></svg>
+      <div class="verse">Arepita de manteca<br>pa’ mamá que da la teta.<br>Arepita de cebada,<br>¡pa’ papá que no da nada!</div>
+    </div></div></div>
+  </section>
+
+  <!-- 66. TORTUGUITA CONCHA -->
+  <section class="a4-sheet" style="--accent:#5d8b55" data-punch="left" data-country="El Salvador">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Tortuguita Concha</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="A smiling turtle"><ellipse cx="118" cy="101" rx="58" ry="41" fill="#719b60"/><path d="M81 100q37-50 75 0q-37 35-75 0" fill="#d2b05c"/><circle cx="178" cy="99" r="20" fill="#8dbb75"/><circle cx="184" cy="94" r="3" fill="#2b2440"/><path d="M169 112q9 7 18 0" fill="none" stroke="#2b2440" stroke-width="2"/><path d="M74 128l-22 17 M91 139l-12 24 M145 139l12 24 M160 126l23 17" stroke="#719b60" stroke-width="11" stroke-linecap="round"/></svg>
+      <div class="verse">Tortuguita Concha, ven a barrer.<br>No tengo manos, no tengo pies.<br><br>Tortuguita Concha, ven a limpiar.<br>No tengo manos, no tengo pies.<br><br>Tortuguita Concha, ven a bailar.<br>No tengo manos, no tengo pies.<br><br>Tortuguita Concha, ven a comer.<br>Sí tengo manos, sí tengo pies.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 67. EN UN PLATO DE ENSALADA -->
+  <section class="a4-sheet" style="--accent:#a95a5a" data-punch="left" data-country="Paraguay">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>En un plato de ensalada</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="A bowl of salad and playing cards"><ellipse cx="117" cy="124" rx="67" ry="21" fill="#cbdde1"/><path d="M58 94q59 76 118 0z" fill="#eef4e9" stroke="#2b2440" stroke-width="3"/><circle cx="90" cy="95" r="17" fill="#78ad58"/><circle cx="122" cy="90" r="17" fill="#e2b445"/><circle cx="148" cy="103" r="17" fill="#c65e4f"/><rect x="167" y="35" width="32" height="47" rx="4" fill="#fffdf7" stroke="#2b2440" stroke-width="3"/><text x="177" y="68" fill="#a95a5a" font-size="25" font-weight="bold">R</text></svg>
+      <div class="verse">En un plato de ensalada<br>todos comen a la vez<br>y jugando a la baraja<br>le salió a Paquito, rey.<br><br>Sota, espada, oros, ¡rey!</div>
+    </div></div></div>
+  </section>
+
+  <!-- 68. SE ME HA PERDIDO UNA NIÑA -->
+  <section class="a4-sheet" style="--accent:#6a78b8" data-punch="left" data-country="Paraguay">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Se me ha perdido una niña</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="Children playing a circle game in a garden"><path d="M25 145q38-72 74 0q35-72 76 0" fill="#8fc26f"/><circle cx="120" cy="54" r="19" fill="#f3ca64"/><path d="M86 118q34-36 68 0" fill="none" stroke="#6a78b8" stroke-width="8"/><g fill="#f2c9a0"><circle cx="62" cy="116" r="11"/><circle cx="178" cy="116" r="11"/></g><path d="M52 139v-15 M188 139v-15" stroke="#2b2440" stroke-width="7" stroke-linecap="round"/></svg>
+      <div class="verse">Se me ha perdido una niña,<br>cataplín, cataplín, cataplero,<br>se me ha perdido una niña<br>en el fondo del jardín.<br><br>Yo se la he encontrado,<br>cataplín, cataplín, cataplero,<br>yo se la he encontrado<br>en el fondo del jardín.<br><br>Haga el favor de entregarla,<br>cataplín, cataplín, cataplero,<br>haga el favor de entregarla<br>del fondo del jardín.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 69. LOS POLLOS DE MI CAZUELA -->
+  <section class="a4-sheet" style="--accent:#bf7e34" data-punch="left" data-country="Nicaragua">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Los pollos de mi cazuela</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="Three chicks beside a cooking pot"><path d="M58 126h124l-11 28H69z" fill="#bf7e34" stroke="#2b2440" stroke-width="3"/><path d="M79 125q41-32 82 0" fill="none" stroke="#2b2440" stroke-width="4"/><g fill="#f2d24e"><circle cx="84" cy="91" r="19"/><circle cx="120" cy="79" r="21"/><circle cx="156" cy="92" r="19"/></g><g fill="#e08a34"><path d="M96 91l11 5-11 5z"/><path d="M132 79l11 5-11 5z"/><path d="M168 92l11 5-11 5z"/></g></svg>
+      <div class="verse">Los pollos de mi cazuela<br>no sirven para comer,<br>solo para las viuditas<br>que lo saben componer.<br><br>Compone, niña, compone,<br>ya llega tu marinero<br>con este bonito traje<br>que parece un carpintero.<br><br>Anoche yo te vi<br>a la orilla de tu jardín,<br>moviendo la cinturita<br>para allá y para acá.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 70. EL CHIRIGUARE -->
+  <section class="a4-sheet" style="--accent:#3f7392" data-punch="left" data-country="Venezuela">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>El chiriguare</h2></div><div class="scallop"></div><div class="sheet-body">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="A bird beside a lagoon"><path d="M20 132q50-21 100 0t100 0v32H20z" fill="#9fd2db"/><ellipse cx="128" cy="91" rx="38" ry="24" fill="#5c7184"/><circle cx="157" cy="78" r="16" fill="#6e8495"/><path d="M171 78l29 9-29 8z" fill="#d9b14a"/><path d="M105 96l-22 37 M132 110l3 31" stroke="#2b2440" stroke-width="4"/><path d="M38 126q22-32 44 0" fill="none" stroke="#3f7392" stroke-width="5"/></svg>
+      <div class="verse">Cerca ’e la laguna<br>sale el chiriguare,<br>cerca ’e la laguna<br>sale el chiriguare,<br>con rabo de burro<br>y boca de bagre.<br><br>Juego de danza:<br>en círculo o en dos filas,<br>un paso adelante<br>y un paso atrás.</div>
+    </div></div></div>
+  </section>
+
+  <!-- 71. ALMA LLANERA -->
+  <section class="a4-sheet" style="--accent:#5b7c48" data-punch="left" data-country="Venezuela · Los Llanos">
+    <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Alma Llanera</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+      <svg class="illus" viewBox="0 0 240 180" aria-label="A heron over the Venezuelan plains"><path d="M20 145q42-51 85-9q37-56 115-3v32H20z" fill="#90bc6f"/><circle cx="52" cy="46" r="19" fill="#f2ca5a"/><path d="M146 42q23 32 1 67l-9 37" fill="none" stroke="#f7eee0" stroke-width="8" stroke-linecap="round"/><path d="M148 42l23 8-20 7" fill="#f7eee0"/><path d="M132 91l-31 13 M145 102l30 13" stroke="#f7eee0" stroke-width="6" stroke-linecap="round"/></svg>
+      <div class="verse">Yo nací en esta ribera<br>del Arauca vibrador,<br>soy hermana de la espuma,<br>de las garzas, de las rosas<br>y del sol, y del sol.<br><br>Me arrulló la viva diana<br>de la brisa en el palmar,<br>y por eso tengo el alma<br>como el alma primorosa<br>del cristal, del cristal.<br><br>Joropo de Venezuela.<br>Música: Pedro Elías Gutiérrez.<br>Letra: Rafael Bolívar Coronado.</div>
+    </div></div></div>
   </section>
 
 </div>
@@ -3249,11 +3518,153 @@ I take out both little hands,
 I make them dance,
 I close them, I open them,
 and put them away again.`
+  },
+  {
+    title: "Has a Little Llama Gone By?",
+    verse: `Has a little llama gone by?
+—Rose Hill.
+
+Has a little llama gone by?
+—Shaggy Dog Street.
+
+A traditional Bolivian game:
+everyone lines up as little llamas.
+The last little llama runs down the opposite path
+so that they will not be caught.`
+  },
+  {
+    title: "Inspiration of Mount Tunupa",
+    verse: `Weaver, weaver, lovely young woman,
+on the cold hillside, on the cold plain,
+weaving in the sun's bright rays,
+weaver, weaver, lovely little girl.
+
+On the high hill, dancing to the pinkillu,
+on the straw-covered plain, whistling sweetly,
+tending llamas, braiding slings,
+dancing beautifully at every festival.
+
+Your spinning, your weaving,
+everyone wishes for it;
+your braid, your twisted cord,
+everyone wishes for it.
+
+Good sister, good brother,
+all of us, all of us will work
+for our beautiful Bolivia.`
+  },
+  {
+    title: "Baby Manuelito",
+    verse: `Baby Manuelito, how lovely you are,
+beside your little cradle, you are a grain of gold.
+Here comes the cow with her cart,
+bringing milk for the baby Jesus.
+
+Mary was crying; she had lost his nappy,
+Saint John had it in the rosemary grove.
+Unbraid the braids and braid them again:
+the king of heaven is to be crowned.`
+  },
+  {
+    title: "My Little Boat Will Pass",
+    verse: `My little boat will pass, will pass;
+the last one will stay behind.
+
+Two children make a bridge
+and secretly choose two names:
+fruits, colours, or places.
+
+The line sings as it passes beneath.
+The last child chooses one name
+and joins that side.`
+  },
+  {
+    title: "Suri Sikuri",
+    verse: `An Andean dance from Bolivia
+
+Suri sikuri accompanies the sikus
+and evokes the swaying step of the suri,
+the Andean rhea.
+
+Try these movements:
+small, soft, watchful steps;
+one arm holds the headdress
+and the other draws shapes in the air.
+
+This is a movement card,
+not a song transcription.`
+  },
+  {
+    title: "The Sebucán",
+    verse: `We are the Indians,\nThe Indians from Pariaguán,\nwho have come to dance\nthis lovely sebucán.\n\nHere are the young women\nweaving this sebucán;\nand if we make a mistake,\nthe weaving will come out wrong.\n\nWith coloured ribbons,\nwe weave and unweave\naround the pole.`
+  },
+  {
+    title: "Tamboré",
+    verse: `Let the girl sing, tamboré,\nlet the boy sing, tamboré,\nlet the frog sing, tamboré,\nlet the monkey sing, tamboré…\n\nTwo lines face one another.\nWith each verse they exchange places;\nwhen they name an animal,\nthey imitate it as they move.`
+  },
+  {
+    title: "The Chimichimitos",
+    verse: `The chimichimitos\nwere dancing\nthe little chorus:\nTamboré!\n\nLet the girl dance,\nTamboré!\nLet the boy dance,\nTamboré!\n\nIn the circle, the named pair\ngoes to the middle to dance.`
+  },
+  {
+    title: "Where Were You, Little Parakeet?",
+    verse: `Where were you, little parakeet?\nIn the medicine cabinet.\nAnd what were you doing, little parakeet?\nPlaying the violin.\nHow did you play it, little parrot?\n\nJuiqui, juiqui, juin,\njuiqui, juiqui, juiqui,\njuiqui, juiqui, juin.`
+  },
+  {
+    title: "Little Butter Arepa",
+    verse: `Little butter arepa\nfor Mum, who gives milk.\nLittle barley arepa,\nfor Dad, who gives nothing!`
+  },
+  {
+    title: "Concha the Little Turtle",
+    verse: `Concha the little turtle, come and sweep.\nI have no hands, I have no feet.\n\nConcha the little turtle, come and clean.\nI have no hands, I have no feet.\n\nConcha the little turtle, come and dance.\nI have no hands, I have no feet.\n\nConcha the little turtle, come and eat.\nYes, I have hands, yes, I have feet.`
+  },
+  {
+    title: "On a Plate of Salad",
+    verse: `On a plate of salad,\neveryone eats at once,\nand while playing cards,\nPaquito was dealt the king.\n\nJack, sword, gold, king!`
+  },
+  {
+    title: "A Little Girl Has Gotten Lost",
+    verse: `A little girl has gotten lost,\ncataplín, cataplín, cataplero,\na little girl has gotten lost\nin the back of the garden.\n\nI have found her,\ncataplín, cataplín, cataplero,\nI have found her\nin the back of the garden.\n\nPlease give her back,\ncataplín, cataplín, cataplero,\nplease give her back\nfrom the back of the garden.`
+  },
+  {
+    title: "The Chicks in My Pot",
+    verse: `The chicks in my pot\nare not for eating,\nonly for little widows\nwho know how to prepare them.\n\nPrepare it, girl, prepare it,\nyour sailor is arriving\nin this handsome suit\nthat looks like a carpenter.\n\nLast night I saw you\nby the edge of your garden,\nswaying your little waist\nthis way and that.`
+  },
+  {
+    title: "The Chiriguare",
+    verse: `Near the lagoon,\nout comes the chiriguare,\nnear the lagoon,\nout comes the chiriguare,\nwith a donkey's tail\nand a catfish's mouth.\n\nDance game:\nin a circle or two lines,\none step forward\nand one step back.`
+  },
+  {
+    title: "Soul of the Plains",
+    verse: `I was born on these shores\nof the vibrant Arauca;\nI am sister to the foam,\nto the herons, to the roses,\nand to the sun, to the sun.\n\nThe bright call of the breeze\nin the palm grove lulled me,\nand that is why my soul is\nlike the lovely soul\nof crystal, of crystal.\n\nA Venezuelan joropo.\nMusic: Pedro Elías Gutiérrez.\nWords: Rafael Bolívar Coronado.`
   }
 ];
 
 const preview = document.querySelector(".a4-preview");
 const fronts = [...preview.querySelectorAll(':scope > .a4-sheet')];
+const phoneLayout = window.matchMedia("(max-width: 760px)");
+
+function fitPagesToPhone() {
+  if (!phoneLayout.matches) {
+    preview.style.removeProperty("--phone-zoom");
+    return;
+  }
+  const pageWidth = 210 * 96 / 25.4;
+  const availableWidth = Math.max(240, document.documentElement.clientWidth - 24);
+  preview.style.setProperty("--phone-zoom", Math.min(1, availableWidth / pageWidth).toFixed(4));
+}
+
+fitPagesToPhone();
+phoneLayout.addEventListener("change", fitPagesToPhone);
+window.addEventListener("resize", fitPagesToPhone, { passive: true });
+document.querySelector(".card-count").textContent = ` — ${fronts.length} tarjeta${fronts.length === 1 ? "" : "s"} a doble cara`;
+function addCountryTag(sheet, country) {
+  if (!country) return;
+  const tag = document.createElement("span");
+  tag.className = "country-tag";
+  tag.textContent = country;
+  sheet.querySelector(".band")?.append(tag);
+}
 fronts.forEach((front, index) => {
   const frontVerse = front.querySelector(".verse");
   if (frontVerse && frontVerse.textContent.trim().split(/\n/).length > 10) {
@@ -3261,6 +3672,8 @@ fronts.forEach((front, index) => {
   }
   const copy = translations[index];
   if (!copy) return;
+  const country = front.dataset.country;
+  addCountryTag(front, country);
   const accent = front.style.getPropertyValue("--accent");
   const art = front.querySelector(".illus")?.cloneNode(true);
   const back = document.createElement("section");
@@ -3276,6 +3689,7 @@ fronts.forEach((front, index) => {
     </div>
     </div>`;
   const body = back.querySelector(".sheet-body");
+  addCountryTag(back, country);
   if (art) body.append(art);
   const verse = document.createElement("div");
   verse.className = "verse";
