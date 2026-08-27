@@ -68,6 +68,34 @@ and new illustrations for **Aserrín, aserrán**, **Tengo una muñeca**,
 pies**. After this batch, 49 cards still use inline SVG illustrations (26
 now painting-style).
 
+## Print pipeline + premium frame — August 2026
+
+Sebastian asked for a PDF pack of his 13 favourite cards to send for
+printing. Building it surfaced a real, previously-invisible bug: `.site-shell`'s
+print override to `display:block` sat earlier in the stylesheet than the
+unconditional `display:grid` rule (same specificity → later source wins
+regardless of media), so every print — including the "Imprimir" button
+on the live site, not just the new pack — silently stayed a sidebar grid
+with the (now-hidden) sidebar's 240px column, clipping all printed
+content to a narrow strip. Fixed with `!important`. This had presumably
+been broken since the print stylesheet was written; there was no way to
+test it visually until this session (see the Chrome-via-executablePath
+gotcha below).
+
+Also added a decorative double-rule frame (`.a4-page::before/::after`) to
+every card per Sebastian's "make them look premium" ask — inset from the
+page edge in the card's accent color, wider inset on the punch-side edge
+(17mm/19mm vs 7mm/9mm) so it clears the hole guide, which reaches 15mm
+from that edge. Three options were mocked up and screenshotted for his
+pick (hairline / double-rule / scallop-echo); double-rule won.
+
+`scripts/generate_print_pack.js` (new, needs `npm install` once for
+`playwright-core`) turns the ad-hoc pack-building process into a reusable
+tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
+`--all`, get a print-ready PDF using the site's own print CSS. Output
+goes to `packs/` (gitignored) — copy deliverables out of there manually,
+e.g. to `~/Inbox` for Sebastian to grab.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
