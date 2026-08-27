@@ -206,6 +206,22 @@ future additions:
    Andean material, where a historically attributed piece may still be a
    worthwhile fit for the binder. When in doubt, check for an attributed
    composer before including.
+   - *Un elefante* → English back page swapped to **"One Elephant Went Out
+     to Play"** (August 2026): near-identical traditional English/Canadian
+     counting rhyme (elephant balances on a spider's web, calls another
+     elephant) — same content, not just a translation. Public domain.
+   - *Lobo, ¿estás?* → English back page swapped to **"What's the Time, Mr
+     Wolf?"** (August 2026): the real English-language equivalent game
+     (hide/approach while a wolf figure is elsewhere, repeated question,
+     wolf eventually declares readiness and chases) — same game, adapted
+     game mechanics (Spanish: wolf getting dressed; English: counting
+     steps toward a called-out hour) since the two traditions differ there.
+     Public domain, playground tradition since ~1917.
+   - *Tengo una muñeca* → English back page swapped to **"Miss Polly Had a
+     Dolly"** (August 2026): same story beat-for-beat (doll falls sick,
+     doctor called, doctor prescribes treatment). Traditional, Scottish
+     origin, public domain (first documented in print 1986 per Wikipedia,
+     but the rhyme itself predates that; no attributed composer).
    - *Chuchuwa* (August 2026): turns out to be a 1993 Finnish song
      (*Sutsisatsi*, Fröbelin Palikat), independently adapted into Spanish,
      English (Minidisco/Kidsstation's "Choo Choo Wa"), German, and Dutch —
