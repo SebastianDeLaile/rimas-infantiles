@@ -262,8 +262,8 @@ h1, h2, h3, .display {
 }
 .scallop {
   height: 4mm;
-  background-image: radial-gradient(circle at 5mm 4mm, var(--accent) 5mm, transparent 5.1mm);
-  background-size: 10mm 4mm;
+  background-image: radial-gradient(circle at 4mm 0, var(--accent) 4mm, transparent 4.1mm);
+  background-size: 8mm 4mm;
   background-repeat: repeat-x;
 }
 
@@ -382,7 +382,7 @@ h1, h2, h3, .display {
     <div class="a4-sheet__content">
       <div class="band"><h2>Los pollitos dicen</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body">
+      <div class="sheet-body no-auto-shrink">
         <img class="illus painting" src="assets/los-pollitos.png" alt="Tres pollitos se acurrucan bajo las alas de su mamá gallina">
         <div class="verse">Los pollitos dicen
 pío, pío, pío
@@ -3435,9 +3435,11 @@ function addCountryTag(sheet, country) {
   sheet.querySelector(".band")?.append(tag);
 }
 fronts.forEach((front, index) => {
+  const frontBody = front.querySelector(".sheet-body");
   const frontVerse = front.querySelector(".verse");
-  if (frontVerse && frontVerse.textContent.trim().split(/\n/).length > 10) {
-    front.querySelector(".sheet-body")?.classList.add("long-verse");
+  const noAutoShrink = frontBody?.classList.contains("no-auto-shrink");
+  if (frontVerse && !noAutoShrink && frontVerse.textContent.trim().split(/\n/).length > 10) {
+    frontBody?.classList.add("long-verse");
   }
   const copy = translations[index];
   if (!copy) return;
@@ -3464,7 +3466,7 @@ fronts.forEach((front, index) => {
   verse.className = "verse";
   verse.textContent = copy.verse;
   body.append(verse);
-  if (copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
+  if (!noAutoShrink && copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
   front.after(back);
 });
 
