@@ -46,6 +46,28 @@ Second completed batch: **Los pollitos dicen**, **Debajo de un botón**,
 tú, periquito?**, and **Tortuguita Concha**. After this batch, 59 cards still
 use inline SVG illustrations.
 
+## Transparent-background pass — August 2026
+
+Switched painting illustrations to genuine transparent backgrounds (real
+RGBA alpha, not a flat cream fill) generated via OpenAI's `gpt-image-1`
+through `scripts/generate_illustration.py` (reads `OPENAI_API_KEY` from a
+gitignored `.env`). This prints with zero ink behind the character and
+blends correctly regardless of paper shade — supersedes relying on
+`mix-blend-mode: multiply` against a flat cream fill.
+
+Covered: **Arroz con leche**, **Barco chiquitito**, **Cinco lobitos**, **El
+patio de mi casa**, **Pin Pon**, **Sana, sana & Que llueva** (the six
+illustrated August 15 — Sana sana's combo card now uses one shared
+illustration above both verses instead of two small icons), plus a
+consistency pass across Sebastian's favourite cards: **Los pollitos dicen**,
+**Cucú cantaba la rana**, **Chuchuwa**, **Un elefante** (converted existing
+opaque-cream paintings to transparent), **Estrellita, ¿dónde estás?**
+(recomposed from a full bedroom scene to an on-model character vignette),
+and new illustrations for **Aserrín, aserrán**, **Tengo una muñeca**,
+**Lobo, ¿estás?**, **Las mañanitas**, and **Cabeza, hombros, rodillas y
+pies**. After this batch, 49 cards still use inline SVG illustrations (26
+now painting-style).
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
