@@ -206,6 +206,15 @@ future additions:
    Andean material, where a historically attributed piece may still be a
    worthwhile fit for the binder. When in doubt, check for an attributed
    composer before including.
+   - *Chuchuwa* (August 2026): turns out to be a 1993 Finnish song
+     (*Sutsisatsi*, Fröbelin Palikat), independently adapted into Spanish
+     ("Sr. Piñón"), English (Minidisco/Kidsstation's "Choo Choo Wa"), German,
+     and Dutch — not a translation chain. Sebastian pasted the Minidisco
+     English lyrics directly and chose to use them verbatim for the English
+     back page (replacing what had been a literal translation of the
+     Spanish instructions), knowingly accepting the same commercial-lyrics
+     risk as this rule describes. Flag if this pattern comes up again rather
+     than assuming the precedent applies automatically.
 4. **Skip near-duplicates.** Regional variants that are essentially the same
    song under a different name weren't added twice — e.g. skipped
    *A la rueda de la batata* (Argentina) because it's *Al corro de la
@@ -261,12 +270,15 @@ starting a new print project instead of re-deriving it.
   ```
 - **Deploy check:** `gh run list --repo SebastianDeLaile/rimas-infantiles --limit 1`
   after every push; GitHub Pages deploy takes ~20-30s.
-- No headless browser available in this environment to visually test —
-  Playwright's downloaded Chromium gets killed by macOS's `AppleSystemPolicy`
-  code-signing enforcement, and ad-hoc re-signing didn't fix it. Verification
-  has been by careful CSS/JS reasoning + the structural checks above, not
-  visual screenshots. If that ever matters, Sebastian would need to check
-  visually himself or grant Chrome/another real browser on this machine.
+- **Visual testing now works.** `npx playwright install chromium`'s own
+  browser download hangs indefinitely in this environment (tried twice,
+  13 days apart — looks like a persistent network block on Playwright's
+  CDN, not transient). Workaround: use `playwright-core` (installed via
+  plain `npm install`, no browser download) and point it at the Mac's
+  existing Chrome with `executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'`.
+  `rimas.delaile.com` also serves a mismatched TLS cert from this sandboxed
+  network — pass `ignoreHTTPSErrors: true` on the browser context when
+  hitting the live site (not needed against `localhost`).
 
 ## Suggested next steps
 
