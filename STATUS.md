@@ -207,14 +207,17 @@ future additions:
    worthwhile fit for the binder. When in doubt, check for an attributed
    composer before including.
    - *Chuchuwa* (August 2026): turns out to be a 1993 Finnish song
-     (*Sutsisatsi*, Fröbelin Palikat), independently adapted into Spanish
-     ("Sr. Piñón"), English (Minidisco/Kidsstation's "Choo Choo Wa"), German,
-     and Dutch — not a translation chain. Sebastian pasted the Minidisco
-     English lyrics directly and chose to use them verbatim for the English
-     back page (replacing what had been a literal translation of the
-     Spanish instructions), knowingly accepting the same commercial-lyrics
-     risk as this rule describes. Flag if this pattern comes up again rather
-     than assuming the precedent applies automatically.
+     (*Sutsisatsi*, Fröbelin Palikat), independently adapted into Spanish,
+     English (Minidisco/Kidsstation's "Choo Choo Wa"), German, and Dutch —
+     not a translation chain. The Spanish adaptation ("¡Compañía! brazo
+     extendido...", confirmed genuine, not a card error) is attributed to
+     Argentine children's entertainer **Piñón Fijo** (Fabián Alberto Gómez),
+     via the Cantajuegos series. Sebastian pasted the Minidisco English
+     lyrics directly and chose to use them verbatim for the English back
+     page (replacing what had been a literal translation of the Spanish
+     instructions), knowingly accepting the same commercial-lyrics risk as
+     this rule describes. Flag if this pattern comes up again rather than
+     assuming the precedent applies automatically.
 4. **Skip near-duplicates.** Regional variants that are essentially the same
    song under a different name weren't added twice — e.g. skipped
    *A la rueda de la batata* (Argentina) because it's *Al corro de la
