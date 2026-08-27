@@ -1,0 +1,12 @@
+{
+  "name": "rimas-infantiles",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Mi Cancionero Bilingüe — build tooling only (the site itself is a build-step-free index.html)",
+  "scripts": {
+    "print-pack": "node scripts/generate_print_pack.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.48.0"
+  }
+}
