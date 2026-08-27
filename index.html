@@ -2629,21 +2629,10 @@ used to show them too.`
   },
   {
     title: "Chuchuwa",
-    verse: `Choo choo wa, choo choo wa
-Choo choo wa-wa-wa
-
-On your marks!
-Repeat the chorus and add
-one move each time.
-
-1. Stretch your arms
-2. Make a fist
-3. Thumbs up
-4. Lift your shoulders
-5. Head up high
-6. Bottom behind
-7. Pigeon-toed
-8. Stick out your tongue`
+    chorus: "Choo choo wa, choo choo wa\nChoo choo wa-wa-wa",
+    introLead: "On your marks!",
+    introRest: "Repeat the chorus and add one move each time.",
+    movements: ["Stretch your arms", "Make a fist", "Thumbs up", "Lift your shoulders", "Head up high", "Bottom behind", "Pigeon-toed", "Stick out your tongue"],
   },
   {
     title: "Twinkle, Twinkle, Little Star",
@@ -3459,11 +3448,39 @@ fronts.forEach((front, index) => {
   const body = back.querySelector(".sheet-body");
   addCountryTag(back, country);
   if (art) body.append(art);
-  const verse = document.createElement("div");
-  verse.className = "verse";
-  verse.textContent = copy.verse;
-  body.append(verse);
-  if (!noAutoShrink && copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
+  if (copy.movements) {
+    body.classList.add("movement-body");
+    const openChorus = document.createElement("div");
+    openChorus.className = "verse chorus";
+    openChorus.textContent = copy.chorus;
+    body.append(openChorus);
+    const introEl = document.createElement("p");
+    introEl.className = "movement-intro";
+    const introLead = document.createElement("b");
+    introLead.textContent = copy.introLead;
+    introEl.append(introLead, ` ${copy.introRest}`);
+    body.append(introEl);
+    const listEl = document.createElement("div");
+    listEl.className = "movement-list";
+    listEl.setAttribute("aria-label", `${copy.title} movements`);
+    copy.movements.forEach(m => {
+      const item = document.createElement("div");
+      item.className = "movement";
+      item.textContent = m;
+      listEl.append(item);
+    });
+    body.append(listEl);
+    const closeChorus = document.createElement("div");
+    closeChorus.className = "verse chorus";
+    closeChorus.textContent = copy.chorus;
+    body.append(closeChorus);
+  } else {
+    const verse = document.createElement("div");
+    verse.className = "verse";
+    verse.textContent = copy.verse;
+    body.append(verse);
+    if (!noAutoShrink && copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
+  }
   front.after(back);
 });
 
