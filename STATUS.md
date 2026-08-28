@@ -82,15 +82,33 @@ been broken since the print stylesheet was written; there was no way to
 test it visually until this session (see the Chrome-via-executablePath
 gotcha below).
 
-Also added a decorative double-rule frame (`.a4-page::before/::after`) to
-every card per Sebastian's "make them look premium" ask — inset 7mm/9mm
-from the page edge in the card's accent color, uniform on all four sides
-by his explicit call, so the punch-hole guide runs through it on the
-punch side rather than the frame stepping inward to avoid it (like a
-bound planner page). Three options were mocked up and screenshotted for
-his pick (hairline / double-rule / scallop-echo); double-rule won. A
-punch-aware asymmetric-inset version was tried first but reverted —
-Sebastian wanted uniform, not avoidant.
+Also added a decorative frame per Sebastian's "make them look premium"
+ask, iterated twice:
+1. First a double-rule frame (`.a4-page::before/::after`), inset 7mm/9mm,
+   uniform on all four sides by explicit request — the punch-hole guide
+   runs through it on the punch side rather than the frame stepping
+   inward to avoid it (like a bound planner page). A punch-aware
+   asymmetric-inset version was tried first but reverted.
+2. Then upgraded to gallery-frame corner brackets (nested L-shapes, CSS
+   mask so it's accent-colored automatically) plus a bespoke themed
+   medallion badge on the 13 favourite cards — a small single-color line
+   icon (hen, star, seesaw, wolf head, birthday cake, etc.) generated per
+   rhyme via `scripts/generate_illustration.py`, sitting at top-center
+   like a wax seal. Icons live at `assets/icons/` (300×300, optimized,
+   11-38KB each). The medallion is real DOM (a `.medallion` div inside
+   `.a4-page`), not a CSS pseudo-element, so its presence is per-card and
+   it propagates to the auto-generated English back page the same way
+   the illustration does (`front.querySelector(...).cloneNode(true)`).
+   Cards without a themed icon just keep the plain bracket frame — no
+   broken placeholder. Only the 13 favourites have medallions so far;
+   extending to the rest of the 75 would need ~62 more generations, not
+   yet done.
+
+Debugging note: CSS `mask-image` defaults to `mask-mode: match-source`,
+which resolved to luminance (not alpha) for these black-on-transparent
+icon PNGs in Chromium — the mask silently rendered nothing until
+`mask-mode: alpha` was set explicitly. Same fix needed for both the
+bracket SVG and the medallion icons.
 
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
