@@ -53,18 +53,64 @@
   color: var(--sheet-ink);
   overflow: hidden;
 }
-/* Decorative double-rule frame, uniform inset on all four sides
-   (deliberately including the punch side — the hole guide sits through
-   it, like a bound planner page). */
-.a4-page::after, .a4-page::before {
+/* Decorative frame: a thin rule plus gallery-frame corner brackets,
+   uniform inset on all four sides (deliberately including the punch
+   side — the hole guide sits through it, like a bound planner page).
+   The bracket art is a CSS mask (accent-colored via background-color)
+   so one SVG works for every card's accent color. */
+.a4-page::after {
   content: "";
   position: absolute;
   top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
   border: 0.35mm solid var(--accent);
-  border-radius: 2.5mm;
+  border-radius: 2mm;
   pointer-events: none;
 }
-.a4-page::before { top: 9mm; bottom: 9mm; left: 9mm; right: 9mm; border-radius: 2mm; opacity: .5; }
+.a4-page::before {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  -webkit-mask-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20196%20283%22%3E%0A%3Cpath%20d%3D%22M%202%2014%20L%202%202%20L%2014%202%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%205%2014%20L%205%205%20L%2014%205%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3Cpath%20d%3D%22M%20194%2014%20L%20194%202%20L%20182%202%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%20191%2014%20L%20191%205%20L%20182%205%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3Cpath%20d%3D%22M%202%20269%20L%202%20281%20L%2014%20281%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%205%20269%20L%205%20278%20L%2014%20278%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3Cpath%20d%3D%22M%20194%20269%20L%20194%20281%20L%20182%20281%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%20191%20269%20L%20191%20278%20L%20182%20278%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3C/svg%3E');
+  mask-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20196%20283%22%3E%0A%3Cpath%20d%3D%22M%202%2014%20L%202%202%20L%2014%202%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%205%2014%20L%205%205%20L%2014%205%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3Cpath%20d%3D%22M%20194%2014%20L%20194%202%20L%20182%202%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%20191%2014%20L%20191%205%20L%20182%205%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3Cpath%20d%3D%22M%202%20269%20L%202%20281%20L%2014%20281%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%205%20269%20L%205%20278%20L%2014%20278%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3Cpath%20d%3D%22M%20194%20269%20L%20194%20281%20L%20182%20281%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.9%22/%3E%0A%3Cpath%20d%3D%22M%20191%20269%20L%20191%20278%20L%20182%20278%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22/%3E%0A%3C/svg%3E');
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
+/* Themed medallion badge — only present on cards with a bespoke icon
+   (set via markup, not every card has one). Sits at top-center of the
+   frame like a wax seal. */
+.medallion {
+  position: absolute;
+  top: 2mm;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16mm;
+  height: 16mm;
+  background: var(--sheet-bg);
+  border: 0.35mm solid var(--accent);
+  border-radius: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.medallion-icon {
+  width: 10.5mm;
+  height: 10.5mm;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
 .a4-page {
   position: relative;
   width: var(--page-w);
@@ -391,6 +437,7 @@ h1, h2, h3, .display {
   <section class="a4-sheet" style="--accent:#e2a13a" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/los-pollitos.png'); mask-image:url('assets/icons/los-pollitos.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Los pollitos dicen</h2></div>
       <div class="scallop"></div>
@@ -442,6 +489,7 @@ teta les daba.</div>
   <section class="a4-sheet" style="--accent:#c9463a" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/arroz-con-leche.png'); mask-image:url('assets/icons/arroz-con-leche.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Arroz con leche</h2></div>
       <div class="scallop"></div>
@@ -488,6 +536,7 @@ debajo de un botón, ton, ton.</div>
   <section class="a4-sheet" style="--accent:#1f7f74" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/pin-pon.png'); mask-image:url('assets/icons/pin-pon.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Pin Pon</h2></div>
       <div class="scallop"></div>
@@ -511,6 +560,7 @@ no llora ni hace así.</div>
   <section class="a4-sheet" style="--accent:#4f8a3d" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/sana-sana.png'); mask-image:url('assets/icons/sana-sana.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Sana, sana &amp; Que llueva</h2></div>
       <div class="scallop"></div>
@@ -541,6 +591,7 @@ que caiga un chaparrón!</div>
   <section class="a4-sheet" style="--accent:#d27a52" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/un-elefante.png'); mask-image:url('assets/icons/un-elefante.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Un elefante</h2></div>
       <div class="scallop"></div>
@@ -559,6 +610,7 @@ fue a llamar a otro elefante.</div>
   <section class="a4-sheet" style="--accent:#668b4d" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/cucu-rana.png'); mask-image:url('assets/icons/cucu-rana.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Cucú cantaba la rana</h2></div>
       <div class="scallop"></div>
@@ -600,6 +652,7 @@ también los sacó.</div>
   <section class="a4-sheet" style="--accent:#b45273" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/chuchuwa.png'); mask-image:url('assets/icons/chuchuwa.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Chuchuwa</h2></div>
       <div class="scallop"></div>
@@ -629,6 +682,7 @@ Ta-ta-ta-ta-ta</div>
   <section class="a4-sheet" style="--accent:#334b78" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/estrellita.png'); mask-image:url('assets/icons/estrellita.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Estrellita, ¿dónde estás?</h2></div>
       <div class="scallop"></div>
@@ -1100,6 +1154,7 @@ las quemaditas para papá.</div>
   <section class="a4-sheet" style="--accent:#7a5230" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/aserrin-aserran.png'); mask-image:url('assets/icons/aserrin-aserran.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Aserrín, aserrán</h2></div>
       <div class="scallop"></div>
@@ -1122,6 +1177,7 @@ en las puertas del zaguán,
   <section class="a4-sheet" style="--accent:#4a6fa5" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/tengo-muneca.png'); mask-image:url('assets/icons/tengo-muneca.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Tengo una muñeca</h2></div>
       <div class="scallop"></div>
@@ -1451,6 +1507,7 @@ y en el toronjil.</div>
   <section class="a4-sheet" style="--accent:#4a4a5a" data-punch="left" data-country="Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/lobo-estas.png'); mask-image:url('assets/icons/lobo-estas.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Lobo, ¿estás?</h2></div>
       <div class="scallop"></div>
@@ -1927,6 +1984,7 @@ se duermen otra vez!)</div>
   <section class="a4-sheet" style="--accent:#d4a72e" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/mananitas.png'); mask-image:url('assets/icons/mananitas.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Las mañanitas</h2></div>
       <div class="scallop"></div>
@@ -2078,6 +2136,7 @@ y trata de atrapar a los demás guiándose solo por sus voces.)</div>
   <section class="a4-sheet" style="--accent:#2f9f8a" data-punch="left" data-country="República Dominicana">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/cabeza-hombros.png'); mask-image:url('assets/icons/cabeza-hombros.png');"></div></div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Cabeza, hombros, rodillas y pies</h2></div>
       <div class="scallop"></div>
@@ -3446,6 +3505,7 @@ fronts.forEach((front, index) => {
   addCountryTag(front, country);
   const accent = front.style.getPropertyValue("--accent");
   const art = front.querySelector(".illus")?.cloneNode(true);
+  const medallion = front.querySelector(".medallion")?.cloneNode(true);
   const back = document.createElement("section");
   back.className = "a4-sheet translation";
   back.dataset.punch = "right";
@@ -3458,6 +3518,7 @@ fronts.forEach((front, index) => {
       <div class="sheet-body"></div>
     </div>
     </div>`;
+  if (medallion) back.querySelector(".a4-page").appendChild(medallion);
   const body = back.querySelector(".sheet-body");
   addCountryTag(back, country);
   if (art) body.append(art);
