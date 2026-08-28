@@ -114,10 +114,39 @@ Corner art swapped a third time: four options (full scallop border,
 beaded-dot border, vine/leaf corners, dashed rule) were mocked up
 alongside the live brackets; Sebastian picked vine/leaf corner sprigs.
 Same CSS mask mechanism as the brackets, just a different SVG — small
-curling leaf shapes instead of L-brackets. If asked for more border
-variety again, the mask-based corner-motif technique (SVG with 4
-mirrored corners, `mask-mode: alpha`, `background-color: var(--accent)`)
-is the reusable pattern — only the SVG path data needs to change.
+curling leaf shapes instead of L-brackets.
+
+Fourth revision, and the current one: Sebastian shared a reference image
+of hand-drawn doodle border patterns (wave/dots/zigzag/scallop/etc.
+running the full edge, not just corners) and asked for "premium but
+kids rhymes so a bit whimsical" variety across cards, not one uniform
+style. Landed on **5 rotating full-perimeter patterns** — wave, dots,
+zigzag, loop-stitch, scallop — assigned via a `.frame-*` class on each
+`<section>`, cycling evenly across the 75 cards (15 each, in document
+order). A flower-petal variant was tried and dropped: the overlapping
+ellipses collapsed into an indistinct blob at border scale (~4mm tall),
+illegible. Implementation:
+- Wave/dots/zigzag/loop: each is a horizontal SVG tile + a
+  coordinate-transposed vertical tile (x/y swapped), combined as 4
+  `mask-image` layers on one element (`mask-position`/`mask-repeat`
+  per layer, same trick as multi-layer `background-image`) so one
+  `.a4-page::after` covers all four edges without 4 separate DOM nodes.
+- Scallop reuses the existing header-trim radial-gradient technique
+  (4 layers, one per edge) instead of a mask — needs
+  `mask-image: none` in its override to cancel the base rule's mask.
+- Base `.a4-page::after` (no `.frame-*` class) defaults to the wave
+  pattern as a safety net.
+- The frame class propagates front→back the same way `.medallion` does
+  (read `front.classList`, add to `back.className` in the JS that
+  builds the translation page).
+
+If asked for more border variety again: for full-perimeter patterns,
+reuse the tile-mask technique above (new pattern = new SVG tile pair +
+a `.frame-<name>` block, same structure). For corner-only motifs, the
+earlier technique still applies (SVG with 4 mirrored corners,
+`mask-mode: alpha`, `background-color: var(--accent)`). Either way,
+test at actual border scale before presenting options — several ideas
+that looked fine as a concept didn't survive being 4mm tall.
 
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
