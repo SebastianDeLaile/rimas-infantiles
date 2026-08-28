@@ -108,7 +108,16 @@ Debugging note: CSS `mask-image` defaults to `mask-mode: match-source`,
 which resolved to luminance (not alpha) for these black-on-transparent
 icon PNGs in Chromium — the mask silently rendered nothing until
 `mask-mode: alpha` was set explicitly. Same fix needed for both the
-bracket SVG and the medallion icons.
+corner-art SVG and the medallion icons.
+
+Corner art swapped a third time: four options (full scallop border,
+beaded-dot border, vine/leaf corners, dashed rule) were mocked up
+alongside the live brackets; Sebastian picked vine/leaf corner sprigs.
+Same CSS mask mechanism as the brackets, just a different SVG — small
+curling leaf shapes instead of L-brackets. If asked for more border
+variety again, the mask-based corner-motif technique (SVG with 4
+mirrored corners, `mask-mode: alpha`, `background-color: var(--accent)`)
+is the reusable pattern — only the SVG path data needs to change.
 
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
