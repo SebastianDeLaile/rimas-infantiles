@@ -53,14 +53,9 @@
   color: var(--sheet-ink);
   overflow: hidden;
 }
-/* Decorative double-rule frame. Insets differ on the punch-side edge
-   because the hole guide reaches --hole-inset + --hole-dia/2 = 15mm from
-   that edge — the frame must clear it, not the 14mm --edge-margin used
-   for the other three sides. Punch-side values (19mm/21mm) carry extra
-   buffer beyond the 15mm minimum: a desktop Safari rendering difference
-   made the original tighter values (17mm/19mm) look like they crossed
-   the holes, unreproduced in Chrome — verify on Safari before trusting
-   this further if it recurs. */
+/* Decorative double-rule frame, uniform inset on all four sides
+   (deliberately including the punch side — the hole guide sits through
+   it, like a bound planner page). */
 .a4-page::after, .a4-page::before {
   content: "";
   position: absolute;
@@ -70,10 +65,6 @@
   pointer-events: none;
 }
 .a4-page::before { top: 9mm; bottom: 9mm; left: 9mm; right: 9mm; border-radius: 2mm; opacity: .5; }
-.a4-sheet[data-punch="left"] .a4-page::after { left: 19mm; }
-.a4-sheet[data-punch="left"] .a4-page::before { left: 21mm; }
-.a4-sheet[data-punch="right"] .a4-page::after { right: 19mm; }
-.a4-sheet[data-punch="right"] .a4-page::before { right: 21mm; }
 .a4-page {
   position: relative;
   width: var(--page-w);
