@@ -83,11 +83,14 @@ test it visually until this session (see the Chrome-via-executablePath
 gotcha below).
 
 Also added a decorative double-rule frame (`.a4-page::before/::after`) to
-every card per Sebastian's "make them look premium" ask — inset from the
-page edge in the card's accent color, wider inset on the punch-side edge
-(17mm/19mm vs 7mm/9mm) so it clears the hole guide, which reaches 15mm
-from that edge. Three options were mocked up and screenshotted for his
-pick (hairline / double-rule / scallop-echo); double-rule won.
+every card per Sebastian's "make them look premium" ask — inset 7mm/9mm
+from the page edge in the card's accent color, uniform on all four sides
+by his explicit call, so the punch-hole guide runs through it on the
+punch side rather than the frame stepping inward to avoid it (like a
+bound planner page). Three options were mocked up and screenshotted for
+his pick (hairline / double-rule / scallop-echo); double-rule won. A
+punch-aware asymmetric-inset version was tried first but reverted —
+Sebastian wanted uniform, not avoidant.
 
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
