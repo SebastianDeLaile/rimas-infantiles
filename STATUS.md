@@ -140,13 +140,27 @@ illegible. Implementation:
   (read `front.classList`, add to `back.className` in the JS that
   builds the translation page).
 
-If asked for more border variety again: for full-perimeter patterns,
-reuse the tile-mask technique above (new pattern = new SVG tile pair +
-a `.frame-<name>` block, same structure). For corner-only motifs, the
-earlier technique still applies (SVG with 4 mirrored corners,
-`mask-mode: alpha`, `background-color: var(--accent)`). Either way,
-test at actual border scale before presenting options — several ideas
-that looked fine as a concept didn't survive being 4mm tall.
+Expanded to **10 rotating patterns** (August 2026): Sebastian asked for
+5 more options, chose crosshatch/diamond/teardrop/ticks/x-marks from
+that second batch, then asked to combine rather than replace — so the
+rotation is now wave/dots/zigzag/loop/scallop/crosshatch/diamond/
+teardrop/ticks/xmarks, 75 cards / 10 patterns ≈ 7-8 each. Two more
+candidates were dropped from that batch: triangle+dot (the dot
+disappeared at border scale) and heart (transposing x/y correctly
+rotates the shape 90°, but a heart lying on its side just reads as an
+arrow-like blob at ~4mm — same failure mode as the flower-petal variant
+dropped earlier). **Pattern for adding more:** design the horizontal
+tile, transpose x/y for the vertical tile, render at *actual* border
+scale (~4mm) before presenting as an option — symmetric shapes (dots,
+diamonds, X's, ticks) survive the transpose and the tiny scale; shapes
+with a strong "this way up" identity (hearts, flowers, animals) usually
+don't.
+
+For full-perimeter patterns, reuse the tile-mask technique above (new
+pattern = new SVG tile pair + a `.frame-<name>` block, same structure).
+For corner-only motifs instead, the earlier technique still applies
+(SVG with 4 mirrored corners, `mask-mode: alpha`,
+`background-color: var(--accent)`).
 
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
