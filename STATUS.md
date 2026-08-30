@@ -399,16 +399,36 @@ turn.
 Verified via cropped 2×2 corner grids for all four patterns, then
 independently re-verified through the actual print pipeline
 (`generate_print_pack.js` → `pdftoppm`, both front and back/translation
-pages) rather than trusting the on-screen render alone. Residual: zigzag
-BR has a sub-millimeter artifact at extreme zoom (invisible at normal
-viewing/print scale — the two junction points there are only ~0.7mm
-apart, close to the stroke width itself); wave/loop BL keep a small but
-real kink. Lesson for next time a corner pattern is added: never assume
-a corner is symmetric with its TL/TR sibling — derive each of the 4
-corners' junction points independently from the real strip/box
-page-coordinate offsets, because the top/left-vs-bottom/right anchoring
-asymmetry silently flips which physical side a given tile-phase value
-lands on.
+pages) rather than trusting the on-screen render alone. At the time this
+was judged good enough — zigzag BL/BR had a small residual "whisker" I
+called invisible at normal scale; wave/loop BL kept a small kink. That
+call on zigzag was wrong (see below). Lesson for next time a corner
+pattern is added: never assume a corner is symmetric with its TL/TR
+sibling — derive each of the 4 corners' junction points independently
+from the real strip/box page-coordinate offsets, because the
+top/left-vs-bottom/right anchoring asymmetry silently flips which
+physical side a given tile-phase value lands on.
+
+**Same-day follow-up #2**: Sebastian: "arroz con leche still looks
+dodgy." A tighter zoom on zigzag's BL/BR than the previous pass used
+showed the 3-point path (junction → mid-vertex → junction) rendering as
+a visible hook/notch, not a sub-pixel artifact — the mid-vertex was the
+actual problem, not just its coordinates. At BL/BR the two strip
+junctions sit only ~1.5-3.5mm apart already (both near the same edge of
+the 4×4mm corner box); cramming a third vertex between two such close
+points, with `stroke-linejoin: round` on the resulting near-parallel
+short segments, reliably produces a notch regardless of exactly where
+the mid-point is placed — confirmed by having tried two different
+mid-point coordinates across the two passes, both wrong in different
+ways. Fix: dropped the middle vertex entirely, connecting the two
+junctions with a single straight line (`M4,0.5 L0.5,0` for BL, `M0,0.5
+L0.5,0` for BR). Still reads as a sharp "meets at a point" corner since
+the two points are close together, just without the fake extra bend.
+Re-verified the same way (corner-zoom crops + print pipeline). wave/loop
+BL's kink was not touched in this pass — same underlying "points too
+close together" shape, but as a curve control-point problem rather than
+a line-join problem, so the fix doesn't carry over directly; revisit if
+flagged.
 
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
