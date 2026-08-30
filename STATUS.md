@@ -490,6 +490,29 @@ land at a *specific coordinate* — that needs an explicit tile size +
 auto-solved rounding, even though both "just barely" look plausible at
 a glance.
 
+**Same-day correction #2**: still "off" — the x-alignment fix above
+was real but incomplete. left/right hadn't been touched, so they kept
+their original 11mm-inset `mask-repeat: round` tiling; the gap from the
+now-correctly-placed corner dot to the first genuine left/right-strip
+dot measured ~4.35mm against a ~5mm rhythm everywhere else on that
+column — a visibly short first gap, which is what was still reading as
+wrong. Fixed by extending left/right to the same 7mm inset as top/
+bottom and applying the identical exact-tile + `mask-position` technique
+(283mm span, 2mm margins, 56 gaps of 4.9821mm). Both axes now target
+the literal same page coordinate for the corner dot, so they land
+exactly on top of each other instead of one "owning" the corner and the
+other's rhythm restarting nearby at a different phase. Verified at 4x
+device-scale screenshots (to rule out low-res screenshot rasterization
+snapping, which briefly looked like a residual ~2.6% inconsistency
+before the hi-res check showed it was measurement noise, not a real
+gap) — spacing is uniform at ~4.95–4.99mm straight through every
+corner, corner-dot x agrees between axes to 0.03mm. **Broader lesson**:
+when a fix touches one axis of a symmetric pattern (here: "align the
+horizontal strip's corner dot"), check whether the *other* axis needs
+the matching treatment before calling it done — the two problems looked
+identical from a distance but were graded separately by inspection,
+which is how the first pass shipped only half-fixed.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
