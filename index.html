@@ -134,7 +134,18 @@
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q0%2C0%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q0%2C0%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
+/* dots' top/bottom strips run the full corner-to-corner span (7mm
+   inset, same as the corner piece used elsewhere) instead of stopping
+   short at 11mm -- a ring of identical, evenly-spaced dots reads better
+   than a rhythm broken by a separately-sized "hard" dot bolted on at
+   each corner. mask-repeat:round re-solves the tile width per side so
+   the spacing change this introduces is only ever a fraction of a mm.
+   left/right stay at the original 11mm inset and simply pick the
+   rhythm back up below/above where top/bottom leave off -- extending
+   both axes into the same 4mm corner square would draw two independent
+   dots a fraction of a mm apart there instead of one. */
 .frame-dots .frame-strip-top, .frame-dots .frame-strip-bottom {
+  left: 7mm; right: 7mm;
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 5mm 4mm;
@@ -146,10 +157,7 @@
   -webkit-mask-size: 4mm 5mm;
   mask-size: 4mm 5mm;
 }
-.frame-dots .frame-corner {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-}
+.frame-dots .frame-corner { display: none; }
 .frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
