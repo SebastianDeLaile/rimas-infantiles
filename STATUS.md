@@ -469,6 +469,27 @@ preferred generally, the same technique (extend one axis's strips to
 discrete-icon patterns (diamond, teardrop, ticks, xmarks, plus, square,
 crosshatch) too, but none of those were flagged, so left as-is.
 
+**Same-day correction**: Sebastian caught it immediately — "the corner
+dots look in a weird position." Right: `mask-repeat: round` only
+guarantees a *whole number* of tiles fit the strip, not a specific
+*phase*, so the top/bottom strip's corner-most dot landed at x=9.52mm
+while the left/right strip's fixed column sits at x=9mm exactly. A
+0.5mm stagger doesn't sound like much but reads as clearly off-grid
+once you're looking at a single corner, which is exactly where the eye
+goes. Pixel-scanned both the row and column dot centers to confirm
+before guessing at a fix. Replaced the `round`-based auto-sizing on
+top/bottom with a hand-computed exact tile width + `mask-position`:
+196mm span, first/last dot forced to exactly 2mm from each end (to
+match left/right's fixed offset), giving 38 gaps of 192/38 = 5.0526mm.
+Re-measured after: row and column centers now agree to within 1px
+(~0.06mm) at 250dpi. **Lesson**: `mask-repeat: round` is the right tool
+for "don't truncate a tile at the edge" (its original use, see above)
+but the wrong tool whenever a *specific point* in the pattern needs to
+land at a *specific coordinate* — that needs an explicit tile size +
+`mask-position` computed from the actual container dimension, not
+auto-solved rounding, even though both "just barely" look plausible at
+a glance.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
