@@ -285,6 +285,32 @@ arches) by hand alongside the other 14. Worth grepping for a pattern's
 name in generated output like this whenever a pattern doesn't fit the
 common code path — it won't error, it'll just silently produce nothing.
 
+**Root cause found and fixed, same day**: Sebastian pointed at Arroz
+con leche (zigzag) specifically — expected the two edges to meet in a
+clean point, got a small orphan spike instead. Measuring the actual
+rendered DOM (`getBoundingClientRect()` on `.frame-strip-top`) showed
+why: strips are 188mm long (page width 210mm minus 2×11mm inset), and
+zigzag's tile is 6mm wide. 188 ÷ 6 = 31.33 — not a whole number, so
+plain `repeat-x` left a truncated partial tile at the strip's far end,
+colliding with the corner piece. The same non-integer-division problem
+affects most of the 15 patterns against both the 188mm (top/bottom)
+and 275mm (left/right, = 297mm page height − 2×11mm) strip lengths —
+zigzag's sharp vertices just made the truncation obvious, where softer
+patterns hid it better.
+
+Fix: `mask-repeat: round` (and the `background-repeat` equivalent for
+scallop) instead of `repeat-x`/`repeat-y`. `round` auto-scales each
+tile slightly so a whole number always fits exactly — no truncation,
+for any pattern, without hand-computing tile sizes against two
+different strip lengths per pattern. One CSS change, applied
+everywhere, visibly cleaned up corners across the whole set, not just
+zigzag — this was likely the single biggest contributor to "still
+looks dodgy" across the earlier attempts, more than the corner-art
+design itself. **If corners look off again in the future, check this
+first** (measure actual strip length ÷ tile size, look for a
+non-integer result) before redesigning corner art — the two problems
+look similar but have very different fixes.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
