@@ -196,6 +196,33 @@ rather than a patch, and required zero changes to the pattern
 definitions themselves. If a 16th pattern is added later, this fix
 applies automatically — no per-pattern work needed.
 
+**Superseded same day** — Sebastian said the dot still looked off, and
+he was right: it covered the seam but looked like a foreign round shape
+dropped onto the angular patterns (squares, diamonds, ticks, X's).
+Replaced with a structurally different fix: each edge's pattern is now
+a separate real DOM element (`.frame-strip-top/bottom/left/right`,
+injected into every `.a4-page` by `addFrameStrips()` in the main
+script — called for both the static fronts and the JS-generated backs)
+inset from the corners by `--frame-gap` (6mm), instead of one element
+covering the whole box per side. The patterns simply stop before
+they'd collide — no seam, no patch, no foreign shape. This is closer
+to how real doodle-border/washi-tape designs handle corners.
+
+This meant rewriting all 15 pattern definitions from "4 mask layers
+(top/bottom/left/right) on one `::after`" to "1 mask layer per strip
+pair" — `.frame-<name> .frame-strip-top, .frame-<name>
+.frame-strip-bottom` share the horizontal tile, `.frame-strip-left/
+right` the vertical. Same SVG art throughout, just retargeted onto the
+new elements. Scallop's radial-gradient version (it never used masks)
+was split the same way, one gradient per strip. `.a4-page::before` /
+`::after` are no longer used for the frame at all.
+
+If asked to touch the border system again: the per-pattern SVG tile
+data (horizontal + transposed vertical, one object per pattern name)
+is the thing to edit; the strip positioning/injection plumbing
+(`.frame-strip*` CSS + `addFrameStrips()`) shouldn't need to change
+for a new pattern, only for a structural change like this one.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
