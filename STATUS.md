@@ -223,6 +223,68 @@ is the thing to edit; the strip positioning/injection plumbing
 (`.frame-strip*` CSS + `addFrameStrips()`) shouldn't need to change
 for a new pattern, only for a structural change like this one.
 
+**Superseded again, same day** — Sebastian said the dot still looked
+off ("not super clean") and asked to actually make the corners meet,
+not just avoid clashing. Correct call: a plain dot is a foreign round
+shape sitting on top of angular patterns (squares, diamonds, ticks,
+X's), so it never was going to look intentional.
+
+Real fix this time: each edge strip now stops 4mm short of the corner
+(`.frame-strip-top/bottom` inset to `left/right: 11mm` instead of
+`7mm`; same for left/right), and a dedicated 4×4mm `.frame-corner-*`
+piece — hand-drawn **per pattern** to continue that pattern's own
+motif — fills the gap. `addFrameStrips()` now injects both the 4 strips
+and 4 corner pieces into every `.a4-page`. Corner art lives alongside
+each pattern's h/v tile pair as a third `CORNERS[name]` SVG (4×4
+viewBox, drawn once for the top-left corner, reused at the other 3 via
+CSS `transform: scaleX(-1)` / `scaleY(-1)` / `scale(-1,-1)` on
+`.frame-corner-tr/bl/br`). Design approach per pattern: discrete-icon
+patterns (dots, diamond, teardrop, xmarks, plus, square, star) just get
+one centered instance of their own motif — trivial, since a dot/star/
+diamond looks the same regardless of rotation. Connected-line patterns
+needed real design judgement: crosshatch's X is already 90°-rotation-
+symmetric so it reuses its own tile verbatim (comes out **perfect**,
+zero visible seam); wave/arches/scallop get a matching quarter-arc;
+zigzag gets a shared peak vertex; loop/spiral/ticks get a simplified
+single motif (loop→small circle, spiral→small coil, ticks→small dot)
+that's serviceable but reads as a slightly different element than the
+edge — the weakest three of the fifteen, still infinitely better than
+the collision or the dot patch, but if revisited, these are the ones
+worth another pass.
+
+Two dead ends hit on the way here, worth remembering before trying
+either again:
+- **CSS `border-image`** is the standard/obvious tool for tileable
+  border corners (9-slice: fixed corners + repeating edges, with
+  `border-image-repeat: round` auto-fitting tile count evenly — exactly
+  the "make it fit without cutting off mid-tile" problem this is). But
+  it paints the source image's **own colors** — `border-color` is only
+  a fallback/center-fill color, not a tint — so it's incompatible with
+  this project's "one black-on-transparent SVG, colorized via
+  `background-color` for whichever card's accent" approach. Per-card
+  dynamic coloring would need either 15×75 pre-baked color variants or
+  per-card JS-generated data URIs; neither is attractive.
+- **`mask-border`** (`-webkit-mask-box-image-*` / `mask-border-*`) is
+  the masking analogue of border-image and in principle solves the
+  coloring problem (mask + `background-color` still works). In
+  practice it rendered as solid untextured blobs with no visible tile
+  detail and didn't appear to repeat along the edges at all — possibly
+  a slice-unit interpretation issue, possibly just an immature/
+  inconsistently-implemented feature. Not trustworthy enough to debug
+  further under time pressure; real DOM elements + `mask-image` (the
+  technique already reliable everywhere else in this build) won out.
+
+scallop needed a small side-fix here too: it was never in the shared
+`PATTERNS` object (it always used a radial-gradient `background`
+instead of an SVG mask, since that was simpler for a pure semicircle-
+bump pattern), so the corner-piece generation pass silently produced
+nothing for it — caught by grepping the generated CSS for
+`frame-scallop` and finding zero matches. Added its strips (unchanged
+radial-gradient approach) and corner (quarter-arc SVG mask, like wave/
+arches) by hand alongside the other 14. Worth grepping for a pattern's
+name in generated output like this whenever a pattern doesn't fit the
+common code path — it won't error, it'll just silently produce nothing.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
