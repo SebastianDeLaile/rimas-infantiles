@@ -53,280 +53,225 @@
   color: var(--sheet-ink);
   overflow: hidden;
 }
-/* Decorative frame: a continuous hand-drawn doodle pattern around all
-   four edges, uniform inset (deliberately including the punch side —
-   the hole guide sits through it, like a bound planner page). Five
-   pattern variants rotate across the cards for variety via a .frame-*
-   class on each <section> (wave/dots/zigzag/loop/scallop); each is a
-   repeating CSS mask tile per edge, accent-colored via
-   background-color so one set of SVGs works for every card's accent
-   color. Base rule below is the wave pattern, used whenever no
-   .frame-* class is present — a safety net, not meant to be relied on.
+/* Decorative frame: a continuous hand-drawn doodle pattern around each
+   edge, via 4 real DOM elements (.frame-strip-top/bottom/left/right,
+   injected by JS below into every .a4-page -- see addFrameStrips) rather
+   than a single element covering the whole box. 15 pattern variants
+   rotate across the cards for variety via a .frame-* class on each
+   <section>; each strip gets one repeating CSS mask tile (accent-colored
+   via background-color, so one set of SVGs works for every card's
+   accent color) -- top/bottom use the horizontal tile, left/right the
+   vertical.
 
-   Each edge's tiles start counting from their own corner (top/bottom
-   from the left, left/right from the top), so two independently-tiled
-   edges essentially never land on a matching phase where they meet —
-   the patterns collide/overlap messily at all 4 corners. Rather than
-   solving that per-pattern (15x the work, and no tile size evenly
-   divides both the 196mm and 283mm edges for every pattern anyway),
-   .a4-page::before is a single corner-dot layer, unconditional on any
-   .frame-* class, painted on top via z-index so it works for all 15
-   patterns without touching their individual rules. */
-.a4-page::before {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  z-index: 2;
-  background:
-    radial-gradient(circle at 0 0, var(--accent) 2.3mm, transparent 2.4mm) no-repeat,
-    radial-gradient(circle at 100% 0, var(--accent) 2.3mm, transparent 2.4mm) no-repeat,
-    radial-gradient(circle at 0 100%, var(--accent) 2.3mm, transparent 2.4mm) no-repeat,
-    radial-gradient(circle at 100% 100%, var(--accent) 2.3mm, transparent 2.4mm) no-repeat;
+   Earlier version covered the whole edge with one tiled layer per side,
+   each counting from its own corner -- since adjacent edges essentially
+   never land on a matching phase where they meet, the patterns
+   collided/overlapped messily at all 4 corners. A corner-dot patch
+   covered the seam but looked like a foreign shape dropped onto angular
+   patterns (squares, diamonds, ticks, X's). This version insets each
+   strip from the corners (--frame-gap) instead, so patterns simply stop
+   before they'd collide -- no seam, no patch needed. */
+.frame-strip { position: absolute; pointer-events: none; background-color: var(--accent); mask-mode: alpha; -webkit-mask-repeat: repeat; }
+.frame-strip-top, .frame-strip-bottom { left: calc(7mm + var(--frame-gap, 6mm)); right: calc(7mm + var(--frame-gap, 6mm)); height: 4mm; }
+.frame-strip-top { top: 7mm; }
+.frame-strip-bottom { bottom: 7mm; }
+.frame-strip-left, .frame-strip-right { top: calc(7mm + var(--frame-gap, 6mm)); bottom: calc(7mm + var(--frame-gap, 6mm)); width: 4mm; }
+.frame-strip-left { left: 7mm; }
+.frame-strip-right { right: 7mm; }
+.frame-strip-top, .frame-strip-bottom {
+  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
 }
-.a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 10mm 4mm, 10mm 4mm, 4mm 10mm, 4mm 10mm;
-  mask-size: 10mm 4mm, 10mm 4mm, 4mm 10mm, 4mm 10mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
+.frame-strip-left, .frame-strip-right {
+  -webkit-mask-repeat: repeat-y; mask-repeat: repeat-y;
 }
-.frame-dots .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
-  mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
+.frame-wave .frame-strip-top, .frame-wave .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 10mm 4mm;
+  mask-size: 10mm 4mm;
 }
-.frame-zigzag .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
+.frame-wave .frame-strip-left, .frame-wave .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 10mm;
+  mask-size: 4mm 10mm;
 }
-.frame-loop .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%209%22%3E%3Cpath%20d%3D%22M3%2C0%20C1%2C0%201%2C2%202%2C2.25%20C3%2C2.5%203%2C4.5%201.5%2C4.5%20C3%2C4.5%203%2C6.5%202%2C6.75%20C1%2C7%201%2C9%203%2C9%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%209%22%3E%3Cpath%20d%3D%22M3%2C0%20C1%2C0%201%2C2%202%2C2.25%20C3%2C2.5%203%2C4.5%201.5%2C4.5%20C3%2C4.5%203%2C6.5%202%2C6.75%20C1%2C7%201%2C9%203%2C9%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%209%22%3E%3Cpath%20d%3D%22M3%2C0%20C1%2C0%201%2C2%202%2C2.25%20C3%2C2.5%203%2C4.5%201.5%2C4.5%20C3%2C4.5%203%2C6.5%202%2C6.75%20C1%2C7%201%2C9%203%2C9%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%209%22%3E%3Cpath%20d%3D%22M3%2C0%20C1%2C0%201%2C2%202%2C2.25%20C3%2C2.5%203%2C4.5%201.5%2C4.5%20C3%2C4.5%203%2C6.5%202%2C6.75%20C1%2C7%201%2C9%203%2C9%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 9mm 4mm, 9mm 4mm, 4mm 9mm, 4mm 9mm;
-  mask-size: 9mm 4mm, 9mm 4mm, 4mm 9mm, 4mm 9mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}.frame-scallop .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
+.frame-dots .frame-strip-top, .frame-dots .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 5mm 4mm;
+  mask-size: 5mm 4mm;
+}
+.frame-dots .frame-strip-left, .frame-dots .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 5mm;
+  mask-size: 4mm 5mm;
+}
+.frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 6mm 4mm;
+  mask-size: 6mm 4mm;
+}
+.frame-zigzag .frame-strip-left, .frame-zigzag .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 6mm;
+  mask-size: 4mm 6mm;
+}
+.frame-loop .frame-strip-top, .frame-loop .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 9mm 4mm;
+  mask-size: 9mm 4mm;
+}
+.frame-loop .frame-strip-left, .frame-loop .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%209%22%3E%3Cpath%20d%3D%22M3%2C0%20C1%2C0%201%2C2%202%2C2.25%20C3%2C2.5%203%2C4.5%201.5%2C4.5%20C3%2C4.5%203%2C6.5%202%2C6.75%20C1%2C7%201%2C9%203%2C9%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%209%22%3E%3Cpath%20d%3D%22M3%2C0%20C1%2C0%201%2C2%202%2C2.25%20C3%2C2.5%203%2C4.5%201.5%2C4.5%20C3%2C4.5%203%2C6.5%202%2C6.75%20C1%2C7%201%2C9%203%2C9%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 9mm;
+  mask-size: 4mm 9mm;
+}
+.frame-crosshatch .frame-strip-top, .frame-crosshatch .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 8mm 4mm;
+  mask-size: 8mm 4mm;
+}
+.frame-crosshatch .frame-strip-left, .frame-crosshatch .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 8mm;
+  mask-size: 4mm 8mm;
+}
+.frame-diamond .frame-strip-top, .frame-diamond .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 6mm 4mm;
+  mask-size: 6mm 4mm;
+}
+.frame-diamond .frame-strip-left, .frame-diamond .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C3%20L2%2C5%20L3.5%2C3%20L2%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C3%20L2%2C5%20L3.5%2C3%20L2%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 6mm;
+  mask-size: 4mm 6mm;
+}
+.frame-teardrop .frame-strip-top, .frame-teardrop .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 6mm 4mm;
+  mask-size: 6mm 4mm;
+}
+.frame-teardrop .frame-strip-left, .frame-teardrop .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 6mm;
+  mask-size: 4mm 6mm;
+}
+.frame-ticks .frame-strip-top, .frame-ticks .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 3mm 4mm;
+  mask-size: 3mm 4mm;
+}
+.frame-ticks .frame-strip-left, .frame-ticks .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%203%22%3E%3Cline%20x1%3D%220.8%22%20y1%3D%221.5%22%20x2%3D%223.2%22%20y2%3D%221.5%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%203%22%3E%3Cline%20x1%3D%220.8%22%20y1%3D%221.5%22%20x2%3D%223.2%22%20y2%3D%221.5%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 3mm;
+  mask-size: 4mm 3mm;
+}
+.frame-xmarks .frame-strip-top, .frame-xmarks .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 5mm 4mm;
+  mask-size: 5mm 4mm;
+}
+.frame-xmarks .frame-strip-left, .frame-xmarks .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 5mm;
+  mask-size: 4mm 5mm;
+}
+.frame-plus .frame-strip-top, .frame-plus .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 5mm 4mm;
+  mask-size: 5mm 4mm;
+}
+.frame-plus .frame-strip-left, .frame-plus .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 5mm;
+  mask-size: 4mm 5mm;
+}
+.frame-square .frame-strip-top, .frame-square .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 6mm 4mm;
+  mask-size: 6mm 4mm;
+}
+.frame-square .frame-strip-left, .frame-square .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 6mm;
+  mask-size: 4mm 6mm;
+}
+.frame-spiral .frame-strip-top, .frame-spiral .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 7mm 4mm;
+  mask-size: 7mm 4mm;
+}
+.frame-spiral .frame-strip-left, .frame-spiral .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 7mm;
+  mask-size: 4mm 7mm;
+}
+.frame-star .frame-strip-top, .frame-star .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 8mm 4mm;
+  mask-size: 8mm 4mm;
+}
+.frame-star .frame-strip-left, .frame-star .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 8mm;
+  mask-size: 4mm 8mm;
+}
+.frame-arches .frame-strip-top, .frame-arches .frame-strip-bottom {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 8mm 4mm;
+  mask-size: 8mm 4mm;
+}
+.frame-arches .frame-strip-left, .frame-arches .frame-strip-right {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 8mm;
+  mask-size: 4mm 8mm;
+}.frame-scallop .frame-strip-top, .frame-scallop .frame-strip-bottom {
   -webkit-mask-image: none;
   mask-image: none;
-  background:
-    radial-gradient(circle at 4mm 0, var(--accent) 4mm, transparent 4.1mm) top / 8mm 4mm repeat-x,
-    radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) bottom / 8mm 4mm repeat-x,
-    radial-gradient(circle at 0 4mm, var(--accent) 4mm, transparent 4.1mm) left / 4mm 8mm repeat-y,
-    radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) right / 4mm 8mm repeat-y;
+}
+.frame-scallop .frame-strip-top {
+  background: radial-gradient(circle at 4mm 0, var(--accent) 4mm, transparent 4.1mm) top / 8mm 4mm repeat-x;
+}
+.frame-scallop .frame-strip-bottom {
+  background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) bottom / 8mm 4mm repeat-x;
+}
+.frame-scallop .frame-strip-left, .frame-scallop .frame-strip-right {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.frame-scallop .frame-strip-left {
+  background: radial-gradient(circle at 0 4mm, var(--accent) 4mm, transparent 4.1mm) left / 4mm 8mm repeat-y;
+}
+.frame-scallop .frame-strip-right {
+  background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) right / 4mm 8mm repeat-y;
 }
 
-.frame-crosshatch .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
-  mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-diamond .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C3%20L2%2C5%20L3.5%2C3%20L2%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C3%20L2%2C5%20L3.5%2C3%20L2%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C3%20L2%2C5%20L3.5%2C3%20L2%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C3%20L2%2C5%20L3.5%2C3%20L2%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-teardrop .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-ticks .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%203%22%3E%3Cline%20x1%3D%220.8%22%20y1%3D%221.5%22%20x2%3D%223.2%22%20y2%3D%221.5%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%203%22%3E%3Cline%20x1%3D%220.8%22%20y1%3D%221.5%22%20x2%3D%223.2%22%20y2%3D%221.5%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%203%22%3E%3Cline%20x1%3D%220.8%22%20y1%3D%221.5%22%20x2%3D%223.2%22%20y2%3D%221.5%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%203%22%3E%3Cline%20x1%3D%220.8%22%20y1%3D%221.5%22%20x2%3D%223.2%22%20y2%3D%221.5%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 3mm 4mm, 3mm 4mm, 4mm 3mm, 4mm 3mm;
-  mask-size: 3mm 4mm, 3mm 4mm, 4mm 3mm, 4mm 3mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-xmarks .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
-  mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-
-.frame-plus .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
-  mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-square .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-spiral .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 7mm 4mm, 7mm 4mm, 4mm 7mm, 4mm 7mm;
-  mask-size: 7mm 4mm, 7mm 4mm, 4mm 7mm, 4mm 7mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-star .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
-  mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
-.frame-arches .a4-page::after {
-  content: "";
-  position: absolute;
-  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
-  pointer-events: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-position: top left, bottom left, top left, top right;
-  mask-position: top left, bottom left, top left, top right;
-  -webkit-mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
-  mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
-  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
-  mask-mode: alpha;
-  background-color: var(--accent);
-}
 
 /* Themed medallion badge — only present on cards with a bespoke icon
    (set via markup, not every card has one). Sits at top-center of the
@@ -3740,7 +3685,15 @@ function addCountryTag(sheet, country) {
   tag.textContent = country;
   sheet.querySelector(".band")?.append(tag);
 }
+function addFrameStrips(page) {
+  ["top", "bottom", "left", "right"].forEach(side => {
+    const strip = document.createElement("div");
+    strip.className = `frame-strip frame-strip-${side}`;
+    page.appendChild(strip);
+  });
+}
 fronts.forEach((front, index) => {
+  addFrameStrips(front.querySelector(".a4-page"));
   const frontBody = front.querySelector(".sheet-body");
   const frontVerse = front.querySelector(".verse");
   const noAutoShrink = frontBody?.classList.contains("no-auto-shrink");
@@ -3767,6 +3720,7 @@ fronts.forEach((front, index) => {
       <div class="sheet-body"></div>
     </div>
     </div>`;
+  addFrameStrips(back.querySelector(".a4-page"));
   if (medallion) back.querySelector(".a4-page").appendChild(medallion);
   const body = back.querySelector(".sheet-body");
   addCountryTag(back, country);
