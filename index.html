@@ -161,11 +161,27 @@
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
+/* Extended to the same 7mm corner-to-corner inset as top/bottom, with
+   the same "exact 2mm margin, computed tile" treatment -- both axes
+   are now solved so their corner-most dot lands on the literal same
+   page coordinate (9mm, 9mm from a given corner), so they land exactly
+   on top of each other there instead of needing one axis to "own" the
+   corner and leave the other's rhythm to restart nearby at a different,
+   tighter spacing (which was the previous version's remaining flaw:
+   fixed the horizontal misalignment but left a visibly shorter first
+   gap on the vertical column, ~4.35mm vs. the ~5mm rhythm everywhere
+   else). 283mm span, dots 2mm from each end, 56 gaps of 279mm/56 =
+   4.9821mm. */
 .frame-dots .frame-strip-left, .frame-dots .frame-strip-right {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-size: 4mm 5mm;
-  mask-size: 4mm 5mm;
+  top: 7mm; bottom: 7mm;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204.982143%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.491071%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204.982143%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.491071%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 4.982143mm;
+  mask-size: 4mm 4.982143mm;
+  -webkit-mask-position: 0 -0.491071mm;
+  mask-position: 0 -0.491071mm;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
 }
 .frame-dots .frame-corner { display: none; }
 .frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
