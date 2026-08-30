@@ -177,6 +177,25 @@ a hard rendering bug). Fixed by flipping the swept-flag bit for the `A`
 commands in the vertical tile. Worth checking specifically whenever a
 new tile pattern's horizontal version uses an SVG arc (`A`) command.
 
+**Corner collision fix** (August 2026, same day): Sebastian flagged
+that the corners looked messy across all 15 patterns. Root cause: each
+edge's tiles start counting from their own corner (top/bottom from the
+left, left/right from the top), so two independently-tiled perpendicular
+edges essentially never land on a matching phase where they meet —
+visible as an overlapping/broken seam at all 4 corners, on every
+pattern. Fixing the tiling math per-pattern wasn't attractive (15x the
+work, and no tile size evenly divides both the 196mm and 283mm edges
+for every pattern anyway). Instead, added a single corner-dot layer on
+`.a4-page::before` (previously unused — every pattern lives on
+`::after`), given `z-index: 2` so it paints on top of whatever pattern
+is active without touching any of the 15 individual `.frame-*` rules.
+Small accent-colored circle (2.3mm radius) at each of the 4 corners,
+positioned via `background: radial-gradient(...) at 0 0 / 100% 0 / 0
+100% / 100% 100%`. Reads as an intentional accent (like a corner rivet)
+rather than a patch, and required zero changes to the pattern
+definitions themselves. If a 16th pattern is added later, this fix
+applies automatically — no per-pattern work needed.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
