@@ -54,28 +54,42 @@
   overflow: hidden;
 }
 /* Decorative frame: a continuous hand-drawn doodle pattern around each
-   edge, via 4 real DOM elements (.frame-strip-top/bottom/left/right,
-   injected by JS below into every .a4-page -- see addFrameStrips) rather
-   than a single element covering the whole box. 15 pattern variants
-   rotate across the cards for variety via a .frame-* class on each
-   <section>; each strip gets one repeating CSS mask tile (accent-colored
-   via background-color, so one set of SVGs works for every card's
-   accent color) -- top/bottom use the horizontal tile, left/right the
-   vertical.
+   edge, via real DOM elements injected into every .a4-page by JS
+   (addFrameStrips/addFrameCorners below) rather than CSS pseudo-elements
+   covering the whole box. 15 pattern variants rotate across the cards
+   via a .frame-* class on each <section>.
 
-   Earlier version covered the whole edge with one tiled layer per side,
-   each counting from its own corner -- since adjacent edges essentially
-   never land on a matching phase where they meet, the patterns
-   collided/overlapped messily at all 4 corners. A corner-dot patch
-   covered the seam but looked like a foreign shape dropped onto angular
-   patterns (squares, diamonds, ticks, X's). This version insets each
-   strip from the corners (--frame-gap) instead, so patterns simply stop
-   before they'd collide -- no seam, no patch needed. */
-.frame-strip { position: absolute; pointer-events: none; background-color: var(--accent); mask-mode: alpha; -webkit-mask-repeat: repeat; }
-.frame-strip-top, .frame-strip-bottom { left: calc(7mm + var(--frame-gap, 6mm)); right: calc(7mm + var(--frame-gap, 6mm)); height: 4mm; }
+   History: v1 covered each whole edge with one tiled mask layer per
+   side, each counting from its own corner -- adjacent edges essentially
+   never landed on a matching phase where they met, so patterns
+   collided/overlapped messily at all 4 corners. v2 patched the seam
+   with a plain accent-colored dot on top -- technically hid it, but
+   looked like a foreign round shape dropped onto angular patterns
+   (squares, diamonds, ticks, X's). v3 (this one) fixes it properly:
+   each edge strip stops 4mm short of the corner, and a dedicated
+   4x4mm corner piece -- hand-drawn per pattern to continue that
+   pattern's own motif -- fills the gap. Tried CSS border-image first
+   (the standard tool for exactly this) but it renders the source
+   image's own colors and can't be tinted via background-color the way
+   mask-image can, so per-card accent coloring broke entirely. Tried
+   mask-border (the masking analogue) next -- correct in theory, but
+   rendered as solid untextured blobs and didn't repeat properly; too
+   immature/unreliable to trust. Landed on real DOM elements +
+   mask-image throughout, the one technique that's been reliable all
+   along in this codebase.
+
+   Each pattern needs 3 art assets: a horizontal tile (top/bottom
+   strips), a vertical tile (left/right strips, x/y-transposed from the
+   horizontal one), and a 4x4mm corner piece (hand-drawn to continue
+   that pattern's own motif into the corner -- same base art reused at
+   all 4 corners via CSS mirroring, .frame-corner-tr/bl/br). All
+   accent-colored via background-color + mask-mode:alpha, so one asset
+   set works for every card's accent color. */
+.frame-strip, .frame-corner { position: absolute; pointer-events: none; background-color: var(--accent); mask-mode: alpha; -webkit-mask-repeat: repeat; }
+.frame-strip-top, .frame-strip-bottom { left: 11mm; right: 11mm; height: 4mm; }
 .frame-strip-top { top: 7mm; }
 .frame-strip-bottom { bottom: 7mm; }
-.frame-strip-left, .frame-strip-right { top: calc(7mm + var(--frame-gap, 6mm)); bottom: calc(7mm + var(--frame-gap, 6mm)); width: 4mm; }
+.frame-strip-left, .frame-strip-right { top: 11mm; bottom: 11mm; width: 4mm; }
 .frame-strip-left { left: 7mm; }
 .frame-strip-right { right: 7mm; }
 .frame-strip-top, .frame-strip-bottom {
@@ -84,6 +98,11 @@
 .frame-strip-left, .frame-strip-right {
   -webkit-mask-repeat: repeat-y; mask-repeat: repeat-y;
 }
+.frame-corner { width: 4mm; height: 4mm; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 4mm 4mm; mask-size: 4mm 4mm; }
+.frame-corner-tl { top: 7mm; left: 7mm; }
+.frame-corner-tr { top: 7mm; right: 7mm; transform: scaleX(-1); }
+.frame-corner-bl { bottom: 7mm; left: 7mm; transform: scaleY(-1); }
+.frame-corner-br { bottom: 7mm; right: 7mm; transform: scale(-1,-1); }
 .frame-wave .frame-strip-top, .frame-wave .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -95,6 +114,10 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%2010%22%3E%3Cpath%20d%3D%22M2%2C0%20Q-0.5%2C2.5%202%2C5%20T2%2C10%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 10mm;
   mask-size: 4mm 10mm;
+}
+.frame-wave .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20A2%2C2%200%200%201%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20A2%2C2%200%200%201%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-dots .frame-strip-top, .frame-dots .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
@@ -108,6 +131,10 @@
   -webkit-mask-size: 4mm 5mm;
   mask-size: 4mm 5mm;
 }
+.frame-dots .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -119,6 +146,10 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 6mm;
   mask-size: 4mm 6mm;
+}
+.frame-zigzag .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C3%20L2%2C1%20L4%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C3%20L2%2C1%20L4%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-loop .frame-strip-top, .frame-loop .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -132,6 +163,10 @@
   -webkit-mask-size: 4mm 9mm;
   mask-size: 4mm 9mm;
 }
+.frame-loop .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%221.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%221.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-crosshatch .frame-strip-top, .frame-crosshatch .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L8%2C4%20M0%2C4%20L8%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -143,6 +178,10 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C8%20M4%2C0%20L0%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 8mm;
   mask-size: 4mm 8mm;
+}
+.frame-crosshatch .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C4%20M0%2C4%20L4%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C0%20L4%2C4%20M0%2C4%20L4%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-diamond .frame-strip-top, .frame-diamond .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C0.5%20L5%2C2%20L3%2C3.5%20L1%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -156,6 +195,10 @@
   -webkit-mask-size: 4mm 6mm;
   mask-size: 4mm 6mm;
 }
+.frame-diamond .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C0.5%20L3.5%2C2%20L2%2C3.5%20L0.5%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C0.5%20L3.5%2C2%20L2%2C3.5%20L0.5%2C2%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-teardrop .frame-strip-top, .frame-teardrop .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M3%2C1%20C4%2C1%204%2C3%203%2C3%20C2%2C3%202%2C1%203%2C1%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
@@ -167,6 +210,10 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C3%20C1%2C2%203%2C2%203%2C3%20C3%2C4%201%2C4%201%2C3%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 6mm;
   mask-size: 4mm 6mm;
+}
+.frame-teardrop .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C0.7%20C3%2C0.7%203%2C3.3%202%2C3.3%20C1%2C3.3%201%2C0.7%202%2C0.7%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C0.7%20C3%2C0.7%203%2C3.3%202%2C3.3%20C1%2C3.3%201%2C0.7%202%2C0.7%20Z%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-ticks .frame-strip-top, .frame-ticks .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%203%204%22%3E%3Cline%20x1%3D%221.5%22%20y1%3D%220.8%22%20x2%3D%221.5%22%20y2%3D%223.2%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -180,6 +227,10 @@
   -webkit-mask-size: 4mm 3mm;
   mask-size: 4mm 3mm;
 }
+.frame-ticks .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.55%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.55%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-xmarks .frame-strip-top, .frame-xmarks .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M1.3%2C1%20L3.7%2C3%20M3.7%2C1%20L1.3%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -191,6 +242,10 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M1%2C1.3%20L3%2C3.7%20M1%2C3.7%20L3%2C1.3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 5mm;
   mask-size: 4mm 5mm;
+}
+.frame-xmarks .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M1%2C1%20L3%2C3%20M3%2C1%20L1%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M1%2C1%20L3%2C3%20M3%2C1%20L1%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-plus .frame-strip-top, .frame-plus .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -204,6 +259,10 @@
   -webkit-mask-size: 4mm 5mm;
   mask-size: 4mm 5mm;
 }
+.frame-plus .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C0.8%20L2%2C3.2%20M0.8%2C2%20L3.2%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C0.8%20L2%2C3.2%20M0.8%2C2%20L3.2%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-square .frame-strip-top, .frame-square .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
@@ -215,6 +274,10 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 6mm;
   mask-size: 4mm 6mm;
+}
+.frame-square .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Crect%20x%3D%221%22%20y%3D%221%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-spiral .frame-strip-top, .frame-spiral .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -228,6 +291,10 @@
   -webkit-mask-size: 4mm 7mm;
   mask-size: 4mm 7mm;
 }
+.frame-spiral .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C3%20C0.7%2C3%200.7%2C1.2%202%2C1.2%20C2.9%2C1.2%202.9%2C2.4%202.1%2C2.4%20C1.6%2C2.4%201.6%2C1.8%202%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M2%2C3%20C0.7%2C3%200.7%2C1.2%202%2C1.2%20C2.9%2C1.2%202.9%2C2.4%202.1%2C2.4%20C1.6%2C2.4%201.6%2C1.8%202%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-star .frame-strip-top, .frame-star .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
@@ -240,6 +307,10 @@
   -webkit-mask-size: 4mm 8mm;
   mask-size: 4mm 8mm;
 }
+.frame-star .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpolygon%20points%3D%222.00%2C0.50%202.35%2C1.51%203.43%2C1.54%202.57%2C2.19%202.88%2C3.21%202.00%2C2.60%201.12%2C3.21%201.43%2C2.19%200.57%2C1.54%201.65%2C1.51%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpolygon%20points%3D%222.00%2C0.50%202.35%2C1.51%203.43%2C1.54%202.57%2C2.19%202.88%2C3.21%202.00%2C2.60%201.12%2C3.21%201.43%2C2.19%200.57%2C1.54%201.65%2C1.51%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-arches .frame-strip-top, .frame-arches .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
@@ -251,7 +322,13 @@
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 8mm;
   mask-size: 4mm 8mm;
-}.frame-scallop .frame-strip-top, .frame-scallop .frame-strip-bottom {
+}
+.frame-arches .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20A2%2C2%200%200%201%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20A2%2C2%200%200%201%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+}
+
+.frame-scallop .frame-strip-top, .frame-scallop .frame-strip-bottom {
   -webkit-mask-image: none;
   mask-image: none;
 }
@@ -271,7 +348,10 @@
 .frame-scallop .frame-strip-right {
   background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) right / 4mm 8mm repeat-y;
 }
-
+.frame-scallop .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22/%3E%3C/svg%3E");
+}
 
 /* Themed medallion badge — only present on cards with a bespoke icon
    (set via markup, not every card has one). Sits at top-center of the
@@ -3690,6 +3770,11 @@ function addFrameStrips(page) {
     const strip = document.createElement("div");
     strip.className = `frame-strip frame-strip-${side}`;
     page.appendChild(strip);
+  });
+  ["tl", "tr", "bl", "br"].forEach(corner => {
+    const piece = document.createElement("div");
+    piece.className = `frame-corner frame-corner-${corner}`;
+    page.appendChild(piece);
   });
 }
 fronts.forEach((front, index) => {
