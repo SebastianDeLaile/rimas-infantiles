@@ -161,25 +161,32 @@
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
-/* Extended to the same 7mm corner-to-corner inset as top/bottom, with
-   the same "exact 2mm margin, computed tile" treatment -- both axes
-   are now solved so their corner-most dot lands on the literal same
-   page coordinate (9mm, 9mm from a given corner), so they land exactly
-   on top of each other there instead of needing one axis to "own" the
-   corner and leave the other's rhythm to restart nearby at a different,
-   tighter spacing (which was the previous version's remaining flaw:
-   fixed the horizontal misalignment but left a visibly shorter first
-   gap on the vertical column, ~4.35mm vs. the ~5mm rhythm everywhere
-   else). 283mm span, dots 2mm from each end, 56 gaps of 279mm/56 =
-   4.9821mm. */
+/* Previous version made left/right also reach into the 7mm corner
+   inset and land a dot on the exact same page coordinate as top/
+   bottom's corner dot, on the theory that two masks targeting the same
+   point would render as one. They don't, reliably: two independently
+   -masked elements each round their own sub-pixel position, so the
+   "shared" corner point rendered as two dots ~0.16mm apart -- close
+   enough to look like a crowded double-dot instead of one clean circle
+   (Sebastian: "there should be a dot exactly at the top right point,
+   but there are 2 crowded together"). Fix: only one axis may ever draw
+   at a literal shared coordinate. top/bottom keeps owning every corner
+   dot (unchanged, span 196mm, margin 2mm, spacing 4.9821mm -- sorry,
+   5.0526mm, see above). left/right goes back to its original 11mm
+   inset (i.e. simply not reaching the corner square at all) but keeps
+   the exact-tile-and-position technique instead of mask-repeat:round,
+   so its first/last dot sit exactly one regular spacing *after* the
+   corner dot rather than wherever auto-rounding happens to land: span
+   275mm, first/last dot at exactly corner+4.9821mm, 55 interior dots,
+   54 gaps of 269.0357mm/54 = 4.9821mm (same pitch as before -- only the
+   phase changed, not the rhythm). */
 .frame-dots .frame-strip-left, .frame-dots .frame-strip-right {
-  top: 7mm; bottom: 7mm;
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204.982143%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.491071%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204.982143%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.491071%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 4mm 4.982143mm;
   mask-size: 4mm 4.982143mm;
-  -webkit-mask-position: 0 -0.491071mm;
-  mask-position: 0 -0.491071mm;
+  -webkit-mask-position: 0 0.491071mm;
+  mask-position: 0 0.491071mm;
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
