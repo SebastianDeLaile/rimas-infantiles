@@ -162,6 +162,21 @@ For corner-only motifs instead, the earlier technique still applies
 (SVG with 4 mirrored corners, `mask-mode: alpha`,
 `background-color: var(--accent)`).
 
+Expanded to **15 rotating patterns** (August 2026, same day): a third
+batch of 5 (plus, square, spiral, star, arches) — Sebastian kept all 5
+this time. 75/15 = 5 cards each. Star turned out the strongest of the
+batch (5-fold symmetry survives both the 90° transpose and the ~4mm
+scale cleanly — stars, like the diamonds/dots/ticks/X's before them,
+have no "wrong way up"). Hit one new failure mode while building
+arches: mirroring x/y for the vertical tile also flips the SVG arc's
+sweep-flag (a coordinate mirror reverses clockwise↔counter-clockwise),
+which isn't obvious from the path numbers alone — missing it made the
+arcs render entirely outside the mask viewBox, so the vertical edges
+showed nothing at all (not a subtle scale problem like flower/heart —
+a hard rendering bug). Fixed by flipping the swept-flag bit for the `A`
+commands in the vertical tile. Worth checking specifically whenever a
+new tile pattern's horizontal version uses an SVG arc (`A`) command.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
