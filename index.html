@@ -93,10 +93,10 @@
 .frame-strip-left { left: 7mm; }
 .frame-strip-right { right: 7mm; }
 .frame-strip-top, .frame-strip-bottom {
-  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  -webkit-mask-repeat: round; mask-repeat: round;
 }
 .frame-strip-left, .frame-strip-right {
-  -webkit-mask-repeat: repeat-y; mask-repeat: repeat-y;
+  -webkit-mask-repeat: round; mask-repeat: round;
 }
 .frame-corner { width: 4mm; height: 4mm; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: 4mm 4mm; mask-size: 4mm 4mm; }
 .frame-corner-tl { top: 7mm; left: 7mm; }
@@ -333,20 +333,20 @@
   mask-image: none;
 }
 .frame-scallop .frame-strip-top {
-  background: radial-gradient(circle at 4mm 0, var(--accent) 4mm, transparent 4.1mm) top / 8mm 4mm repeat-x;
+  background: radial-gradient(circle at 4mm 0, var(--accent) 4mm, transparent 4.1mm) top / 8mm 4mm round;
 }
 .frame-scallop .frame-strip-bottom {
-  background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) bottom / 8mm 4mm repeat-x;
+  background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) bottom / 8mm 4mm round;
 }
 .frame-scallop .frame-strip-left, .frame-scallop .frame-strip-right {
   -webkit-mask-image: none;
   mask-image: none;
 }
 .frame-scallop .frame-strip-left {
-  background: radial-gradient(circle at 0 4mm, var(--accent) 4mm, transparent 4.1mm) left / 4mm 8mm repeat-y;
+  background: radial-gradient(circle at 0 4mm, var(--accent) 4mm, transparent 4.1mm) left / 4mm 8mm round;
 }
 .frame-scallop .frame-strip-right {
-  background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) right / 4mm 8mm repeat-y;
+  background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) right / 4mm 8mm round;
 }
 .frame-scallop .frame-corner {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22/%3E%3C/svg%3E");
