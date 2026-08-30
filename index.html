@@ -225,6 +225,87 @@
   background-color: var(--accent);
 }
 
+.frame-plus .a4-page::after {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Cpath%20d%3D%22M2.5%2C0.8%20L2.5%2C3.2%20M1.3%2C2%20L3.7%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Cpath%20d%3D%22M0.8%2C2.5%20L3.2%2C2.5%20M2%2C1.3%20L2%2C3.7%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-position: top left, bottom left, top left, top right;
+  mask-position: top left, bottom left, top left, top right;
+  -webkit-mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
+  mask-size: 5mm 4mm, 5mm 4mm, 4mm 5mm, 4mm 5mm;
+  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
+.frame-square .a4-page::after {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Crect%20x%3D%221.3%22%20y%3D%220.8%22%20width%3D%223.4%22%20height%3D%222.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Crect%20x%3D%220.8%22%20y%3D%221.3%22%20width%3D%222.4%22%20height%3D%223.4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.55%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-position: top left, bottom left, top left, top right;
+  mask-position: top left, bottom left, top left, top right;
+  -webkit-mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
+  mask-size: 6mm 4mm, 6mm 4mm, 4mm 6mm, 4mm 6mm;
+  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
+.frame-spiral .a4-page::after {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%207%204%22%3E%3Cpath%20d%3D%22M3.5%2C3%20C2.2%2C3%202.2%2C1.2%203.5%2C1.2%20C4.4%2C1.2%204.4%2C2.4%203.6%2C2.4%20C3.1%2C2.4%203.1%2C1.8%203.5%2C1.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%207%22%3E%3Cpath%20d%3D%22M1%2C3.5%20C1%2C2.2%202.8%2C2.2%202.8%2C3.5%20C2.8%2C4.4%201.6%2C4.4%201.6%2C3.6%20C1.6%2C3.1%202.2%2C3.1%202.2%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.5%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-position: top left, bottom left, top left, top right;
+  mask-position: top left, bottom left, top left, top right;
+  -webkit-mask-size: 7mm 4mm, 7mm 4mm, 4mm 7mm, 4mm 7mm;
+  mask-size: 7mm 4mm, 7mm 4mm, 4mm 7mm, 4mm 7mm;
+  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
+.frame-star .a4-page::after {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpolygon%20points%3D%224.00%2C0.40%204.38%2C1.47%205.52%2C1.51%204.62%2C2.20%204.94%2C3.29%204.00%2C2.65%203.06%2C3.29%203.38%2C2.20%202.48%2C1.51%203.62%2C1.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpolygon%20points%3D%222.00%2C2.40%202.38%2C3.47%203.52%2C3.51%202.62%2C4.20%202.94%2C5.29%202.00%2C4.65%201.06%2C5.29%201.38%2C4.20%200.48%2C3.51%201.62%2C3.47%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-position: top left, bottom left, top left, top right;
+  mask-position: top left, bottom left, top left, top right;
+  -webkit-mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
+  mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
+  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
+.frame-arches .a4-page::after {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%208%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A2%2C2%200%200%201%204%2C4%20A2%2C2%200%200%201%208%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%208%22%3E%3Cpath%20d%3D%22M4%2C0%20A2%2C2%200%200%200%204%2C4%20A2%2C2%200%200%200%204%2C8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-position: top left, bottom left, top left, top right;
+  mask-position: top left, bottom left, top left, top right;
+  -webkit-mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
+  mask-size: 8mm 4mm, 8mm 4mm, 4mm 8mm, 4mm 8mm;
+  -webkit-mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+  mask-mode: alpha;
+  background-color: var(--accent);
+}
+
 /* Themed medallion badge — only present on cards with a bespoke icon
    (set via markup, not every card has one). Sits at top-center of the
    frame like a wax seal. */
@@ -824,7 +905,7 @@ Ta-ta-ta-ta-ta</div>
   </section>
 
   <!-- 11. ESTRELLITA / TWINKLE, TWINKLE -->
-  <section class="a4-sheet frame-wave" style="--accent:#334b78" data-punch="left">
+  <section class="a4-sheet frame-plus" style="--accent:#334b78" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/estrellita.png'); mask-image:url('assets/icons/estrellita.png');"></div></div>
@@ -845,7 +926,7 @@ Me pregunto qué serás.</div>
   </section>
 
   <!-- 12. EL PATIO DE MI CASA -->
-  <section class="a4-sheet frame-dots" style="--accent:#d9b23c" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-square" style="--accent:#d9b23c" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -875,7 +956,7 @@ Chocolate, molinillo,
   </section>
 
   <!-- 13. HABÍA UNA VEZ UN BARCO CHIQUITITO -->
-  <section class="a4-sheet frame-zigzag" style="--accent:#5c7a8a" data-punch="left">
+  <section class="a4-sheet frame-spiral" style="--accent:#5c7a8a" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -906,7 +987,7 @@ volveremos a empezar.</div>
   </section>
 
   <!-- 14. A LA VÍBORA DE LA MAR -->
-  <section class="a4-sheet frame-loop" style="--accent:#1f9bab" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-star" style="--accent:#1f9bab" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -953,7 +1034,7 @@ tras, tras, tras.</div>
   </section>
 
   <!-- 15. NARANJA DULCE, LIMÓN PARTIDO -->
-  <section class="a4-sheet frame-scallop" style="--accent:#8aad3a" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-arches" style="--accent:#8aad3a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -999,7 +1080,7 @@ yo ya me voy.</div>
   </section>
 
   <!-- 16. ANTÓN PIRULERO -->
-  <section class="a4-sheet frame-crosshatch" style="--accent:#4a3d8a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-wave" style="--accent:#4a3d8a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1040,7 +1121,7 @@ una prenda.</div>
   </section>
 
   <!-- 17. HUACHÍ TORITÓ -->
-  <section class="a4-sheet frame-diamond" style="--accent:#8a2035" data-punch="left" data-country="Bolivia · Perú · Chile · Argentina">
+  <section class="a4-sheet frame-dots" style="--accent:#8a2035" data-punch="left" data-country="Bolivia · Perú · Chile · Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1089,7 +1170,7 @@ torito del corralito.</div>
   </section>
 
   <!-- 18. BUENOS DÍAS SU SEÑORÍA -->
-  <section class="a4-sheet frame-teardrop" style="--accent:#9a5fa8" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-zigzag" style="--accent:#9a5fa8" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1133,7 +1214,7 @@ mantantirulirulá.</div>
   </section>
 
   <!-- 19. MI GALLITO -->
-  <section class="a4-sheet frame-ticks" style="--accent:#2f6b4f" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-loop" style="--accent:#2f6b4f" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1171,7 +1252,7 @@ y también dice: ¡quiriquiquí!</div>
   </section>
 
   <!-- 20. LOS CINCO PATITOS -->
-  <section class="a4-sheet frame-xmarks" style="--accent:#4a90a4" data-punch="left">
+  <section class="a4-sheet frame-scallop" style="--accent:#4a90a4" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1225,7 +1306,7 @@ regresaron todos a jugar.</div>
   </section>
 
   <!-- 21. DOÑA BLANCA -->
-  <section class="a4-sheet frame-wave" style="--accent:#c07a8a" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-crosshatch" style="--accent:#c07a8a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1269,7 +1350,7 @@ Cuando alguien responde «¡de papel!»… ¡todos a correr!)</div>
   </section>
 
   <!-- 22. TORTILLITAS PARA MAMÁ -->
-  <section class="a4-sheet frame-dots" style="--accent:#d98a6a" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-diamond" style="--accent:#d98a6a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1296,7 +1377,7 @@ las quemaditas para papá.</div>
   </section>
 
   <!-- 23. ASERRÍN, ASERRÁN -->
-  <section class="a4-sheet frame-zigzag" style="--accent:#7a5230" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-teardrop" style="--accent:#7a5230" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/aserrin-aserran.png'); mask-image:url('assets/icons/aserrin-aserran.png');"></div></div>
@@ -1319,7 +1400,7 @@ en las puertas del zaguán,
   </section>
 
   <!-- 24. TENGO UNA MUÑECA -->
-  <section class="a4-sheet frame-loop" style="--accent:#4a6fa5" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-ticks" style="--accent:#4a6fa5" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/tengo-muneca.png'); mask-image:url('assets/icons/tengo-muneca.png');"></div></div>
@@ -1341,7 +1422,7 @@ que le dé jarabe con el tenedor.</div>
   </section>
 
   <!-- 25. AL CORRO DE LA PATATA -->
-  <section class="a4-sheet frame-scallop" style="--accent:#a8973a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-xmarks" style="--accent:#a8973a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1377,7 +1458,7 @@ sentadita me quedé!</div>
   </section>
 
   <!-- 26. LA ARAÑA PEQUEÑITA -->
-  <section class="a4-sheet frame-crosshatch" style="--accent:#5a4a6a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-plus" style="--accent:#5a4a6a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1423,7 +1504,7 @@ subió, subió, subió.</div>
   </section>
 
   <!-- 27. VAMOS A CONTAR MENTIRAS -->
-  <section class="a4-sheet frame-diamond" style="--accent:#e0637a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-square" style="--accent:#e0637a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1449,7 +1530,7 @@ y me cayeron avellanas, ¡tralará!</div>
   </section>
 
   <!-- 28. PINTO, PINTO, GORGORITO -->
-  <section class="a4-sheet frame-teardrop" style="--accent:#6a6fc4" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-spiral" style="--accent:#6a6fc4" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1482,7 +1563,7 @@ pim, pam, pum,
   </section>
 
   <!-- 29. LOS DIEZ PERRITOS -->
-  <section class="a4-sheet frame-ticks" style="--accent:#b8834a" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-star" style="--accent:#b8834a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1532,7 +1613,7 @@ enseguida los llamé,
   </section>
 
   <!-- 30. SAN SERENÍN -->
-  <section class="a4-sheet frame-xmarks" style="--accent:#2a7a8a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-arches" style="--accent:#2a7a8a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1936,7 +2017,7 @@ y otra para vos.</div>
   </section>
 
   <!-- 41. UN, DOS, TRES, MOMIA ES -->
-  <section class="a4-sheet frame-wave" style="--accent:#7a8a4a" data-punch="left" data-country="Chile">
+  <section class="a4-sheet frame-plus" style="--accent:#7a8a4a" data-punch="left" data-country="Chile">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1968,7 +2049,7 @@ vuelve a la línea de salida.)</div>
   </section>
 
   <!-- 42. ARRIBA JUAN -->
-  <section class="a4-sheet frame-dots" style="--accent:#d9784a" data-punch="left" data-country="Ecuador">
+  <section class="a4-sheet frame-square" style="--accent:#d9784a" data-punch="left" data-country="Ecuador">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2015,7 +2096,7 @@ ya estoy levantado.</div>
   </section>
 
   <!-- 43. UNA ROSA CAYÓ DEL CIELO -->
-  <section class="a4-sheet frame-zigzag" style="--accent:#c9698a" data-punch="left" data-country="Ecuador">
+  <section class="a4-sheet frame-spiral" style="--accent:#c9698a" data-punch="left" data-country="Ecuador">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2052,7 +2133,7 @@ se la puso en la cabeza,
   </section>
 
   <!-- 44. PAJARITO DEL CIELO -->
-  <section class="a4-sheet frame-loop" style="--accent:#6a9fc4" data-punch="left" data-country="Guatemala">
+  <section class="a4-sheet frame-star" style="--accent:#6a9fc4" data-punch="left" data-country="Guatemala">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2083,7 +2164,7 @@ ir a ver a mamá.</div>
   </section>
 
   <!-- 45. LOS ESQUELETOS -->
-  <section class="a4-sheet frame-scallop" style="--accent:#4a3a5a" data-punch="left" data-country="Costa Rica">
+  <section class="a4-sheet frame-arches" style="--accent:#4a3a5a" data-punch="left" data-country="Costa Rica">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2126,7 +2207,7 @@ se duermen otra vez!)</div>
   </section>
 
   <!-- 46. LAS MAÑANITAS -->
-  <section class="a4-sheet frame-crosshatch" style="--accent:#d4a72e" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-wave" style="--accent:#d4a72e" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/mananitas.png'); mask-image:url('assets/icons/mananitas.png');"></div></div>
@@ -2150,7 +2231,7 @@ la luna ya se metió.</div>
   </section>
 
   <!-- 47. MAMBRÚ SE FUE A LA GUERRA -->
-  <section class="a4-sheet frame-diamond" style="--accent:#6a7a8a" data-punch="left">
+  <section class="a4-sheet frame-dots" style="--accent:#6a7a8a" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2190,7 +2271,7 @@ o por la Trinidad.</div>
   </section>
 
   <!-- 48. EL SEÑOR DON GATO -->
-  <section class="a4-sheet frame-teardrop" style="--accent:#4a4a4a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-zigzag" style="--accent:#4a4a4a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2244,7 +2325,7 @@ siete vidas tiene un gato.</div>
   </section>
 
   <!-- 49. GALLINITA CIEGA -->
-  <section class="a4-sheet frame-ticks" style="--accent:#c9a468" data-punch="left" data-country="Puerto Rico">
+  <section class="a4-sheet frame-loop" style="--accent:#c9a468" data-punch="left" data-country="Puerto Rico">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2278,7 +2359,7 @@ y trata de atrapar a los demás guiándose solo por sus voces.)</div>
   </section>
 
   <!-- 50. CABEZA, HOMBROS, RODILLAS Y PIES -->
-  <section class="a4-sheet frame-xmarks" style="--accent:#2f9f8a" data-punch="left" data-country="República Dominicana">
+  <section class="a4-sheet frame-scallop" style="--accent:#2f9f8a" data-punch="left" data-country="República Dominicana">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="medallion"><div class="medallion-icon" style="-webkit-mask-image:url('assets/icons/cabeza-hombros.png'); mask-image:url('assets/icons/cabeza-hombros.png');"></div></div>
@@ -2302,7 +2383,7 @@ rodillas y pies.
   </section>
 
   <!-- 51. RATÓN QUE TE PILLA EL GATO -->
-  <section class="a4-sheet frame-wave" style="--accent:#8a7a6a" data-punch="left" data-country="Argentina">
+  <section class="a4-sheet frame-crosshatch" style="--accent:#8a7a6a" data-punch="left" data-country="Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2340,7 +2421,7 @@ y el otro de ratón. ¡A correr!)</div>
   </section>
 
   <!-- 52. LA CUCARACHA -->
-  <section class="a4-sheet frame-dots" style="--accent:#5a4530" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-diamond" style="--accent:#5a4530" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2372,7 +2453,7 @@ una patica para andar.</div>
   </section>
 
   <!-- 53. EL COQUÍ -->
-  <section class="a4-sheet frame-zigzag" style="--accent:#4fa863" data-punch="left" data-country="Puerto Rico">
+  <section class="a4-sheet frame-teardrop" style="--accent:#4fa863" data-punch="left" data-country="Puerto Rico">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2410,7 +2491,7 @@ qui, qui, qui!</div>
   </section>
 
   <!-- 54. TIN MARÍN -->
-  <section class="a4-sheet frame-loop" style="--accent:#d9553a" data-punch="left" data-country="República Dominicana">
+  <section class="a4-sheet frame-ticks" style="--accent:#d9553a" data-punch="left" data-country="República Dominicana">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2444,7 +2525,7 @@ al que fue.</div>
   </section>
 
   <!-- 55. SACO UNA MANITA -->
-  <section class="a4-sheet frame-scallop" style="--accent:#e0b23a" data-punch="left" data-country="Argentina">
+  <section class="a4-sheet frame-xmarks" style="--accent:#e0b23a" data-punch="left" data-country="Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2486,7 +2567,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 56. KHARWITACHA PASASKI -->
-  <section class="a4-sheet frame-crosshatch" style="--accent:#4e79a7" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-plus" style="--accent:#4e79a7" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2509,7 +2590,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 57. TUNUPAN SAMIRIPA -->
-  <section class="a4-sheet frame-diamond" style="--accent:#b06a3c" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-square" style="--accent:#b06a3c" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2532,7 +2613,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 58. NIÑO MANUELITO -->
-  <section class="a4-sheet frame-teardrop" style="--accent:#6c9a72" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-spiral" style="--accent:#6c9a72" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2554,7 +2635,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 59. PASARÁ, PASARÁ MI BARQUITO -->
-  <section class="a4-sheet frame-ticks" style="--accent:#8b5b9e" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-star" style="--accent:#8b5b9e" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2576,7 +2657,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 60. SURI SIKURI -->
-  <section class="a4-sheet frame-xmarks" style="--accent:#257b78" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-arches" style="--accent:#257b78" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2688,7 +2769,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 71. ALMA LLANERA -->
-  <section class="a4-sheet frame-wave" style="--accent:#5b7c48" data-punch="left" data-country="Venezuela · Los Llanos">
+  <section class="a4-sheet frame-plus" style="--accent:#5b7c48" data-punch="left" data-country="Venezuela · Los Llanos">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content"><div class="band"><h2>Alma Llanera</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
       <svg class="illus" viewBox="0 0 240 180" aria-label="A heron over the Venezuelan plains"><path d="M20 145q42-51 85-9q37-56 115-3v32H20z" fill="#90bc6f"/><circle cx="52" cy="46" r="19" fill="#f2ca5a"/><path d="M146 42q23 32 1 67l-9 37" fill="none" stroke="#f7eee0" stroke-width="8" stroke-linecap="round"/><path d="M148 42l23 8-20 7" fill="#f7eee0"/><path d="M132 91l-31 13 M145 102l30 13" stroke="#f7eee0" stroke-width="6" stroke-linecap="round"/></svg>
@@ -2697,7 +2778,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 72. LAS ESTRELLITAS -->
-  <section class="a4-sheet frame-dots" style="--accent:#b85c7a" data-punch="left" data-country="El Salvador">
+  <section class="a4-sheet frame-square" style="--accent:#b85c7a" data-punch="left" data-country="El Salvador">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content"><div class="band"><h2>Las estrellitas</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
       <img class="illus painting" src="assets/las-estrellitas.png" alt="La maestra Luna enseña a unas estrellitas en una escuela nocturna">
@@ -2706,7 +2787,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 73. SALE EL SOL -->
-  <section class="a4-sheet frame-zigzag" style="--accent:#638f3f" data-punch="left" data-country="Paraguay">
+  <section class="a4-sheet frame-spiral" style="--accent:#638f3f" data-punch="left" data-country="Paraguay">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content"><div class="band"><h2>Sale el sol</h2></div><div class="scallop"></div><div class="sheet-body">
       <img class="illus painting" src="assets/sale-el-sol.png" alt="El sol asoma tras una casa mientras sale un niño vestido de marinero">
@@ -2715,7 +2796,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 74. DOÑA ANA -->
-  <section class="a4-sheet frame-loop" style="--accent:#d16b42" data-punch="left" data-country="Nicaragua">
+  <section class="a4-sheet frame-star" style="--accent:#d16b42" data-punch="left" data-country="Nicaragua">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content"><div class="band"><h2>Doña Ana</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
       <img class="illus painting" src="assets/dona-ana.png" alt="Dos niños preguntan por Doña Ana en un jardín lleno de rosas y claveles">
@@ -2724,7 +2805,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 75. LA PÁJARA PINTA -->
-  <section class="a4-sheet frame-scallop" style="--accent:#3d82b8" data-punch="left" data-country="Honduras">
+  <section class="a4-sheet frame-arches" style="--accent:#3d82b8" data-punch="left" data-country="Honduras">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content"><div class="band"><h2>La pájara pinta</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
       <img class="illus painting" src="assets/pajara-pinta.png" alt="Una pájara de colores bajo la sombra de un limonero verde">
