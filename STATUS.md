@@ -311,6 +311,55 @@ first** (measure actual strip length ÷ tile size, look for a
 non-integer result) before redesigning corner art — the two problems
 look similar but have very different fixes.
 
+**Third issue, same day, after the round fix**: Sebastian pointed at
+Arroz con leche (zigzag) again — "doesn't look like it meets at a
+point." He was right, and this was a real geometry bug, not another
+truncation/scale issue. Traced through the exact coordinates of every
+corner piece and found: **all of them were connecting the corner box's
+own left/top edges to each other, not to where the adjacent strips
+actually begin.** The right edge of a `.frame-corner` needs to match
+the top strip's tile phase at *its own* local x=0; the bottom edge
+needs to match the left strip's phase at *its own* local y=0. Every
+corner piece for the connected-line patterns (wave, zigzag, loop,
+arches) had been eyeballed to "look plausible" near the corner without
+actually computing those two target points — they happened to look
+okay-ish at small preview size in earlier review, not because they
+were geometrically correct.
+
+zigzag needed something extra beyond just fixing the corner: the tile
+itself was defined valley-first (`M0,3.5 L3,0.5 L6,3.5` — starts and
+ends near the strip's inner edge, peak in the middle). That means
+*every* strip boundary — exactly where a corner has to attach — was a
+valley, and no amount of corner-art cleverness produces a sharp point
+out of two valleys. Flipped to peak-first (`M0,0.5 L3,3.5 L6,0.5`, and
+the matching x/y-swapped transpose for the vertical tile) so a peak
+sits at every tile boundary instead. This doesn't change the strip's
+own visual rhythm at all — still an evenly-spaced zigzag — only which
+phase happens to land at the ends, which is exactly the lever needed.
+Recomputed the actual connection coordinates from the tile paths (not
+guessed) and redrew the corner pieces for wave, zigzag, loop, and
+arches to hit them.
+
+crosshatch and every discrete-icon pattern (dots, diamond, teardrop,
+ticks, xmarks, plus, square, star) needed **no change** — verified
+they already happen to touch the right points. crosshatch's X is
+coincidentally 90°-rotation-symmetric so its own tile reused as corner
+art satisfies both connection requirements automatically (this is why
+it rendered "perfect" from the very first attempt, before any of this
+analysis — a lucky symmetry, not a designed one). Single-icon patterns
+don't have a connection-phase problem at all, since a lone dot/star/
+diamond looks identical regardless of what phase the adjacent strip
+happens to end on.
+
+**Result**: zigzag now shows a genuine sharp point at every corner,
+confirmed in both screen and print. wave/loop/arches are visibly
+better but not perfect — `mask-repeat: round`'s tile rescaling (see
+above) shifts the phase slightly from what the fixed-coordinate corner
+art assumes, and smooth curves are more sensitive to that than sharp
+zigzag vertices are. If picked up again, these three are where to
+look; the underlying connection-point math is now correct, so it'd be
+a scaling-tolerance refinement, not another geometry hunt.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
