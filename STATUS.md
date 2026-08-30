@@ -437,6 +437,38 @@ tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
 goes to `packs/` (gitignored) — copy deliverables out of there manually,
 e.g. to `~/Inbox` for Sebastian to grab.
 
+**Same-day follow-up #3, dots pattern (Cinco lobitos)**: Sebastian's
+design call, not a bug report — "better to alter the spacing between
+each circle a tiny bit than put a hard circle in each corner." The dots
+pattern (the only discrete-icon pattern still using the old fixed
+`.frame-corner` circle rather than participating in the connected-line
+corner work above) had its corner dot positioned independently of the
+strips' own tile math — close in spacing but not derived the same way,
+which is exactly the kind of special-cased mismatch worth removing on
+principle even though it measured as only ~0.5mm off.
+
+Fix: extended `.frame-dots .frame-strip-top/bottom` to the full 7mm
+corner-to-corner inset (matching where the corner piece used to sit)
+instead of stopping 11mm short, and set `.frame-dots .frame-corner {
+display: none }`. `mask-repeat: round` re-solves the tile width for the
+new, longer span on its own, so the strip's dot rhythm now runs
+uninterrupted through the corner. Measured (pixel-scanned dot centers,
+not eyeballed): 39 dots at a constant 5.03mm pitch across the full
+196mm top-edge span, first dot 9.52mm from the corner — within 0.5mm of
+where the old separate corner dot sat, with zero special-cased element.
+left/right strips deliberately stay at their original 11mm inset rather
+than also extending into the corner square: extending both axes would
+draw two independent dots a fraction of a mm apart there (checked the
+math before implementing, not just after) instead of one — top/bottom
+"owns" every corner, left/right's rhythm just picks up again after it,
+about 13% tighter on the first gap than its regular spacing, not
+perceptible in the rendered crops or the print pipeline. Only `.frame-dots`
+was touched; the other 14 patterns are unaffected. If this look is
+preferred generally, the same technique (extend one axis's strips to
+7mm, hide the shared `.frame-corner`) could apply to the other
+discrete-icon patterns (diamond, teardrop, ticks, xmarks, plus, square,
+crosshatch) too, but none of those were flagged, so left as-is.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
