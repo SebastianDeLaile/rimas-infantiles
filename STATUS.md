@@ -513,6 +513,47 @@ the matching treatment before calling it done — the two problems looked
 identical from a distance but were graded separately by inspection,
 which is how the first pass shipped only half-fixed.
 
+**Same-day correction #3, actual root cause**: still wrong, and this
+time Sebastian named the exact defect precisely — "there should be a
+dot exactly at the top right point, but there are 2 crowded together."
+That reframed the whole investigation: the previous two passes had been
+verifying *spacing/rhythm* (which was genuinely correct by then) but
+never checked whether the corner point itself was a clean single dot.
+Isolated each strip in turn (`display:none` on the other one, screenshot,
+locate the corner blob) to measure them independently rather than
+guessing from the merged render: top-strip's corner dot centered at
+(3040.0, 137.5)px, right-strip's at (3037.5, 138.0)px — only ~2.5px
+apart at 4x device scale (~0.16mm), but that was enough for the merged
+blob to measure 623px² / 29×27 against neighbouring normal dots'
+~546px² / 26×26 — a real, if small, doubling artifact, confirmed by
+directly viewing a tight crop of just that blob.
+
+Root cause: the prior design had *both* axes' masks independently
+computing a dot at the identical page coordinate, on the assumption
+that "same target coordinate" implies "renders as one dot." It doesn't
+— two separately-masked DOM elements each resolve their own mask
+position to the nearest device sub-pixel independently, so two
+identical target coordinates can still land a fraction of a pixel
+apart, and unlike a single element's own internal tiling (which is
+self-consistent by construction), there's no browser guarantee of
+cross-element sub-pixel agreement.
+
+Fix: stopped trying to make two elements agree on a shared point at
+all. top/bottom keeps exclusive ownership of every corner dot
+(unchanged). left/right reverted to its original 11mm inset (physically
+doesn't reach the 7mm corner square anymore) but kept the exact-tile +
+`mask-position` technique — instead of landing a dot *on* the corner,
+its first/last dot now lands exactly one regular pitch (4.9821mm) past
+it. Re-measured all 4 corners after: 550–562px² / 26–27px, matching
+normal dots to within rendering noise (down from 623px² / 29×27 at TR
+before). **Lesson, layered on top of the previous one**: verifying
+"the rhythm is even" is not the same check as "the corner is a single
+dot" — they can both pass or fail independently, and only checking one
+is how two fixes in a row still missed the actual complaint. When two
+independent elements need to agree on a boundary, don't rely on
+"target the same coordinate" — one element should own the boundary
+outright and the other should start clear of it.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
