@@ -61,7 +61,29 @@
    repeating CSS mask tile per edge, accent-colored via
    background-color so one set of SVGs works for every card's accent
    color. Base rule below is the wave pattern, used whenever no
-   .frame-* class is present — a safety net, not meant to be relied on. */
+   .frame-* class is present — a safety net, not meant to be relied on.
+
+   Each edge's tiles start counting from their own corner (top/bottom
+   from the left, left/right from the top), so two independently-tiled
+   edges essentially never land on a matching phase where they meet —
+   the patterns collide/overlap messily at all 4 corners. Rather than
+   solving that per-pattern (15x the work, and no tile size evenly
+   divides both the 196mm and 283mm edges for every pattern anyway),
+   .a4-page::before is a single corner-dot layer, unconditional on any
+   .frame-* class, painted on top via z-index so it works for all 15
+   patterns without touching their individual rules. */
+.a4-page::before {
+  content: "";
+  position: absolute;
+  top: 7mm; bottom: 7mm; left: 7mm; right: 7mm;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    radial-gradient(circle at 0 0, var(--accent) 2.3mm, transparent 2.4mm) no-repeat,
+    radial-gradient(circle at 100% 0, var(--accent) 2.3mm, transparent 2.4mm) no-repeat,
+    radial-gradient(circle at 0 100%, var(--accent) 2.3mm, transparent 2.4mm) no-repeat,
+    radial-gradient(circle at 100% 100%, var(--accent) 2.3mm, transparent 2.4mm) no-repeat;
+}
 .a4-page::after {
   content: "";
   position: absolute;
