@@ -360,6 +360,56 @@ zigzag vertices are. If picked up again, these three are where to
 look; the underlying connection-point math is now correct, so it'd be
 a scaling-tolerance refinement, not another geometry hunt.
 
+**Follow-up, same day**: Sebastian caught that the above pass only
+verified TL/TR closely — "some still look weird gotta check all 4
+corners" — and BL/BR of zigzag, wave, loop, and arches were still
+broken. Cropped 2×2 corner grids (all 4 corners, zoomed) confirmed:
+zigzag BL/BR showed a self-crossing spike, wave/loop BL had a small
+bump, arches BL had a flat stub and arches BR was a straight diagonal
+line instead of a curve.
+
+Root cause, worked out from the actual page-coordinate math rather
+than guessed: the strategy used for TL/TR — route the corner's middle
+vertex through the corner box's *outer* corner (the physical page
+corner) — only produces a clean shape when the two strip-junction
+points sit on roughly opposite sides of the box. For TL/TR that's true
+by construction. For BL/BR it isn't: because the bottom-strip and
+right-strip anchor their DOM box from the opposite CSS edge (`bottom`/
+`right` instead of `top`/`left`), the *same* mask tile's phase value
+lands on the physically opposite side (outer vs. inner) depending on
+which strip it's used on. Concretely, zigzag's BL junctions both land
+near the box's top edge (not on opposite edges), so routing through
+the far bottom-left outer corner draws two long strokes that nearly
+retrace each other — the whisker/X artifact. Recomputed each of BL/BR's
+two junction points directly from the real page-coordinate mapping
+(not mirrored or assumed) and replaced the middle vertex with one near
+the actual junctions instead of the box's outer corner. wave/loop's BL
+"nose" got the same diagnosis in curve form (the inner-corner control
+point that suits TL over-pulls BL) — tuned the control point closer to
+the chord; this softens it but doesn't fully eliminate the kink (a
+proper fix needs a tangent-matched cubic per corner, not attempted).
+arches BL was under-amplitude (1mm bulge vs. the strip's actual 2mm
+radius, reading as a flat stub) — corrected to match. arches BR's two
+junctions turned out to be genuinely diagonal-opposite corners of the
+box, and the old control point sat exactly on their midpoint, which
+degenerates a quadratic curve into a dead-straight line; moved the
+control point to the box's true outer corner so it reads as a rounded
+turn.
+
+Verified via cropped 2×2 corner grids for all four patterns, then
+independently re-verified through the actual print pipeline
+(`generate_print_pack.js` → `pdftoppm`, both front and back/translation
+pages) rather than trusting the on-screen render alone. Residual: zigzag
+BR has a sub-millimeter artifact at extreme zoom (invisible at normal
+viewing/print scale — the two junction points there are only ~0.7mm
+apart, close to the stroke width itself); wave/loop BL keep a small but
+real kink. Lesson for next time a corner pattern is added: never assume
+a corner is symmetric with its TL/TR sibling — derive each of the 4
+corners' junction points independently from the real strip/box
+page-coordinate offsets, because the top/left-vs-bottom/right anchoring
+asymmetry silently flips which physical side a given tile-phase value
+lands on.
+
 `scripts/generate_print_pack.js` (new, needs `npm install` once for
 `playwright-core`) turns the ad-hoc pack-building process into a reusable
 tool: pass rhyme titles (substring-matched against each card's `<h2>`) or
