@@ -138,18 +138,28 @@
    inset, same as the corner piece used elsewhere) instead of stopping
    short at 11mm -- a ring of identical, evenly-spaced dots reads better
    than a rhythm broken by a separately-sized "hard" dot bolted on at
-   each corner. mask-repeat:round re-solves the tile width per side so
-   the spacing change this introduces is only ever a fraction of a mm.
-   left/right stay at the original 11mm inset and simply pick the
-   rhythm back up below/above where top/bottom leave off -- extending
-   both axes into the same 4mm corner square would draw two independent
-   dots a fraction of a mm apart there instead of one. */
+   each corner. left/right stay at the original 11mm inset and simply
+   pick the rhythm back up below/above where top/bottom leave off --
+   extending both axes into the same 4mm corner square would draw two
+   independent dots a fraction of a mm apart there instead of one.
+   The corner-most dot on top/bottom must land exactly on left/right's
+   fixed cross-axis position (9mm from the edge, i.e. 2mm in from the
+   7mm-inset strip start) or it reads as visibly off-grid against the
+   column above it -- mask-repeat:round doesn't guarantee that (it only
+   guarantees a whole tile count, not a specific phase), so this uses an
+   explicit tile width + mask-position instead: 196mm span, dots 2mm
+   from each end, 38 gaps of 192mm/38 = 5.0526mm (vs. the original 5mm
+   -- the "alter the spacing a tiny bit" this was asked for). */
 .frame-dots .frame-strip-top, .frame-dots .frame-strip-bottom {
   left: 7mm; right: 7mm;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205%204%22%3E%3Ccircle%20cx%3D%222.5%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-size: 5mm 4mm;
-  mask-size: 5mm 4mm;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205.052632%204%22%3E%3Ccircle%20cx%3D%222.526316%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205.052632%204%22%3E%3Ccircle%20cx%3D%222.526316%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 5.052632mm 4mm;
+  mask-size: 5.052632mm 4mm;
+  -webkit-mask-position: -0.526316mm 0;
+  mask-position: -0.526316mm 0;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
 }
 .frame-dots .frame-strip-left, .frame-dots .frame-strip-right {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%205%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.5%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
