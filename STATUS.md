@@ -708,6 +708,59 @@ Wave, loop, arches, scallop, and crosshatch still have this same defect
 and haven't been fixed yet — next up if Sebastian wants the rest done
 the same way.
 
+**Same-day correction #6**: the previous fix's added "rivet" circles at
+each junction turned out to only look fine on tl (and, by luck, tr) —
+on bl/br, whose two junctions sit only ~0.7mm apart, a second same-size
+circle at each one visibly doubled up into a swollen knot (Sebastian:
+"only the top left corner looks ok"). Worked out, analytically, each
+strip's actual tangent direction at its junction point from its own
+tile path (not by eyeballing): tl/tr's two junctions are collinear with
+the straight line between them, so a direct 2-point diagonal was
+already the right shape once the redundant circles were removed. bl's
+two junctions are collinear *with each other* (~45deg) but not with the
+straight line between them (~8deg) — the direct line cut across both
+strips' natural direction, reading as a flat kink. Fixed by routing bl
+through a bend point matching that shared 45deg tangent instead.
+
+br's small bump turned out to be a different animal entirely, and two
+attempts to path around it made things worse before landing on the
+right diagnosis. First tried extending br's line all the way to the
+true page-corner apex (matching the old pre-Round-2 3-point style) —
+produced an ugly stray spike, because br's own arm lengths are just too
+short (~0.7mm apart) for a wide V to look proportionate. Backed off to
+a modest bend at increasing distances (0.8mm, 1.2mm, 2.0mm) — the notch
+shrank, then grew again at 2.0mm, never disappearing. That inconsistency
+was the tell: re-ran the same tangent analysis used for bl/tl/tr and
+found br's direct line was *already* tangent-correct (both strips'
+tangents point straight along the short line between the two
+junctions) — so no path shape was ever going to fix it, because the
+path wasn't the problem. The visible bump is each strip's own native
+round line-cap (r=0.35mm, entirely outside this corner piece's SVG)
+landing close enough to its neighbor's cap to visually merge — a
+property of where 188mm/31 tiles and 275mm/46 tiles happen to phase-
+land relative to each other at that one corner, confirmed present in
+the original pre-session shipped version too (same 0.7mm gap), not
+something this round's changes introduced. Fixing it for real means
+changing one of the two tile counts, which reshapes the whole pattern's
+spacing everywhere, not just at br — left for Sebastian's call. Reverted
+br to the plain, already-correct 2-point line.
+
+**Lesson**: had been assuming a still-broken corner meant a still-wrong
+path shape and kept reaching for path tweaks — but the right move when
+a tweak makes things worse or the result won't stabilize (shrinks then
+regrows) is to stop adjusting and re-derive from the underlying geometry
+what "correct" actually looks like for *that specific* junction, because
+two corners that look like the same bug can have entirely different
+causes (angle mismatch at bl vs. cap proximity at br) needing entirely
+different fixes, or in br's case, no path fix at all.
+
+Also: this whole round was fixed locally across several iterations
+before ever being pushed, so Sebastian's "still only top left looks ok"
+that prompted it was actually about the *previous* deployed commit, not
+the new one — a reminder to push promptly after a fix that's being
+actively reviewed, since "still broken" from the other end can just
+mean "hasn't seen the fix yet."
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
