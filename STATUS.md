@@ -809,6 +809,71 @@ symmetry is still only reachable via the bigger corner redesign
 in the previous entry) — this was the bounded version of that
 tradeoff, not a substitute for it.
 
+**Same-day correction #8, the actual corner redesign, plus a heads-up
+that scallop needs the same treatment**: Sebastian: "yeah lets do the
+corner art" (then, mid-turn: "i suspect we may need this for a few e.g.
+pin pon also" — checked, Pin Pon uses `frame-scallop`, one of the 5
+other patterns already known to share this defect from the original
+survey). Three real attempts before landing on a working design, each
+one teaching something the next one needed:
+
+- **v1** (8mm corner square, entry point at the strip's own exact tile
+  phase — 0.5-1mm from its edge, unchanged): connected cleanly, but
+  read as a right-angle bracket, not a diagonal V. Cause: doubling the
+  box while keeping the SAME small offset halves the effective angle
+  (arctan(offset/box) — same ratio would've preserved it, but the
+  offset didn't scale). A 4mm box had tolerated this shallow ~7deg
+  angle without looking broken; an 8mm one made a long, obviously flat
+  line before the turn.
+- **v2** (6mm square, entry point at the FAR edge of the strip's own
+  4mm band instead of its exact phase, to force a steeper ~34deg
+  angle): angle looked right, corner motif looked like a proper V on
+  its own — but it no longer touched the strip's actual rendered
+  content at all, since "far edge of the band" isn't a real point on
+  the strip's path, just a plausible-sounding one. Produced a visible
+  gap at all 4 corners.
+- **v3** (4.5mm square, entry point back at a REAL point on the strip's
+  path — but the deep/amplitude point, 3.5mm, instead of the shallow
+  0.5mm one): connects cleanly (real point) AND at a good ~38deg angle
+  (deep point, small box). The missing piece: which literal point in
+  the tile's "M...L...L" is "first" (and therefore lands at the
+  tile-repeat boundary) is entirely our own choice, not fixed by the
+  pattern's shape — re-pointed top/left strips to lead with the deep
+  point. But top/bottom (and left/right) were still one shared CSS rule
+  each, and bottom/right's local coordinate origin is the INNER side
+  (opposite of top/left's OUTER side — the same "coordinate flip" the
+  original corner-path comment already flagged) — so the SAME
+  redefinition that fixed top/left would have re-broken bottom/right's
+  angle. Split each pair into 2 independent rules so bottom/right could
+  keep their original (now correctly-understood-as-already-right)
+  phase while top/left got the new one. Verified with a script, not by
+  hand, this time: all 8 resulting corner angles came out at exactly
+  37.9deg. Rendered all 4 corners and they're now genuinely
+  interchangeable — same diagonal, same connection quality, matching
+  the pattern's own ~40deg leg angle. Confirmed via pixel-blob
+  connectivity (all single-component) and direct visual crops, on two
+  cards and in the live browser.
+
+One false-positive during verification worth recording: the automated
+connectivity check flagged tr as a 3.5mm gap on a card with no
+medallion, which looked like a real, size-independent defect — but a
+tighter crop excluding the area showed a single connected component.
+The wider crop had been catching the title band's own rounded-corner
+decoration (present on every card, same accent color), which the
+algorithm treated as a second "border" component purely because it's
+the same color and roughly nearby. **Lesson**: an automated same-color
+connectivity check is only as trustworthy as its crop bounds — always
+sanity-check a flagged "gap" against a direct visual crop before
+trusting the number, especially when the flagged distance doesn't
+match the failure mode being tested for.
+
+Wave, loop, arches, and crosshatch (plus scallop, now confirmed needed
+via Pin Pon) still need this same corner-art treatment — the geometry
+will differ per pattern's motif shape, but the method (find each real
+tile-phase point closest to a good connecting angle, verify
+programmatically, split shared strip rules if their coordinate origins
+flip) should transfer directly.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional

@@ -195,140 +195,136 @@
 .frame-dots .frame-corner-tr, .frame-dots .frame-corner-bl, .frame-dots .frame-corner-br {
   transform: none;
 }
-/* top/bottom strips span 188mm (left:11mm/right:11mm base inset).
-   Nominal tile width is 6mm, but the base .frame-strip-top/-bottom rule's
-   mask-repeat:round doesn't guarantee WHERE the pattern's phase starts --
-   it only guarantees a whole number of (possibly rescaled) tiles fit, so
-   the corner pieces below (hand-computed assuming the first/last tile
-   sits flush at the strip's own edge) could miss by up to half a tile.
-   That's the corner-connection gap Sebastian spotted on zigzag ("arroz
-   con leche") and confirmed present on 5 other stroke-based patterns
-   too. Fix: explicit mask-size + mask-position:0 0 + repeat instead of
-   round, so the first tile is flush at local x=0 (page 11mm) by
-   definition, not by the browser's guess -- 188mm / 31 tiles =
-   6.064516mm (closest whole tile count to the nominal 6mm). */
-.frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C1%20L3%2C3.5%20L6%2C1%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C1%20L3%2C3.5%20L6%2C1%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-size: 6.064516mm 4mm;
-  mask-size: 6.064516mm 4mm;
+/* v2 corner design: a dedicated 8x8mm corner motif that reaches the true
+   page corner itself, decoupled from the strips' exact tile phase --
+   replaces the earlier approach (strip's own tile rhythm computed to
+   land near a small 4.5mm corner square) after repeated attempts there
+   hit a hard structural ceiling: on a non-square page, one repeating
+   phase meeting 4 different CSS anchor orientations unavoidably puts
+   some corners' two strip-ends far apart (~4.95mm) and others close
+   together (~0.7mm) -- not a bug, worked out analytically, and the only
+   fix within that approach (offset=S/2) would have flattened the whole
+   zigzag's trough to nothing just to fix 4 small joints (Sebastian:
+   "this pattern should be totally symmetrical").
+
+   This version sidesteps that entirely: strips now stop 15mm from the
+   edge (not 11mm), leaving an 8mm corner square (double the old 4mm)
+   for a hand-authored motif that runs from each strip's actual
+   endpoint through the TRUE page corner to the other strip's endpoint
+   -- both segments come out around 8mm long regardless of which corner,
+   vs. the old design's segments as short as 0.7mm apart at bl/br, which
+   is what caused both the "cap overlap" blobs and the hook/notch
+   artifacts on cramped short segments. With the corner now owning its
+   own reach to the true corner, the strips' boundary phase no longer
+   needs any special-casing -- reverted to the original clean 0.5mm
+   offset (was bumped to 1.0mm for the previous "tiny flattening"
+   compromise, no longer needed). */
+/* v3 corner design: 4.5mm corner square, strips stop at 11.5mm inset.
+   v2 (6mm square, corner reaching the strip's far band-edge instead of
+   its exact tile phase) fixed v1's shallow-angle "bracket" look but
+   broke the connection outright -- the corner's line no longer touched
+   the strip's actual content at all, since it wasn't aiming at a real
+   point on the strip's path, just a plausible-looking one.
+
+   Root fix: each strip's boundary phase (which point in its "M...L...L"
+   tile lands at the tile-repeat boundary) was never something the
+   corner path had to accept as fixed -- it's just which point in the
+   SVG path is written first, entirely our choice. Re-pointed every
+   strip to put its DEEPEST point (amplitude 3.5mm, not the shallow
+   0.5mm one) at that boundary instead, since a deep point gives a much
+   steeper, more natural-looking connecting angle to the true corner
+   than a shallow one at the same box size (worked out precisely: with
+   a 4.5mm box, connecting to the true corner from the deep point is
+   ~38deg -- close to the pattern's own ~40deg leg angle -- vs. ~7deg
+   from the shallow point, which reads as a flat line, not a zigzag leg).
+
+   That alone isn't quite enough, though: top/left strips' "local 0" is
+   the outer/frame-facing side of their own band, so redefining them to
+   start at the deep point does what's described above -- but
+   bottom/right strips' "local 0" is the INNER/content-facing side (the
+   coordinate flip noted in the corner-path comment below), so the SAME
+   redefinition on them would land the corner-facing junction on the
+   SHALLOW point instead, recreating the flat-angle problem exactly
+   where top/left just fixed it. Top/bottom (and left/right) used to
+   share one CSS rule each; split into 4 independent rules so
+   bottom/right can each keep their ORIGINAL shallow-point-first phase
+   (which is, on their flipped geometry, the equivalent of top/left's
+   redefinition) while top/left get the new deep-point-first one.
+   Verified programmatically, not by hand: all 8 resulting corner-leg
+   angles come out at exactly the same ~37.9deg. */
+.frame-zigzag .frame-strip-top {
+  left: 11.5mm; right: 11.5mm; top: 7mm;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L3%2C0.5%20L6%2C3.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 6.032258mm 4mm;
+  mask-size: 6.032258mm 4mm;
   -webkit-mask-position: 0 0;
   mask-position: 0 0;
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
-/* left/right span 275mm (top:11mm/bottom:11mm base inset), same fix:
-   275mm / 46 tiles = 5.978261mm (closest whole tile count to nominal 6mm). */
-.frame-zigzag .frame-strip-left, .frame-zigzag .frame-strip-right {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C0%20L3.5%2C3%20L1%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M1%2C0%20L3.5%2C3%20L1%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-size: 4mm 5.978261mm;
-  mask-size: 4mm 5.978261mm;
+/* bottom keeps the ORIGINAL shallow-point-first phase -- on bottom's
+   flipped local axis that's the one that lands the corner-facing
+   junction on the deep point (see comment above .frame-strip-top). */
+.frame-zigzag .frame-strip-bottom {
+  left: 11.5mm; right: 11.5mm; bottom: 7mm;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 6.032258mm 4mm;
+  mask-size: 6.032258mm 4mm;
   -webkit-mask-position: 0 0;
   mask-position: 0 0;
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
-/* zigzag corners are computed explicitly per corner, not mirrored from
-   one asset — CSS scaleX/scaleY/scale(-1,-1) don't correctly handle the
-   outer/inner coordinate flip that happens for the bottom and right
-   strips (their local 0 is the content-facing/inner side, not the
-   frame-facing/outer side like top and left), so a mirrored path
-   connects to the wrong phase on one of its two ends. Each of the 4
-   paths below was computed from the actual tile phase at that specific
-   corner's two adjacent strip-ends, not derived by transforming another
-   corner's path.
-
-   Switching the strips above to explicit tile math (previous commit)
-   didn't close the corner gap Sebastian found -- it stayed exactly
-   0.3175mm at TL before and after. Root cause turned out to be
-   different: the connecting endpoint sits exactly ON the mask SVG's own
-   viewBox edge on both sides of the joint (local x=4 for the corner
-   piece, local x=0 for the strip), and an SVG's default overflow:hidden
-   clips off the round line-cap's natural overshoot right at that edge --
-   so neither piece can ever bleed into the other's territory, no matter
-   how exact the underlying coordinate math is. Two lines meeting only at
-   a shared point (not overlapping along a shared edge) can't be
-   "trapped" by simply extending one line past the joint either: the two
-   paths point in different directions, so overshooting the corner's own
-   line just makes it diverge from the strip's line instead of covering
-   for it.
-
-   Fix: enlarge each corner piece's canvas by 0.5mm on the two sides
-   that face its strips (mask-size 4.5x4.5mm instead of 4x4, position
-   unchanged so the true page-corner point doesn't move) so there's
-   headroom for the stroke's own round-cap overshoot to render instead
-   of being edge-clipped. Also drops the apex-hitting middle vertex on
-   tl/tr (a direct 2-point diagonal instead, matching bl/br, which got
-   this same simplification in the previous zigzag fix after the same
-   vertex style produced a hook/notch artifact there).
-
-   First version of this fix (still in the repo's history) also added a
-   filled circle at each of the 2 junction points, reasoning that an
-   explicit "rivet" would reliably bridge either side's shortfall. That
-   was redundant: with the clipping gone, the stroke's own round cap
-   already provides the identical bulge (r = stroke-width/2 = 0.35mm) at
-   that exact point for free -- removed (Sebastian: "only the top left
-   corner looks ok").
-
-   Why the 4 corners don't (and structurally can't fully) match: the
-   page isn't square, and each strip's mask always lands its corner-
-   facing point at a FIXED tile-relative offset (previously 0.5mm,
-   apex at 3.5mm -- see the strip rules above) from its own edge.
-   Depending on which way a corner is CSS-anchored (top/left vs
-   bottom/right), that fixed point ends up either far from the true
-   corner (worked out geometrically: distance = sqrt((S-off)^2 +
-   (S-off)^2) for the "both far" case) or right up against it (distance
-   = sqrt(off^2 + off^2) for "both near") -- with the other two corners
-   landing in between. That's why tl's two junctions sat ~4.95mm apart
-   while br's sat only ~0.7mm apart: not a bug, a direct consequence of
-   one repeating phase meeting a non-square page at 4 different anchor
-   orientations. True equal-distance symmetry only happens at
-   offset = S/2 exactly, which would also flatten the zigzag's trough
-   to nothing (Sebastian: "this pattern should be totally symmetrical").
-
-   Sebastian's compromise: "a tiny flattening, happy for angle to be
-   slightly different vert vs horizontal if it's small." Moved the
-   strip path's boundary offset from 0.5mm to 1.0mm (apex unchanged at
-   3.5mm) -- roughly doubles br's separation (0.7mm -> 1.4mm, enough
-   that its line-cap "knot" reads as a soft thickening rather than a
-   distinct blob) while only shaving ~17% off the trough depth
-   (3.0mm -> 2.5mm), barely visible along the rest of the border. tl/tr
-   stayed exactly as clean as before (their two junctions are still
-   near-collinear with the straight line between them at this new
-   offset too). bl/br still show a small flat spot up close -- tried
-   bending both through a middle vertex (the technique that cleanly
-   fixed bl at the old offset) at several distances; it shrank the
-   flat spot but replaced it with a small step/notch instead of
-   removing it outright, so reverted both to the plain 2-point line
-   (no artifact introduced, smallest defect of the options tried).
-   Full identical-corner symmetry remains only achievable via the
-   bigger corner redesign described above (decoupling the corner motif
-   from the strip's exact phase) -- this was the bounded, "tiny"
-   version of that trade-off instead. */
+/* top/bottom span 187mm (11.5mm inset each side): 187/31 = 6.032258mm.
+   left/right span 274mm (11.5mm inset each side): 274/46 = 5.956522mm
+   (closest whole tile counts to nominal 6mm). */
+.frame-zigzag .frame-strip-left {
+  top: 11.5mm; bottom: 11.5mm; left: 7mm;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M3.5%2C0%20L0.5%2C3%20L3.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 5.956522mm;
+  mask-size: 4mm 5.956522mm;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+.frame-zigzag .frame-strip-right {
+  top: 11.5mm; bottom: 11.5mm; right: 7mm;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C0%20L3.5%2C3%20L0.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C0%20L3.5%2C3%20L0.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-size: 4mm 5.956522mm;
+  mask-size: 4mm 5.956522mm;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
 .frame-zigzag .frame-corner {
   width: 4.5mm; height: 4.5mm;
   -webkit-mask-size: 4.5mm 4.5mm;
   mask-size: 4.5mm 4.5mm;
 }
 .frame-zigzag .frame-corner-tl {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C1%20L1%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C1%20L1%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C3.5%20L0%2C0%20L3.5%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C3.5%20L0%2C0%20L3.5%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-zigzag .frame-corner-tr {
   transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C1%20L1.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C1%20L1.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L4.5%2C0%20L1%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L4.5%2C0%20L1%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-zigzag .frame-corner-bl {
   transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C1.5%20L1%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C1.5%20L1%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C1%20L0%2C4.5%20L3.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C1%20L0%2C4.5%20L3.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-zigzag .frame-corner-br {
   transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C1.5%20L1.5%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C1.5%20L1.5%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C1%20L4.5%2C4.5%20L1%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C1%20L4.5%2C4.5%20L1%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-loop .frame-strip-top, .frame-loop .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
