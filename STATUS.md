@@ -622,6 +622,92 @@ happened to name yet — check all 4 corners on both axes as the default
 verification shape for this pattern, not just whichever one a report
 pointed at.
 
+**Zigzag corner-connection gaps, plus a same-day survey of the other
+13 border patterns**: after all the dots corrections above, Sebastian
+pushed back on the whole line of fixing: "why is the border different
+between pages at all? the english/spanish borders should be identical."
+Correct challenge — front and back run through the identical
+`addFrameStrips()` call and the identical `.frame-*` class, and
+re-verifying (live browser at 1x/2x/3x device-pixel ratio, 400dpi
+print, two different cards) found them pixel-identical every time.
+Asked to look at zigzag ("arroz con leche") next instead of re-chasing
+sub-pixel dots numbers.
+
+That paid off immediately: zigzag's corners had *real*, plainly visible
+gaps (a broken line, not a sub-pixel offset) — connected-component
+analysis on a clean (no-medallion) zigzag card found TL with a genuine
+~0.3mm gap and TR fragmented into 4 disconnected pieces. Surveying all
+15 border patterns the same way (one clean card per pattern, corner
+crops + connected-component counts) found the same defect, in varying
+severity, on 6 of them — every pattern that draws a *continuous*
+connecting line through the corner (zigzag, wave, loop, arches,
+scallop, crosshatch) has it; the other 9 patterns are built from
+separate self-contained shapes per tile (dots, ticks, x-marks,
+plus-marks, squares, diamonds, stars, spirals, teardrops) so there's no
+line to break — spot-checked several of those corners directly and
+they're clean. Across all 6 affected patterns, BL was consistently the
+cleanest corner and TR consistently the worst, same pattern zigzag
+showed alone.
+
+Root cause (confirmed by first trying the "obvious" fix and watching it
+do nothing): the strips still use the base rule's `mask-repeat: round`,
+which only guarantees a whole number of tiles fit — not where the
+pattern's phase starts — so the hand-drawn corner pieces (which assume
+each strip's first/last tile sits flush at the strip's own edge) can
+miss by an amount `round` doesn't bound. Switched zigzag's 4 strips to
+the same explicit `mask-size` + `mask-position:0 0` + `repeat` technique
+used for dots (188mm/31 tiles = 6.064516mm top/bottom; 275mm/46 tiles =
+5.978261mm left/right) — and re-measured: **the TL gap was exactly
+0.3175mm, before and after, unchanged to four decimal places.** The
+strip's phase wasn't the problem after all.
+
+Actual cause: the connecting endpoint sits exactly *on* the mask SVG's
+own viewBox edge on both sides of every joint (local x=4 for the corner
+piece, local x=0 for the strip) — and an SVG's default
+`overflow:hidden` clips off the stroke's round line-cap right at that
+edge. Neither piece can ever bleed into the other's space, no matter
+how exactly the coordinate math lines up, because the natural cap
+overshoot that would normally paper over small rendering variance is
+clipped away by construction. And unlike the dots fix, simply
+overshooting one line past the joint doesn't work here either: the
+corner's line and the strip's line meet at an *angle*, not along a
+shared edge, so extending either one independently just makes it
+diverge from the other instead of covering for it — "trapping" only
+works when two shapes share a boundary line, not when they only touch
+at a point.
+
+Fix: enlarged each corner piece's canvas by 0.5mm on the 2 sides facing
+its strips (`mask-size: 4.5mm 4.5mm` instead of 4x4, position
+unchanged so the true page-corner point doesn't move) so there's room
+for the join to render without edge-clipping, and added a small filled
+circle (r=0.35mm) at each of the corner's 2 strip-junction points — a
+"rivet" wide enough to visually bridge whichever side's line falls
+short, regardless of which one it is, without needing to know the
+exact residual in advance. Also dropped the apex-hitting middle vertex
+on tl/tr, matching bl/br's already-fixed direct 2-point diagonal (the
+same hook/notch problem that motivated bl/br's earlier simplification
+was still live on tl/tr — the "look first" survey caught it, since
+nobody had gone back to apply that fix everywhere it was needed).
+Re-verified on 2 different zigzag cards (one with a medallion, to check
+for collisions), print PDF and live preview: all 4 corners now render
+as a single connected component (the one remaining "gap" the algorithm
+still reports at TR is a sharply-angled antialiased touch-point that
+merges at a looser color threshold and is visually seamless in the
+crop — a measurement artifact, not a real one). **Lesson**: when a fix
+that should work does nothing at all (not "slightly better," literally
+identical to 4 decimal places), that's a strong signal the theory of
+the bug is wrong, not that the fix needs tuning — go find the actual
+mechanism instead of adjusting the same knob harder. And a technique
+that fixed one bug (dots' single-point coincidence problem) doesn't
+automatically transfer to a bug that looks similar but has a different
+shape (two lines meeting at an angle vs. two shapes needing to occupy
+the same point) — check what's actually being asked of the new case
+before reapplying an old fix.
+
+Wave, loop, arches, scallop, and crosshatch still have this same defect
+and haven't been fixed yet — next up if Sebastian wants the rest done
+the same way.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional

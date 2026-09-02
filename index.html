@@ -195,17 +195,39 @@
 .frame-dots .frame-corner-tr, .frame-dots .frame-corner-bl, .frame-dots .frame-corner-br {
   transform: none;
 }
+/* top/bottom strips span 188mm (left:11mm/right:11mm base inset).
+   Nominal tile width is 6mm, but the base .frame-strip-top/-bottom rule's
+   mask-repeat:round doesn't guarantee WHERE the pattern's phase starts --
+   it only guarantees a whole number of (possibly rescaled) tiles fit, so
+   the corner pieces below (hand-computed assuming the first/last tile
+   sits flush at the strip's own edge) could miss by up to half a tile.
+   That's the corner-connection gap Sebastian spotted on zigzag ("arroz
+   con leche") and confirmed present on 5 other stroke-based patterns
+   too. Fix: explicit mask-size + mask-position:0 0 + repeat instead of
+   round, so the first tile is flush at local x=0 (page 11mm) by
+   definition, not by the browser's guess -- 188mm / 31 tiles =
+   6.064516mm (closest whole tile count to the nominal 6mm). */
 .frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-size: 6mm 4mm;
-  mask-size: 6mm 4mm;
+  -webkit-mask-size: 6.064516mm 4mm;
+  mask-size: 6.064516mm 4mm;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
 }
+/* left/right span 275mm (top:11mm/bottom:11mm base inset), same fix:
+   275mm / 46 tiles = 5.978261mm (closest whole tile count to nominal 6mm). */
 .frame-zigzag .frame-strip-left, .frame-zigzag .frame-strip-right {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C0%20L3.5%2C3%20L0.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%206%22%3E%3Cpath%20d%3D%22M0.5%2C0%20L3.5%2C3%20L0.5%2C6%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  -webkit-mask-size: 4mm 6mm;
-  mask-size: 4mm 6mm;
+  -webkit-mask-size: 4mm 5.978261mm;
+  mask-size: 4mm 5.978261mm;
+  -webkit-mask-position: 0 0;
+  mask-position: 0 0;
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
 }
 /* zigzag corners are computed explicitly per corner, not mirrored from
    one asset — CSS scaleX/scaleY/scale(-1,-1) don't correctly handle the
@@ -215,25 +237,57 @@
    connects to the wrong phase on one of its two ends. Each of the 4
    paths below was computed from the actual tile phase at that specific
    corner's two adjacent strip-ends, not derived by transforming another
-   corner's path. */
+   corner's path.
+
+   Switching the strips above to explicit tile math (previous commit)
+   didn't close the corner gap Sebastian found -- it stayed exactly
+   0.3175mm at TL before and after. Root cause turned out to be
+   different: the connecting endpoint sits exactly ON the mask SVG's own
+   viewBox edge on both sides of the joint (local x=4 for the corner
+   piece, local x=0 for the strip), and an SVG's default overflow:hidden
+   clips off the round line-cap's natural overshoot right at that edge --
+   so neither piece can ever bleed into the other's territory, no matter
+   how exact the underlying coordinate math is. Two lines meeting only at
+   a shared point (not overlapping along a shared edge) can't be
+   "trapped" by simply extending one line past the joint either: the two
+   paths point in different directions, so overshooting the corner's own
+   line just makes it diverge from the strip's line instead of covering
+   for it.
+
+   Fix: enlarge each corner piece's canvas by 0.5mm on the two sides
+   that face its strips (mask-size 4.5x4.5mm instead of 4x4, position
+   unchanged so the true page-corner point doesn't move) so there's
+   headroom for the join to render without edge-clipping, and add a
+   small filled circle at each of the 2 strip-junction points -- a
+   "rivet" wide enough (r=0.35mm) to visually bridge whichever side's
+   line falls short, regardless of which one it is. Also drops the
+   apex-hitting middle vertex on tl/tr (a direct 2-point diagonal
+   instead, matching bl/br, which got this same simplification in the
+   previous zigzag fix after the same vertex style produced a hook/notch
+   artifact there). */
+.frame-zigzag .frame-corner {
+  width: 4.5mm; height: 4.5mm;
+  -webkit-mask-size: 4.5mm 4.5mm;
+  mask-size: 4.5mm 4.5mm;
+}
 .frame-zigzag .frame-corner-tl {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M4%2C0.5%20L0%2C0%20L0.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M4%2C0.5%20L0%2C0%20L0.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C0.5%20L0.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%224%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%224%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C0.5%20L0.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%224%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%224%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-zigzag .frame-corner-tr {
   transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L4%2C0%20L0.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L4%2C0%20L0.5%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C0.5%20L1%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%221%22%20cy%3D%224%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C0.5%20L1%2C4%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%221%22%20cy%3D%224%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-zigzag .frame-corner-bl {
   transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M4%2C0.5%20L0.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M4%2C0.5%20L0.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C1%20L0.5%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%224%22%20cy%3D%221%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4%2C1%20L0.5%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%224%22%20cy%3D%221%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-zigzag .frame-corner-br {
   transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L0.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L0.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C1%20L1%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%221%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%221%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0.5%2C1%20L1%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%220.5%22%20cy%3D%221%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3Ccircle%20cx%3D%221%22%20cy%3D%220.5%22%20r%3D%220.35%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
 }
 .frame-loop .frame-strip-top, .frame-loop .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%209%204%22%3E%3Cpath%20d%3D%22M0%2C3%20C0%2C1%202%2C1%202.25%2C2%20C2.5%2C3%204.5%2C3%204.5%2C1.5%20C4.5%2C3%206.5%2C3%206.75%2C2%20C7%2C1%209%2C1%209%2C3%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
