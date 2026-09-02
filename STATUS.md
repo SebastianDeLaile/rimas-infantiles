@@ -761,6 +761,54 @@ the new one — a reminder to push promptly after a fix that's being
 actively reviewed, since "still broken" from the other end can just
 mean "hasn't seen the fix yet."
 
+**Same-day correction #7, why the 4 corners can't fully match, and a
+bounded compromise**: pushing the previous fix didn't settle it —
+Sebastian, now looking at the actually-current version: "this pattern
+should be totally symmetrical the other corners really dont look liike
+they join in the same clean way." Worked out the real geometry instead
+of tweaking further: each strip's mask always lands its corner-facing
+point at a FIXED tile-relative offset (0.5mm) from its own edge. Which
+of the 4 corners that point ends up "far from" or "right next to" the
+true page corner depends purely on which way that corner is CSS-
+anchored (top/left vs bottom/right) — derived it symbolically:
+distance = sqrt((S-off)²+(S-off)²) for the "both far" case (tl, 4.95mm)
+down to sqrt(off²+off²) for "both near" (br, 0.7mm), with tr/bl landing
+at a mix (3.54mm) in between. Not a bug — a direct, unavoidable
+consequence of a non-square page meeting one repeating phase at 4
+different anchor orientations. Solved for what offset would make all 4
+distances equal: exactly S/2 (half the corner box) — but that value is
+shared with the zigzag's trough depth everywhere along the border, not
+just the corners, so true symmetry would flatten the whole pattern to
+almost nothing, not just fix 4 small joints.
+
+Put this to Sebastian directly (the honest tradeoff, not another silent
+tweak); reply: "how about doing a tiny flattening? happy for the angle
+to be slightly different vert vs horizontal if its small." Moved the
+offset from 0.5mm to 1.0mm only (not S/2=2mm) — roughly doubles br's
+junction separation (0.7→1.4mm, enough to read as a soft thickening
+instead of a distinct blob) while only shaving ~17% off the trough
+depth (3.0→2.5mm), barely visible along the rest of the border. Had to
+redo the per-corner tangent analysis from scratch at the new offset
+(the values that made tl/tr/br "already correctly angled" at 0.5mm
+don't automatically transfer to 1.0mm — verified this programmatically
+rather than assuming): tl/tr stayed clean at the new offset too. bl/br
+still show a small flat spot. Tried bending both through a middle
+vertex (the exact technique that cleanly fixed bl before) at several
+distances (0.8/1.2/2.0mm equivalent) — each attempt shrank the flat
+spot but replaced it with a new small step/notch rather than removing
+it, never converging to clean. Reverted both to the plain 2-point line
+— smallest defect among everything tried, and no artifact introduced.
+**Lesson**: when repeated attempts at the same technique keep trading
+one small defect for a different small defect instead of converging,
+that's a sign the technique's ceiling has been reached for this
+specific case, not that the next parameter tweak will finally land it
+— worth surfacing to Sebastian as "this is close to as good as this
+approach gets" rather than continuing to iterate blindly. True full
+symmetry is still only reachable via the bigger corner redesign
+(decoupling the corner motif from the strip's exact phase, described
+in the previous entry) — this was the bounded version of that
+tradeoff, not a substitute for it.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
