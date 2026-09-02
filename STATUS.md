@@ -595,6 +595,33 @@ match a neighboring strip's column/row exactly, don't have a
 many-times-repeated tile be the one computing it; use a single,
 un-repeated placement instead.
 
+**Same-day correction #5**: the "no separate bug found" conclusion
+above was wrong — it only checked the right column's *x*. Sebastian's
+next report ("english page, both bottom corners dodgy") pointed at an
+axis nobody had measured yet: *y*, specifically at the bottom. Measuring
+all 4 corners' both axes (not just the one axis of the one edge that
+had complained before) turned up a real, smaller asymmetry: bl and br's
+y-offset from their row (~0.08mm) was roughly double tl/tr's (~0.035mm).
+The only thing bl/br have that tl doesn't is the base `.frame-corner`
+ruleset's mirroring transform (`scaleY(-1)` for bl, `scale(-1,-1)` for
+br, vs. tl's none and tr's `scaleX(-1)` alone) — needed by other
+patterns' asymmetric corner motifs, but for dots the corner asset is
+just a centered circle, which mirrors to itself. So the transform was
+pure cost with no visual purpose here: an extra rendering pass that
+measurably added sub-pixel drift without changing the output shape.
+Fix: `.frame-dots .frame-corner-tr/-bl/-br { transform: none; }`,
+overriding the base rule dots doesn't need. Re-measured all 4 corners,
+both axes, print + live preview, front + back, at device-pixel ratios
+1x/2x/3x: bl/br's y-offset dropped to ~0.05mm (in line with tl/tr), and
+the live-preview measurement now rounds to exactly 0 at every ratio
+tested (400dpi print still shows ~0.02-0.05mm sub-pixel residue, well
+under anything visible). **Lesson**: a fix that verifies one axis on
+one edge because that's the one axis that was reported broken can still
+leave the same class of bug live on a different axis/edge nobody
+happened to name yet — check all 4 corners on both axes as the default
+verification shape for this pattern, not just whichever one a report
+pointed at.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
