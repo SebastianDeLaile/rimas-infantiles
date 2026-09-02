@@ -908,6 +908,87 @@ inevitable shape where two tangent circles meet (the classic look of
 scalloped/lace trim) — present everywhere, not a corner-specific bug,
 and untouched by this fix.
 
+**Remaining patterns from the original survey — arches, loop, wave,
+crosshatch**: Sebastian: "yes" (to checking the rest). Surveyed all 4
+fresh with actual corner crops rather than trusting the old component-
+count numbers, since those had already produced one false positive
+(dots' naturally-many-components) and one true positive that turned
+out to be a fill issue, not a gap (scallop) — component count alone
+doesn't reliably predict what's actually wrong.
+
+- **crosshatch: no fix needed.** The original survey flagged it worst
+  (TL=2,TR=4,BL=2,BR=3), but that's the SAME false-positive mechanism
+  as dots: an X-shaped motif naturally forms many separate components
+  even when perfectly connected. Direct corner crops show a clean,
+  consistent criss-cross lattice at all 4 corners already.
+- **arches: one real bug, found and fixed.** TL showed a solid opaque
+  green SQUARE filling the whole corner -- not a connection issue at
+  all. Cause: the existing code intentionally left TL's mask-image as
+  an empty SVG (`<svg ...></svg>`, no path), reasoning "both strip-ends
+  land on the same point, so an empty connector is correct" -- true in
+  principle, but an empty SVG used as a mask doesn't mean "fully
+  transparent everywhere" the way it sounds; with nothing drawn, there's
+  no alpha to speak of, and the browser renders the element as fully
+  opaque instead. Fixed with `display:none` (the actual way to draw
+  nothing) instead of an empty mask-image. TR/BL/BR still have the same
+  minor kink artifacts described below for loop/wave -- not addressed
+  this round, time-boxed to the clear bug.
+- **loop and wave: real small kink/hook artifacts at all 4 corners**,
+  from the same failure mode -- the connector curve's tangent at each
+  endpoint didn't match the strip's own curve tangent there, so the two
+  curves met at a visible angle instead of blending smoothly (same
+  class of issue as zigzag's bl fix, applied to actual Bezier curves
+  instead of straight lines this time). Also converted loop's strips
+  from mask-repeat:round to explicit tile math first (same root-cause
+  fix as zigzag), though this alone didn't resolve the kinks -- the
+  strips' actual endpoints already matched the corner paths' assumed
+  targets (verified by isolating strips-only and corner-only renders);
+  the mismatch was in the TANGENT DIRECTION at the shared point, not
+  its position.
+
+  Method: for the strip nearest each corner, worked out its actual
+  tangent direction at the shared endpoint from the SVG path's own
+  control points (direction from an endpoint toward its adjacent
+  control point, by definition of how Bezier curves work), then gave
+  the connector a matching CUBIC bezier (2 independent control points,
+  one tuned to each end -- a quadratic's single control point can't
+  satisfy two independent tangent constraints at once) along that same
+  line. Also enlarged each corner canvas by 0.3mm (4mm -> 4.3mm) for
+  overshoot headroom, reusing the zigzag lesson that a connecting
+  point sitting exactly on the mask SVG's own edge gets its natural
+  curve/cap rendering clipped.
+
+  Hit the same bottom/right-vs-top/left coordinate-flip issue as
+  zigzag along the way: a strip's tangent, expressed in its own local
+  coordinates, needs care translating into page-relative direction
+  depending on which edge that strip's local (0,0) actually sits on.
+  In practice this meant the SAME formula (tangent reversed, then
+  scaled) worked cleanly for tl (top+left, both "normal" orientation)
+  and br (bottom+right, both "flipped" together) on the first try, but
+  needed the OTHER sign (tangent kept in its original, unreversed
+  direction) for tr and bl (mixed orientations) after the naive
+  mirrored version produced an angular kink instead of a smooth curve
+  -- caught by simply checking which sign kept the control point inside
+  the box (the wrong one landed outside it, a useful tell). Verified
+  each fix by isolating the corner element alone (confirms it's a clean
+  curve on its own) and the strips alone (confirms the real gap it
+  needs to bridge), not just the combined render, since a kink can hide
+  in either piece independently.
+
+  Result: wave is clean at all 4 corners now (smooth continuous curve,
+  no visible kink). loop is clean at tl/bl/br; tr still shows a small
+  residual step after several attempts -- accepted as a minor leftover
+  imperfection, same call made for zigzag's br, rather than continuing
+  to chase it at more expense than the defect justifies.
+
+**Lesson for this whole multi-pattern round**: re-verify each pattern
+with real crops before assuming an old survey number still applies --
+two of the four patterns checked this round turned out fine or
+different from what the number suggested. And a "kink" and a "gap" are
+different failure modes needing different diagnostics: isolating each
+contributing element separately (strip alone, corner alone) distinguishes
+them reliably, where looking only at the combined render doesn't.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
