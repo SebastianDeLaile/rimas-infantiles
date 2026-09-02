@@ -134,52 +134,43 @@
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q0%2C0%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q0%2C0%202%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
-/* dots' top/bottom strips run the full corner-to-corner span (7mm
-   inset, same as the corner piece used elsewhere) instead of stopping
-   short at 11mm -- a ring of identical, evenly-spaced dots reads better
-   than a rhythm broken by a separately-sized "hard" dot bolted on at
-   each corner. left/right stay at the original 11mm inset and simply
-   pick the rhythm back up below/above where top/bottom leave off --
-   extending both axes into the same 4mm corner square would draw two
-   independent dots a fraction of a mm apart there instead of one.
-   The corner-most dot on top/bottom must land exactly on left/right's
-   fixed cross-axis position (9mm from the edge, i.e. 2mm in from the
-   7mm-inset strip start) or it reads as visibly off-grid against the
-   column above it -- mask-repeat:round doesn't guarantee that (it only
-   guarantees a whole tile count, not a specific phase), so this uses an
-   explicit tile width + mask-position instead: 196mm span, dots 2mm
-   from each end, 38 gaps of 192mm/38 = 5.0526mm (vs. the original 5mm
-   -- the "alter the spacing a tiny bit" this was asked for). */
+/* dots' corner points are owned by a dedicated, non-repeating
+   .frame-corner circle (below) rather than by either strip reaching
+   into the 4mm corner square. Earlier versions tried to have one strip
+   reach in and draw the corner dot itself (first the top/bottom strip,
+   later attempts at sharing the exact coordinate between both strips):
+   any strip that TILES a repeating dot many times across its own long
+   axis (here, 38 repeats for top/bottom's ~196mm run) accumulates a
+   little float-rounding drift by the time it reaches its last tile --
+   measured at ~0.15-0.18mm off the mathematically-intended coordinate,
+   even though the CSS literally computes the same target on paper
+   (Sebastian: "the top right and bottom right dots dont line up with
+   all the other rhs dots"). The perpendicular strip (left/right, whose
+   dot doesn't repeat along the axis being checked) stays put to
+   ~0.01mm, which is exactly why the column reads as dead straight but
+   the one dot borrowed from the other strip's 38-tile accumulation
+   kicks sideways. A single un-repeated 4x4mm mask -- one placement, no
+   tiling, no accumulation -- doesn't have that failure mode, so it's
+   the one thing that ever draws in the corner square; both strips stop
+   short and pick their own rhythm back up one full pitch clear of it
+   (same "stop short" idea as the previous fix, just applied to both
+   axes now instead of only left/right, since only one axis staying
+   fully self-consistent doesn't help the axis that used to borrow the
+   corner). Spacing target ~5mm on each axis's own corner-to-corner
+   span, rounded to the nearest whole number of gaps, same method as
+   before: horizontal 192mm/38 = 5.0526mm, vertical 279mm/56 =
+   4.9821mm (both keep their span/gap counts from the earlier fix --
+   only which element draws the corner point changed, not the rhythm). */
 .frame-dots .frame-strip-top, .frame-dots .frame-strip-bottom {
-  left: 7mm; right: 7mm;
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205.052632%204%22%3E%3Ccircle%20cx%3D%222.526316%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%205.052632%204%22%3E%3Ccircle%20cx%3D%222.526316%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   -webkit-mask-size: 5.052632mm 4mm;
   mask-size: 5.052632mm 4mm;
-  -webkit-mask-position: -0.526316mm 0;
-  mask-position: -0.526316mm 0;
+  -webkit-mask-position: 0.526316mm 0;
+  mask-position: 0.526316mm 0;
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
-/* Previous version made left/right also reach into the 7mm corner
-   inset and land a dot on the exact same page coordinate as top/
-   bottom's corner dot, on the theory that two masks targeting the same
-   point would render as one. They don't, reliably: two independently
-   -masked elements each round their own sub-pixel position, so the
-   "shared" corner point rendered as two dots ~0.16mm apart -- close
-   enough to look like a crowded double-dot instead of one clean circle
-   (Sebastian: "there should be a dot exactly at the top right point,
-   but there are 2 crowded together"). Fix: only one axis may ever draw
-   at a literal shared coordinate. top/bottom keeps owning every corner
-   dot (unchanged, span 196mm, margin 2mm, spacing 4.9821mm -- sorry,
-   5.0526mm, see above). left/right goes back to its original 11mm
-   inset (i.e. simply not reaching the corner square at all) but keeps
-   the exact-tile-and-position technique instead of mask-repeat:round,
-   so its first/last dot sit exactly one regular spacing *after* the
-   corner dot rather than wherever auto-rounding happens to land: span
-   275mm, first/last dot at exactly corner+4.9821mm, 55 interior dots,
-   54 gaps of 269.0357mm/54 = 4.9821mm (same pitch as before -- only the
-   phase changed, not the rhythm). */
 .frame-dots .frame-strip-left, .frame-dots .frame-strip-right {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204.982143%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.491071%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204.982143%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222.491071%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
@@ -190,7 +181,10 @@
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
-.frame-dots .frame-corner { display: none; }
+.frame-dots .frame-corner {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Ccircle%20cx%3D%222%22%20cy%3D%222%22%20r%3D%220.9%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+}
 .frame-zigzag .frame-strip-top, .frame-zigzag .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%204%22%3E%3Cpath%20d%3D%22M0%2C0.5%20L3%2C3.5%20L6%2C0.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");

@@ -554,6 +554,47 @@ independent elements need to agree on a boundary, don't rely on
 "target the same coordinate" — one element should own the boundary
 outright and the other should start clear of it.
 
+**Same-day correction #4, the actual root cause of the root cause**:
+that fix removed the *double*-dot but left a smaller, real defect
+behind — Sebastian: "the top right and bottom right dots dont line up
+with all the other rhs dots." Pixel-blob measurement (isolate the
+column's dots vs. the corner dot, compare x-centers) confirmed it: the
+column (drawn entirely by `.frame-strip-right`, one continuous element,
+no repeat along x) sat rock-steady at one x to within 0.01mm across all
+53 dots, but the corner dot (drawn by `.frame-strip-top`, which repeats
+its tile 38 times along x to cover the full row) landed ~0.15–0.18mm
+off that column — small, but enough to read as "off-grid" exactly like
+Sebastian described. Root cause: a mask that **tiles a repeating
+pattern many times along an axis accumulates float-rounding drift by
+its last tile**, even though the CSS specifies the identical
+mathematical target as the non-repeating element. The previous fix
+(same-day correction #3) solved the *coincident-point* failure mode
+(two elements independently rounding the same target can disagree) but
+didn't account for this *distinct* failure mode (one wide, many-times-
+tiled element drifting from its own intended target over the course of
+its repeat).
+
+Fix: stopped letting either strip reach into the corner square at all.
+Both top/bottom and left/right now stop one full pitch short of every
+corner (top/bottom didn't do this before; left/right already did after
+correction #3). The corner point itself is drawn by the previously-
+unused `.frame-corner` element — a single 4×4mm mask with **one**
+un-repeated circle, so there's no tiling to accumulate drift on. Same
+dot size/spacing as the rest of the rhythm, just placed once instead of
+being the 39th repeat of a tiled pattern. Re-measured all 4 corners on
+2 different cards (both print PDF at 400dpi and the live on-screen
+preview, front and back pages): offset from the column dropped to
+~0.04–0.05mm, a 4–5x improvement, and consistent front/back — the
+"English side breaks differently" Sebastian also flagged turned out to
+be the same defect on the same coordinates on both pages; no separate
+bug found there. **Lesson, one more layer down**: "both elements target
+the same coordinate" isn't the only way two elements can disagree —
+a single element's *own* internal tiling can drift from its own
+intended target if it repeats enough times. When a corner value must
+match a neighboring strip's column/row exactly, don't have a
+many-times-repeated tile be the one computing it; use a single,
+un-repeated placement instead.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
