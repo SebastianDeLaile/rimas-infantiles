@@ -556,9 +556,18 @@
 .frame-scallop .frame-strip-right {
   background: radial-gradient(circle at 4mm 4mm, var(--accent) 4mm, transparent 4.1mm) right / 4mm 8mm round;
 }
+/* was a bare stroked arc (fill:none) -- next to the strips' bold FILLED
+   scallop bumps, an unfilled outline reads as a mismatched thin line,
+   not a matching bump (Sebastian: "pin pon corners look weird maybe
+   fill them"). The arc is a quarter circle of the same 4mm radius as
+   the bumps, centered exactly at the true page corner (confirmed: the
+   two endpoints, one on each strip's outer edge, are equidistant from
+   local 0,0) -- so filling the pie-slice between the arc and the
+   corner point is exactly the corner-sized quarter of a bump, matching
+   the strips' own bump radius and visual weight. */
 .frame-scallop .frame-corner {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22/%3E%3C/svg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%20L4%2C4%20Z%22%20fill%3D%22black%22/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0%2C4%20A4%2C4%200%200%201%204%2C0%20L4%2C4%20Z%22%20fill%3D%22black%22/%3E%3C/svg%3E");
 }
 
 /* Themed medallion badge — only present on cards with a bespoke icon

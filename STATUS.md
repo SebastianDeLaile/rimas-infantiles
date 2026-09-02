@@ -874,6 +874,40 @@ tile-phase point closest to a good connecting angle, verify
 programmatically, split shared strip rules if their coordinate origins
 flip) should transfer directly.
 
+**Scallop (Pin Pon) corner fill**: Sebastian: "pin pon corners look
+weird maybe fill them" — a much smaller fix than zigzag's, and a
+different failure mode entirely. Scallop's strips are bold, solid-
+filled scallop bumps (CSS radial-gradient circles, `background-size:
+round`, not mask+SVG-path at all); the corner was a bare quarter-circle
+*arc* (`fill:none; stroke:black`) — geometrically already the right
+curve (confirmed: radius 4mm matching the bumps' own radius, centered
+exactly at the true page corner, with both endpoints sitting on the
+strips' own outer edges), but rendering as a thin outline next to bold
+filled shapes reads as a mismatched foreign line, not a matching bump.
+
+Fixed by filling the pie-slice between the arc and the true corner
+instead of just stroking the arc — one line change
+(`d="...L0,0 Z" fill="black"` instead of `fill="none" stroke="black"`).
+First attempt closed the path via the wrong point (`L0,0`, the near/
+true-corner side) and produced the *inverse* shape — filled everywhere
+in the 4mm box except a rounded cutout at the corner, backwards from
+the goal. The arc bulges AWAY from the true corner (a circle centered
+AT a point is the set of locations 4mm FROM it, not near it — a small
+geometric slip, corrected empirically by re-rendering rather than
+re-deriving by hand a second time), so closing via the FAR corner
+(`L4,4 Z`) is what actually fills the correct pie-slice. Verified all 4
+corners now read as one consistent quarter-bump, same visual weight as
+the strips, in both print and live browser.
+
+Also inspected the small triangular notches visible between adjacent
+scallop bumps near every corner, in case they were a related defect —
+they're not: cropping a wider stretch of a strip (not just near a
+corner) shows the exact same cusp repeating between every pair of
+touching bumps along the entire edge. That's the normal, geometrically
+inevitable shape where two tangent circles meet (the classic look of
+scalloped/lace trim) — present everywhere, not a corner-specific bug,
+and untouched by this fix.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
