@@ -1241,6 +1241,141 @@ starting a new print project instead of re-deriving it.
   network — pass `ignoreHTTPSErrors: true` on the browser context when
   hitting the live site (not needed against `localhost`).
 
+## Border-image border redesign — September 2026
+
+After the zigzag corner-detail attempts above (tooth bump, notch,
+standalone icon) all either tangled or read as invisible/floating,
+Sebastian: "lets take a step back — are there other ready made
+solutions we could leverage or a totally different way to do this."
+The real answer was already sitting in this file's own CSS comment
+(index.html:56-79): **border-image was tried once before**, in an
+earlier pass on this project, and rejected because it can't be tinted
+via `background-color`/`currentColor` the way `mask-image` can — so
+per-card accent coloring broke. First proposed it as if it were new
+information without checking that comment first; had to walk that
+back once the same limitation reappeared in a fresh prototype. The
+piece the old note didn't rule out: baking each card's own hex
+directly into its `border-image-source` SVG (no shared CSS rule per
+pattern, since accent colors are already hardcoded per `<section>`
+anyway) — Sebastian confirmed this was worth trying.
+
+**Why border-image is worth the accent-color cost**: the strip+corner
+`mask-image` system builds a border from 8 separately-authored assets
+(4 tiled strips + 4 independently-computed corner pieces) that have to
+be reconciled after the fact via hand-derived tangent math — the
+entire source of the zigzag/wave/loop/arches corner bugs fixed
+earlier. `border-image-slice` takes a single drawn frame graphic and
+crops it into a 3x3 grid; if the corner is drawn as part of the same
+continuous path as the edge, the join is correct by construction, no
+tangent math at all.
+
+**Rollout mechanism**: added `addFrame()` (index.html JS), which
+checks for a `frame-<pattern>-bi` class on the card and, if present,
+builds a `.frame-border-image` div with a per-card-colored
+`border-image-source` instead of the normal `addFrameStrips()` 8-element
+injection. `frame-border-image` (CSS) is a `border-image` box inset
+7mm on all sides (matching the old strips' footprint) with
+`border-width: 4.5mm`. Patterns are piloted one card at a time (new
+class only on that card) so the old and new systems sit side by side
+on the live site for direct comparison before committing to a full
+pattern migration.
+
+**Zigzag pilot** ("Buenos días su señoría", Bolivia): worked
+immediately, all 4 corners clean. Sebastian: "corners look good bit
+angle is a bit sharp" — softened by reducing tooth amplitude (peak/
+valley spread 10→8 units on the same pitch), interior angle at each
+point ~53°→~103°.
+
+**Fused-quadrant overlap bug (found piloting wave)**: reused zigzag's
+"one continuous corner+edge quadrant, mirrored 3x" construction for
+wave and it rendered as a repeating chain of crossing lens/figure-8
+shapes instead of a smooth curve. Root cause: mirroring the *whole*
+quadrant also mirrors its edge portion back into the region the
+original already occupies — border-image slicing composites by pixel
+region, not by "logical path," so both copies' edge content lands in
+the same shared slice and gets drawn on top of each other. zigzag
+happened to get away with this because a straight zigzag mirrored
+around its own edge-band midpoint retraces the *identical* line
+(invisible duplication, confirmed by checking zigzag's own point
+lists mirror onto themselves); wave's Bezier curve doesn't retrace
+itself under reflection, so the mirrored copy became a visibly
+different second curve crossing the first. Diagnosed by isolating the
+tile outside the border-image pipeline (manually placing translated
+copies side by side in one SVG: clean smooth wave) versus the actual
+`border-image` render (crossing): proved the bug was in the mirroring
+scheme, not the curve math itself, before spending time on the wrong
+fix. Also separately hit a genuine amplitude bug on the first retry —
+the curve's trough extended past the top-edge slice's own y-bound
+(y=26 vs. slice height 20), getting silently clipped — fixed by
+keeping the whole curve within its slice box, verified by rendering
+slice-boundary guide rectangles alongside the path before trusting a
+re-test.
+
+Fix: corner and edge are now **separate** pieces for curve-based
+patterns (`BORDER_IMAGE_CORNER_EDGE`), each occupying only its own
+region and mirrored independently (corner → other 3 corners, top edge
+→ bottom edge via one mirror, left edge → right edge via the other) —
+nothing double-covers a region anymore. This needs exactly one
+hand-matched junction per pattern (corner endpoint's value + rough
+tangent against the edge tile's own repeating endpoint); the other 6
+junctions (3 more corners x 2 sides each) are mirror copies of that
+one solved junction, not separately derived — a much smaller problem
+than the old system's "every corner is different" tangent-matching.
+zigzag's already-working polyline path was left on its original fused
+code path rather than migrated to match, since it isn't broken.
+
+Also had to widen wave's source canvas relative to zigzag's (100 vs.
+60 units, same 20-unit corner scale) — at zigzag's canvas size a wave
+period rendered at ~1.1mm, far too small to read as a curve (looked
+like a row of dots), because the corner slice's source-to-mm scale
+factor also determines the edge tile's physical size for any pattern
+sharing that scale. Widening only the *edge* band (not the corner)
+gives ~13.5mm per period without changing corner size/scale between
+patterns.
+
+Piloted on "Antón Pirulero" (frame-wave-bi). Verified via zoomed
+corner crops on all 4 corners: smooth, no crossing, no clipping,
+consistent with the mirror-symmetry expected.
+
+**Unrelated pre-existing bug found while comparing the zigzag pilot
+against its sibling cards**: Sebastian: "the text on that card is too
+big it overlaps the border." Checked against the pre-pilot commit —
+identical overlap, confirmed unrelated to the border-image work. Root
+cause: the single-tier `.long-verse` font shrink (6.15mm) doesn't
+scale with how much longer a verse actually is — fine up to ~19
+lines, but "El señor don Gato" (29 lines) overflowed the bottom
+border by 238px with lines visibly overlapping each other, and
+"Buenos días su señoría" (20 lines) by a smaller 10px. Fixed by adding
+a `.very-long-verse` tier (>22 lines) and a shared
+`sizeVerseForLength()` helper — critically, one that only ever
+*upgrades* a card's tier from its measured line count and never
+strips an existing `long-verse` class: a first version that
+unconditionally recomputed the class broke 3 previously-fine cards
+("Las estrellitas", "Tunupan samiripa", "Doña Ana"), because they need
+`long-verse` for long *individual* lines that wrap to extra visual
+lines, which a literal `\n`-count heuristic can't see — caught by
+running a full clearance scan across all 150 sheets (75 rhymes,
+front+back) before shipping, not just the two cards that prompted the
+fix. Also nudged the `long-verse` tier itself down slightly
+(6.15mm/1.35 → 5.95mm/1.32) to close the last 10px gap. Verified: 0
+of 150 sheets flagged at a 15px clearance threshold after the fix
+(previously 2 genuine overflows, plus a transient 3-card regression
+from the first fix attempt that was caught and corrected before
+committing).
+
+**Lesson for continuing this migration to more patterns**: for any
+pattern whose motif is a curve (not a straight-line polyline), start
+with the corner+edge-separate structure directly — don't assume the
+fused-single-path trick will work just because it worked for zigzag;
+zigzag's success was a lucky coincidence of straight-line
+self-symmetry, not evidence the technique is generally sound. Verify
+a new pattern's tile in isolation (outside the actual border-image
+pipeline, e.g. a raw SVG render or manual side-by-side tiling) before
+debugging inside the pipeline, since the isolated check told us
+immediately whether a rendering bug was in the curve math or the
+mirroring/slicing scheme — the two look identical from inside the
+final render but need completely different fixes.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
