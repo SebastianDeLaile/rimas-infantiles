@@ -651,17 +651,26 @@
   transform: scale(var(--screen-zoom, 1));
   transform-origin: top left;
 }
+/* Content padding uses punch-margin on BOTH sides (not just the side
+   actually being punched) so the readable content stays centered on
+   the page regardless of data-punch -- previously the non-punch side
+   used the narrower edge-margin, shifting content 8mm off-center and
+   making front/back layouts mirror images of each other instead of
+   matching (Sebastian: "everything should be centred on the page,
+   regardless of where the holes will be punched"). Costs 8mm of
+   content width on the non-punch side that wasn't strictly needed for
+   hole clearance, in exchange for a page that's centered and
+   hole-safe on both sides no matter which one ends up punched. */
 .a4-sheet__content {
   width: 210mm;
   height: 297mm;
   box-sizing: border-box;
-  padding: var(--edge-margin) var(--edge-margin) var(--edge-margin) var(--punch-margin);
+  padding: var(--edge-margin) var(--punch-margin) var(--edge-margin) var(--punch-margin);
   display: flex;
   flex-direction: column;
   transform: scale(var(--content-scale, 1));
   transform-origin: top left;
 }
-.a4-sheet[data-punch="right"] .a4-sheet__content { padding: var(--edge-margin) var(--punch-margin) var(--edge-margin) var(--edge-margin); }
 .a4-punch-guide { position: absolute; inset: 0; pointer-events: none; }
 .a4-punch-guide__hole {
   position: absolute;

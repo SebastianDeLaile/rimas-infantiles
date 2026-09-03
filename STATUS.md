@@ -989,6 +989,27 @@ different failure modes needing different diagnostics: isolating each
 contributing element separately (strip alone, corner alone) distinguishes
 them reliably, where looking only at the combined render doesn't.
 
+**Content centering, independent of punch side**: Sebastian: "also
+everything should be centred on the page, regardless of where the
+holes will be punched." Real inconsistency, unrelated to the border
+work: `.a4-sheet__content`'s padding used `--punch-margin` (22mm) on
+whichever side the ring-binder holes go and the narrower
+`--edge-margin` (14mm) on the other -- correct for keeping holes clear
+of text, but it meant the readable content (title band, illustration,
+verse) sat 8mm off-center, and shifted in OPPOSITE directions on a
+card's front (data-punch="left") vs. back (data-punch="right"), so the
+two sides of the same card didn't visually match. Changed to use
+punch-margin on BOTH sides always and dropped the now-unneeded
+`[data-punch="right"]` override for content padding (kept it for the
+punch-guide hole markers themselves, which still need to show up on
+the correct physical side). Costs 8mm of content width on whichever
+side isn't actually being punched, in exchange for content that's
+centered and hole-safe regardless of orientation. Verified: front/back
+of the same card now lay out identically (previously mirror images of
+each other), and spot-checked a movements-grid card and a long-verse
+(auto-shrink) card for overflow -- both fine at the slightly narrower
+width.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
