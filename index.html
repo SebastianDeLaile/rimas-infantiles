@@ -314,29 +314,14 @@
   -webkit-mask-repeat: repeat;
   mask-repeat: repeat;
 }
+/* Standalone mini zigzag icon, same approach every other pattern already
+   uses for its corner (diamond/star/plus/etc: one centered motif, no
+   attempt to phase-match the adjacent strips) -- the base .frame-corner-tr/
+   -bl/-br mirroring (scaleX/scaleY/scale(-1,-1)) handles the other 3
+   corners automatically since this shape doesn't depend on strip phase. */
 .frame-zigzag .frame-corner {
-  width: 4.5mm; height: 4.5mm;
-  -webkit-mask-size: 4.5mm 4.5mm;
-  mask-size: 4.5mm 4.5mm;
-}
-.frame-zigzag .frame-corner-tl {
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C3.5%20L0%2C0%20L3.5%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C3.5%20L0%2C0%20L3.5%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-}
-.frame-zigzag .frame-corner-tr {
-  transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L4.5%2C0%20L1%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C3.5%20L4.5%2C0%20L1%2C4.5%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-}
-.frame-zigzag .frame-corner-bl {
-  transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C1%20L0%2C4.5%20L3.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M4.5%2C1%20L0%2C4.5%20L3.5%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-}
-.frame-zigzag .frame-corner-br {
-  transform: none;
-  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C1%20L4.5%2C4.5%20L1%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
-  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204.5%204.5%22%3E%3Cpath%20d%3D%22M0%2C1%20L4.5%2C4.5%20L1%2C0%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0.3%2C2.8%20L1.2%2C1%20L2%2C2.8%20L2.8%2C1%20L3.7%2C2.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
+  mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%204%204%22%3E%3Cpath%20d%3D%22M0.3%2C2.8%20L1.2%2C1%20L2%2C2.8%20L2.8%2C1%20L3.7%2C2.8%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.6%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E");
 }
 /* was mask-repeat:round (base rule) -- doesn't guarantee WHERE the
    pattern's phase lands, only that a whole number of tiles fit (same

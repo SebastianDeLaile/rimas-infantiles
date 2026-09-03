@@ -1010,6 +1010,74 @@ each other), and spot-checked a movements-grid card and a long-verse
 (auto-shrink) card for overflow -- both fine at the slightly narrower
 width.
 
+**Zigzag "more detailed" corner — three failed attempts before finding
+the actual pattern**: Sebastian, after the connection-gap fixes above:
+"maybe we should have a custom corner design for each border type that
+is a bit more detailed and merges in" — asked to start with zigzag.
+Zigzag's corner is a single clean diagonal bridging the two strips at
+their true meeting point (see the connection-gap fix above); the ask
+was to give it more visual detail, echoing the strip's own sawtooth
+rhythm rather than being a plain line.
+
+Three attempts failed for the *same* root cause before the actual fix
+was found:
+1. A perpendicular "tooth" bump inserted into each of the corner's two
+   legs (one bump per leg, meeting at the true corner vertex).
+   Every corner rendered as a self-crossing tangle, not a clean tooth.
+2. Flipped the bump to the opposite perpendicular side ("notch" instead
+   of "bump") on the theory the first attempt had picked the wrong
+   side. Same tangle, mirrored.
+3. Root cause found by computing the actual angle between the two legs
+   at the vertex: ~14°, not ~90° — zigzag's corner connects each strip
+   at its *deep* tile-phase point (established in the earlier
+   connection-gap fix), which makes the two legs nearly parallel where
+   they meet. Any kink added to *both* legs near that vertex has no
+   room to avoid crossing, regardless of amplitude or which side it
+   bulges toward — confirmed by testing both directions and two
+   different amplitudes/positions, all four corners, all tangled the
+   same way. A separate small filled diamond ornament placed at the
+   vertex (leaving the diagonal itself untouched) avoided the crossing
+   but was nearly invisible — tucked inside the acute angle's own
+   notch, it got swallowed by the stroke rather than reading as a
+   distinct accent.
+
+**Actual fix**: stepped back and checked how every *other* border
+pattern already solves "detailed corner" — diamond/star/plus/square/
+spiral/teardrop/ticks/xmarks all just drop one small self-contained
+icon into the corner box via a single `.frame-X .frame-corner` rule,
+with **no attempt to phase-match or tangent-connect to the adjacent
+strips** — the base `.frame-corner-tr/-bl/-br` mirroring
+(`scaleX(-1)`/`scaleY(-1)`/`scale(-1,-1)`) handles the other three
+corners automatically. Zigzag's corner had never used this pattern
+because its OLD design (before the connection-gap fix) needed exact
+strip-phase connection, which is what forced the custom per-corner
+`-tl/-tr/-bl/-br` overrides with `transform: none` in the first place.
+Replaced all of that with one shape: a small standalone 2-tooth
+zigzag/chevron (`M0.3,2.8 L1.2,1 L2,2.8 L2.8,1 L3.7,2.8` in a 4×4mm
+box, matching the box size every other icon-style pattern already
+uses) and let the inherited mirroring place it in the other 3 corners.
+Net simplification: 5 CSS rules (24 lines) down to 1 rule (2 lines).
+Verified via corner-zoom crops at all 4 corners in the print pipeline
+— clean, no crossings, reads clearly as a mini zigzag echoing the
+strip's teeth, sitting in the same "independent icon" idiom as every
+other pattern's corner. There's a visible gap between the mini icon
+and the strip's own zigzag (it doesn't literally connect) — this
+matches every other pattern in the file and was not treated as a
+defect.
+
+**Lesson**: when "make the corner more detailed" means "add geometry
+that touches the corner's own connecting lines," check the actual
+angle between what you're connecting before assuming a symmetric
+two-sided treatment will fit — a vertex where the two legs are nearly
+parallel (here ~14°, not ~90°) has no room for a kink on both sides
+without crossing, and no amount of retuning the amplitude or side fixes
+that; it needs a fundamentally different placement (independent of the
+connecting geometry, per the other patterns' proven approach), not
+another iteration on the same idea. And when custom per-corner
+geometry starts feeling fragile, checking how the *other* already-
+working patterns solve the same problem is worth doing before
+hand-deriving a bespoke fix from scratch.
+
 ## Central American / Paraguay follow-up — August 2026
 
 Added four short, upbeat cards after checking the source text and regional
