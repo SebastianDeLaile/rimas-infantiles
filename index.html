@@ -1421,7 +1421,7 @@ yo ya me voy.</div>
   </section>
 
   <!-- 16. ANTÓN PIRULERO -->
-  <section class="a4-sheet frame-wave" style="--accent:#4a3d8a" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-wave-bi" style="--accent:#4a3d8a" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -4071,32 +4071,92 @@ function addFrameStrips(page) {
     page.appendChild(piece);
   });
 }
-/* Pilot: border-image instead of strips+corners (see CSS comment above
+/* border-image instead of strips+corners (see CSS comment above
    .frame-strip for why border-image was previously rejected -- it can't
    be tinted via background-color/currentColor like mask-image can, so
    this bakes each card's own accent hex directly into its SVG instead
-   of sharing one colorless asset across every card of that pattern). */
-function zigzagBorderImageSVG(hex) {
-  const tl = [[40, 14], [35, 6], [30, 14], [25, 6], [20, 14], [11.5, 7.5], [14, 20], [6, 25], [14, 30], [6, 35], [14, 40]];
-  const mirrorX = pts => pts.map(([x, y]) => [60 - x, y]);
-  const mirrorY = pts => pts.map(([x, y]) => [x, 60 - y]);
-  const tr = mirrorX(tl), bl = mirrorY(tl), br = mirrorX(mirrorY(tl));
-  const seg = pts => "M" + pts.map(p => p.join(",")).join(" L");
-  const paths = [tl, tr, bl, br]
-    .map(pts => `<path d="${seg(pts)}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
+   of sharing one colorless asset across every card of that pattern).
+
+   Two pattern representations:
+   - POLYLINES (zigzag): one continuous top-left quadrant path (corner
+     bridge fused into both edges, no seam), mirrored 3x for the other
+     quadrants. Works here because a straight zigzag mirrored around its
+     own edge-band midpoint retraces the SAME line, so the mirrored
+     copy's stray edge content lands exactly on top of the original's --
+     harmless duplication, not visible.
+   - CORNER_EDGE (wave, and any curve-based pattern after it): a fused
+     quadrant does NOT work in general -- mirroring the whole path also
+     mirrors its edge portion back into the region the original already
+     owns, and unless that retraces itself exactly (as zigzag's straight
+     lines happen to) you get two different overlapping curves, which
+     rendered as a chain of crossing lens shapes when this was tried
+     fused for wave. Fix: corner and edge are separate, independently-
+     drawn-once pieces (corner spans its own 0-20/80-100 box only, top
+     edge spans only the shared 20-80 band, etc.), each mirrored into
+     its own distinct region so nothing double-covers a region. The
+     corner piece's endpoints are hand-matched (value + rough tangent)
+     to the edge tile's own repeating endpoint -- not automatic, but
+     only one junction to get right per pattern; the other 6 (3 corners
+     x 2 sides) are mirror copies of that same solved junction. Confirmed
+     empirically (isolated test render) before rolling into the real
+     patterns list.
+
+   viewBox/canvas size is per-pattern (bigger canvas = more physical mm
+   per repeat unit at a fixed border-image-width, since the corner slice
+   size sets the mm-per-source-unit scale) -- see comment on `wave`. */
+const BORDER_IMAGE_POLYLINES = {
+  zigzag: { size: 60, pts: [[40, 14], [35, 6], [30, 14], [25, 6], [20, 14], [11.5, 7.5], [14, 20], [6, 25], [14, 30], [6, 35], [14, 40]] },
+};
+const BORDER_IMAGE_CORNER_EDGE = {
+  // Corner box (0-20) kept identical scale/shape to zigzag's so corners
+  // read as the same physical size across patterns. Canvas widened to
+  // 100 (edge band 20-80, 60 units) purely to give the edge's own
+  // repeating unit more physical mm per tile -- at zigzag's 60-unit
+  // canvas a wave period rendered so small (~1.1mm) it looked like a
+  // row of dots instead of a curve; this gives ~13.5mm per period.
+  wave: { size: 100, corner: "M20,10 Q8,8 10,20", edgeTop: "M20,10 Q35,3 50,10 T80,10", edgeLeft: "M10,20 Q3,35 10,50 T10,80" },
+};
+function mirrorPathX(d, w) {
+  return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${w - parseFloat(x)},${y}`);
+}
+function mirrorPathY(d, h) {
+  return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${x},${h - parseFloat(y)}`);
+}
+function borderImageSVG(patternKey, hex) {
+  let pieces, size;
+  if (BORDER_IMAGE_POLYLINES[patternKey]) {
+    ({ size } = BORDER_IMAGE_POLYLINES[patternKey]);
+    const pts = BORDER_IMAGE_POLYLINES[patternKey].pts;
+    const mirrorX = p => p.map(([x, y]) => [size - x, y]);
+    const mirrorY = p => p.map(([x, y]) => [x, size - y]);
+    const seg = p => "M" + p.map(pt => pt.join(",")).join(" L");
+    pieces = [seg(pts), seg(mirrorX(pts)), seg(mirrorY(pts)), seg(mirrorX(mirrorY(pts)))];
+  } else if (BORDER_IMAGE_CORNER_EDGE[patternKey]) {
+    const p = BORDER_IMAGE_CORNER_EDGE[patternKey];
+    size = p.size;
+    pieces = [
+      p.corner, mirrorPathX(p.corner, size), mirrorPathY(p.corner, size), mirrorPathX(mirrorPathY(p.corner, size), size),
+      p.edgeTop, mirrorPathY(p.edgeTop, size),
+      p.edgeLeft, mirrorPathX(p.edgeLeft, size),
+    ];
+  }
+  const paths = pieces
+    .map(d => `<path d="${d}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
     .join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${paths}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${paths}</svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
-function addBorderImageFrame(page, accentHex) {
+function addBorderImageFrame(page, accentHex, patternKey) {
   const div = document.createElement("div");
   div.className = "frame-border-image";
-  div.style.borderImageSource = zigzagBorderImageSVG(accentHex);
+  div.style.borderImageSource = borderImageSVG(patternKey, accentHex);
   page.appendChild(div);
 }
 function addFrame(sheet, page, accentHex) {
-  if (sheet.classList.contains("frame-zigzag-bi")) {
-    addBorderImageFrame(page, accentHex);
+  const biClass = [...sheet.classList].find(c => /^frame-.+-bi$/.test(c));
+  if (biClass) {
+    const patternKey = biClass.replace(/^frame-/, "").replace(/-bi$/, "");
+    addBorderImageFrame(page, accentHex, patternKey);
   } else {
     addFrameStrips(page);
   }
