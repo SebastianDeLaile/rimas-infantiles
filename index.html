@@ -4069,7 +4069,7 @@ function addFrameStrips(page) {
    this bakes each card's own accent hex directly into its SVG instead
    of sharing one colorless asset across every card of that pattern). */
 function zigzagBorderImageSVG(hex) {
-  const tl = [[40, 15], [35, 5], [30, 15], [25, 5], [20, 15], [10, 5], [15, 20], [5, 25], [15, 30], [5, 35], [15, 40]];
+  const tl = [[40, 14], [35, 6], [30, 14], [25, 6], [20, 14], [11.5, 7.5], [14, 20], [6, 25], [14, 30], [6, 35], [14, 40]];
   const mirrorX = pts => pts.map(([x, y]) => [60 - x, y]);
   const mirrorY = pts => pts.map(([x, y]) => [x, 60 - y]);
   const tr = mirrorX(tl), bl = mirrorY(tl), br = mirrorX(mirrorY(tl));
