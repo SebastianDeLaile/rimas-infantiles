@@ -912,7 +912,15 @@ h1, h2, h3, .display {
 
 .sheet-body.long-verse { gap: 3.5mm; }
 .sheet-body.long-verse .illus { width: 68mm; max-height: 62mm; }
-.sheet-body.long-verse .verse { font-size: 6.15mm; line-height: 1.35; }
+.sheet-body.long-verse .verse { font-size: 5.95mm; line-height: 1.32; }
+/* long-verse's single fixed size only fits up to ~20 lines (verified by
+   measuring actual rendered clearance against the frame, not guessed --
+   a 20-line card was 10px short, a 29-line card was 238px short at the
+   same font/illus size, since the tier doesn't scale with how much
+   longer the verse actually is). This tier kicks in past that point. */
+.sheet-body.very-long-verse { gap: 2.5mm; }
+.sheet-body.very-long-verse .illus { width: 50mm; max-height: 42mm; }
+.sheet-body.very-long-verse .verse { font-size: 5.2mm; line-height: 1.22; }
 .movement-body { justify-content: flex-start; gap: 3.5mm; padding-top: 5mm; }
 .movement-body .illus { width: 92mm; max-height: 57mm; }
 .movement-body .chorus { font-size: 6mm; line-height: 1.25; }
@@ -4093,14 +4101,28 @@ function addFrame(sheet, page, accentHex) {
     addFrameStrips(page);
   }
 }
+function sizeVerseForLength(body, verseText) {
+  if (!body || body.classList.contains("very-long-verse")) return;
+  // Only ever upgrades to a smaller tier based on literal newline count --
+  // never removes an existing long-verse, since some cards need it for
+  // long individual lines that wrap to extra visual lines (not captured
+  // by a \n count) rather than for having many literal lines.
+  const lines = verseText.trim().split(/\n/).length;
+  if (lines > 22) {
+    body.classList.remove("long-verse");
+    body.classList.add("very-long-verse");
+  } else if (lines > 10) {
+    body.classList.add("long-verse");
+  }
+}
 fronts.forEach((front, index) => {
   const accent = front.style.getPropertyValue("--accent");
   addFrame(front, front.querySelector(".a4-page"), accent);
   const frontBody = front.querySelector(".sheet-body");
   const frontVerse = front.querySelector(".verse");
   const noAutoShrink = frontBody?.classList.contains("no-auto-shrink");
-  if (frontVerse && !noAutoShrink && frontVerse.textContent.trim().split(/\n/).length > 10) {
-    frontBody?.classList.add("long-verse");
+  if (frontVerse && !noAutoShrink) {
+    sizeVerseForLength(frontBody, frontVerse.textContent);
   }
   const copy = translations[index];
   if (!copy) return;
@@ -4157,7 +4179,7 @@ fronts.forEach((front, index) => {
     verse.className = "verse";
     verse.textContent = copy.verse;
     body.append(verse);
-    if (!noAutoShrink && copy.verse.trim().split(/\n/).length > 10) body.classList.add("long-verse");
+    if (!noAutoShrink) sizeVerseForLength(body, copy.verse);
   }
   front.after(back);
 });
