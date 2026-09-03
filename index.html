@@ -103,6 +103,23 @@
 .frame-corner-tr { top: 7mm; right: 7mm; transform: scaleX(-1); }
 .frame-corner-bl { bottom: 7mm; left: 7mm; transform: scaleY(-1); }
 .frame-corner-br { bottom: 7mm; right: 7mm; transform: scale(-1,-1); }
+/* Pilot: one continuous hand-drawn frame image sliced 3x3 via
+   border-image, instead of 4 separately-tiled strips + 4 separately-
+   computed corner pieces. The corner is part of the same drawn path as
+   the edge, so it's correct by construction -- no tangent-matching
+   needed. border-image-source is set per-card via JS (addBorderImageFrame)
+   since border-image can't be tinted with background-color the way
+   mask-image can. */
+.frame-border-image {
+  position: absolute;
+  top: 7mm; left: 7mm; right: 7mm; bottom: 7mm;
+  box-sizing: border-box;
+  border-style: solid;
+  border-width: 4.5mm;
+  border-image-slice: 20;
+  border-image-repeat: round;
+  pointer-events: none;
+}
 .frame-wave .frame-strip-top, .frame-wave .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -1486,7 +1503,7 @@ torito del corralito.</div>
   </section>
 
   <!-- 18. BUENOS DÍAS SU SEÑORÍA -->
-  <section class="a4-sheet frame-zigzag" style="--accent:#9a5fa8" data-punch="left" data-country="Bolivia">
+  <section class="a4-sheet frame-zigzag-bi" style="--accent:#9a5fa8" data-punch="left" data-country="Bolivia">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -4046,8 +4063,39 @@ function addFrameStrips(page) {
     page.appendChild(piece);
   });
 }
+/* Pilot: border-image instead of strips+corners (see CSS comment above
+   .frame-strip for why border-image was previously rejected -- it can't
+   be tinted via background-color/currentColor like mask-image can, so
+   this bakes each card's own accent hex directly into its SVG instead
+   of sharing one colorless asset across every card of that pattern). */
+function zigzagBorderImageSVG(hex) {
+  const tl = [[40, 15], [35, 5], [30, 15], [25, 5], [20, 15], [10, 5], [15, 20], [5, 25], [15, 30], [5, 35], [15, 40]];
+  const mirrorX = pts => pts.map(([x, y]) => [60 - x, y]);
+  const mirrorY = pts => pts.map(([x, y]) => [x, 60 - y]);
+  const tr = mirrorX(tl), bl = mirrorY(tl), br = mirrorX(mirrorY(tl));
+  const seg = pts => "M" + pts.map(p => p.join(",")).join(" L");
+  const paths = [tl, tr, bl, br]
+    .map(pts => `<path d="${seg(pts)}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
+    .join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${paths}</svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+}
+function addBorderImageFrame(page, accentHex) {
+  const div = document.createElement("div");
+  div.className = "frame-border-image";
+  div.style.borderImageSource = zigzagBorderImageSVG(accentHex);
+  page.appendChild(div);
+}
+function addFrame(sheet, page, accentHex) {
+  if (sheet.classList.contains("frame-zigzag-bi")) {
+    addBorderImageFrame(page, accentHex);
+  } else {
+    addFrameStrips(page);
+  }
+}
 fronts.forEach((front, index) => {
-  addFrameStrips(front.querySelector(".a4-page"));
+  const accent = front.style.getPropertyValue("--accent");
+  addFrame(front, front.querySelector(".a4-page"), accent);
   const frontBody = front.querySelector(".sheet-body");
   const frontVerse = front.querySelector(".verse");
   const noAutoShrink = frontBody?.classList.contains("no-auto-shrink");
@@ -4058,7 +4106,6 @@ fronts.forEach((front, index) => {
   if (!copy) return;
   const country = front.dataset.country;
   addCountryTag(front, country);
-  const accent = front.style.getPropertyValue("--accent");
   const art = front.querySelector(".illus")?.cloneNode(true);
   const medallion = front.querySelector(".medallion")?.cloneNode(true);
   const frameClass = [...front.classList].find(c => c.startsWith("frame-"));
@@ -4074,7 +4121,7 @@ fronts.forEach((front, index) => {
       <div class="sheet-body"></div>
     </div>
     </div>`;
-  addFrameStrips(back.querySelector(".a4-page"));
+  addFrame(back, back.querySelector(".a4-page"), accent);
   if (medallion) back.querySelector(".a4-page").appendChild(medallion);
   const body = back.querySelector(".sheet-body");
   addCountryTag(back, country);
