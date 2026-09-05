@@ -1376,6 +1376,52 @@ immediately whether a rendering bug was in the curve math or the
 mirroring/slicing scheme — the two look identical from inside the
 final render but need completely different fixes.
 
+**Continuing the rollout (loop, arches, then 9 icon patterns)**:
+Sebastian confirmed the wave pilot and asked to keep going through the
+rest of the patterns.
+
+- **loop**: reused its existing strip art (the cubic-bezier chain-link
+  tile) verbatim, scaled x5 and split into corner+edge-separate. Clean
+  at all 4 corners at 300dpi — this is the pattern whose old TR corner
+  had an accepted residual "step" imperfection (see the connection-gap
+  fix entry above); gone for free.
+- **arches**: generalizing corner+edge-separate to an arc-based
+  pattern surfaced a real bug — the mirror regex treats any "N,N"-
+  shaped pair as a coordinate, but an SVG arc's `rx,ry` radius pair has
+  the same shape, so mirroring corrupted the radius instead of the
+  endpoint (jagged nonsense on render). Fix: arc-based patterns hand-
+  author all 4 edges directly (`BORDER_IMAGE_EXPLICIT_EDGES`) instead
+  of mirroring one. No corner piece needed — arches' old corner was
+  literally `display:none` (the strips already met cleanly at a shared
+  point), and the same holds here. This is the pattern whose TL corner
+  was blank and TR/BL/BR had never-addressed minor kinks; now clean on
+  all 4.
+- **9 icon patterns** (diamond, xmarks, plus, square, star, teardrop,
+  spiral, crosshatch, ticks): these never had a corner-connection
+  problem in the old system — each is a small self-contained icon
+  repeated per edge plus an independent corner icon, never touching a
+  neighbor. Added a third, simpler mechanism for this whole class
+  (`iconBorderSVG`): place icons by direct coordinate transform (scale
+  + translate around the icon's own natural center), not by mirroring
+  a path string at all — sidesteps both bugs above by construction,
+  since there's no mirroring involved. ticks needed one variant (dot
+  corner + line edge, two different shapes, matching its original
+  mask art) rather than one icon everywhere.
+- Piloted each on one card (`frame-<name>-bi`), verified corners via
+  zoomed 300dpi crops, then re-ran the full 150-sheet clearance scan
+  (from the long-verse fix) after the whole batch to confirm none of
+  this touched content layout — still 0 flagged.
+- **Left on the old system, deliberately**: dots (already required
+  extensive phase-alignment work to get right — see the dots corner
+  entries above — and never had a connection problem to fix, so
+  migrating it risks redoing carefully-tuned work for no corner-
+  quality gain) and scallop (its strip uses a CSS radial-gradient, not
+  an SVG mask — needs a different conversion approach than the other
+  13 patterns, deferred rather than rushed).
+
+13 of 15 patterns now on border-image; dots and scallop remain on the
+old strip+corner mask-image system for the reasons above.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
