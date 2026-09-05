@@ -1422,6 +1422,42 @@ rest of the patterns.
 13 of 15 patterns now on border-image; dots and scallop remain on the
 old strip+corner mask-image system for the reasons above.
 
+**Finishing the last two**: Sebastian: "finish." Tried both.
+
+- **dots**: converted to the icon-placement system (path-based circle,
+  4-cubic-bezier approximation, same technique as the other 9 icon
+  patterns) and it technically worked, but a real quality regression
+  showed up under a 2x zoomed crop: a small round shape renders crisp
+  in the corner slot (never rescaled by border-image) but visibly
+  softer/fuzzier in the edge slots (rescaled by `border-image-repeat:
+  round`) — the large-radius icons used by diamond/star/etc. don't
+  show this because they have more linear "reach" to survive the
+  rescale; a small circle does not. Tried enlarging the radius twice
+  (0.9 -> 1.3 units) to compensate; better but still visibly softer
+  than the corner. Since dots already works perfectly on the old
+  system and never had a corner-connection bug to justify the
+  migration in the first place, reverted rather than ship a strictly
+  worse result for consistency's sake alone — the first time in this
+  whole migration a pattern was intentionally left behind after
+  actually testing the alternative, not just by inference.
+- **scallop**: converted the CSS radial-gradient strips + the already-
+  fixed arc-fill corner (see the earlier "pin pon" fill-direction
+  lesson) into one filled-arc SVG using `BORDER_IMAGE_EXPLICIT_EDGES`,
+  extended to support explicit per-corner pieces plus a `fill` flag
+  (previous uses of that path were all stroked outlines). One bump per
+  40-unit edge tile, radius 20 matching the shared corner scale,
+  touching the corner boundary the same way the old design's tangent
+  circles touched each other. Corner wedge reused verbatim (just
+  scaled x5) since it was already known-good; hand-derived the other 3
+  corners rather than mirrored, same arc-radius mirroring hazard as
+  arches. Worked on the first isolated test. Piloted on "Los cinco
+  patitos" (frame-scallop-bi, "Pin Pon" itself left on the old system
+  so both remain comparable).
+
+**Final state: 14 of 15 patterns on border-image.** Only dots stays on
+the old mask-image system, and for a specific, tested reason (small-
+icon edge-rescale softness) rather than by default.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
