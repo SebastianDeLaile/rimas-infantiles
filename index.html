@@ -1593,7 +1593,7 @@ y también dice: ¡quiriquiquí!</div>
   </section>
 
   <!-- 20. LOS CINCO PATITOS -->
-  <section class="a4-sheet frame-scallop" style="--accent:#4a90a4" data-punch="left">
+  <section class="a4-sheet frame-scallop-bi" style="--accent:#4a90a4" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -4136,6 +4136,27 @@ const BORDER_IMAGE_EXPLICIT_EDGES = {
     edgeLeft: "M20,20 A10,10 0 0 0 20,40 A10,10 0 0 0 20,60",
     edgeRight: "M60,20 A10,10 0 0 1 60,40 A10,10 0 0 1 60,60",
   },
+  // scallop: filled semicircle bumps (was a CSS radial-gradient on the
+  // strips, not an SVG mask, plus a separately-fixed quarter-circle
+  // corner wedge -- see the fill-direction lesson above). One bump per
+  // 40-unit edge tile (radius 20, matching the corner scale), touching
+  // the corner boundary exactly like the old design's adjacent circles
+  // touching at each tile edge. Corner wedge reused verbatim from the
+  // already-fixed corner art (scaled x5), hand-derived for the other 3
+  // corners rather than mirrored -- same arc-radius mirroring hazard as
+  // arches.
+  scallop: {
+    size: 80,
+    cornerTL: "M0,20 A20,20 0 0 1 20,0 L20,20 Z",
+    cornerTR: "M80,20 A20,20 0 0 0 60,0 L60,20 Z",
+    cornerBL: "M0,60 A20,20 0 0 0 20,80 L20,60 Z",
+    cornerBR: "M80,60 A20,20 0 0 1 60,80 L60,60 Z",
+    edgeTop: "M20,0 A20,20 0 0 0 60,0 Z",
+    edgeBottom: "M20,80 A20,20 0 0 1 60,80 Z",
+    edgeLeft: "M0,20 A20,20 0 0 1 0,60 Z",
+    edgeRight: "M80,20 A20,20 0 0 0 80,60 Z",
+    fill: true,
+  },
 };
 // Independent-icon patterns (no corner-to-edge connection needed --
 // same as the old mask-image design for these: a small self-contained
@@ -4159,6 +4180,15 @@ const BORDER_IMAGE_ICON_PATTERNS = {
   // the original mask art too -- handled as a special case in
   // iconBorderSVG rather than forcing them through the single-shape path.
   ticks: { corner: "circle", edge: "line" },
+  // dots was tried here too (path-based circle, same technique as
+  // above) but rejected: a small round shape renders crisp in the
+  // never-rescaled corner slot but visibly softer/fuzzier in the
+  // round-repeat-rescaled edge slot (large-radius icons like the ones
+  // above don't show this, small circles do). Since dots already works
+  // perfectly on the old mask-image system and never had a corner-
+  // connection problem to fix, that softness is a pure regression with
+  // no offsetting benefit -- left on the old system instead of shipping
+  // a worse result for consistency's sake.
 };
 function transformPath(d, ocx, ocy, cx, cy, scale) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) =>
@@ -4171,12 +4201,16 @@ function iconBorderSVG(patternKey, hex) {
   const edgeCenters = [[35, 10], [65, 10], [35, 90], [65, 90], [10, 35], [10, 65], [90, 35], [90, 65]];
   let els;
   if (pattern.corner === "circle") {
-    els = cornerCenters.map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="2.75" fill="${hex}"/>`)
-      .concat(edgeCenters.map(([cx, cy]) => {
+    els = cornerCenters.map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="2.75" fill="${hex}"/>`);
+    if (pattern.edge === "circle") {
+      els = els.concat(edgeCenters.map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="2.75" fill="${hex}"/>`));
+    } else {
+      els = els.concat(edgeCenters.map(([cx, cy]) => {
         const vertical = cy === 10 || cy === 90;
         const [x1, y1, x2, y2] = vertical ? [cx, cy - 6, cx, cy + 6] : [cx - 6, cy, cx + 6, cy];
         return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hex}" stroke-width="3" stroke-linecap="round"/>`;
       }));
+    }
   } else {
     const attrs = pattern.mode === "fill"
       ? `fill="${hex}" stroke="none"`
@@ -4215,6 +4249,11 @@ function borderImageSVG(patternKey, hex) {
     const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
     size = p.size;
     pieces = [p.edgeTop, p.edgeBottom, p.edgeLeft, p.edgeRight];
+    if (p.cornerTL) pieces.push(p.cornerTL, p.cornerTR, p.cornerBL, p.cornerBR);
+    if (p.fill) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${pieces.map(d => `<path d="${d}" fill="${hex}"/>`).join("")}</svg>`;
+      return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+    }
   }
   const paths = pieces
     .map(d => `<path d="${d}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
