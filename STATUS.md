@@ -1458,6 +1458,54 @@ old strip+corner mask-image system for the reasons above.
 the old mask-image system, and for a specific, tested reason (small-
 icon edge-rescale softness) rather than by default.
 
+**Full rollout, prompted by two real bugs the pilots hadn't caught**:
+Sebastian, after reviewing the live site: "look still some dodgy
+corners, chuchuwa los pollitos dicen arroz con leche, look closely at
+all 4 corners at all of them." These were all still on the *old*
+mask-image system (only one card per pattern had been piloted to
+border-image so far) — checking closely at 300dpi and at live-render
+scale found two genuine, visible-at-normal-viewing-size defects that
+earlier passes had missed:
+
+- **zigzag** (Arroz con leche): the "clean single diagonal" corner
+  from the earlier connection-gap fix has a visible spike/fork right
+  at the vertex. Root cause: the two legs meet at only ~14° (established
+  earlier, when it blocked adding corner detail) — a *stroke*, not just
+  a path, at that acute an angle self-overlaps near the join and shows
+  as a small extra sliver, even though the path itself is a clean two-
+  segment line. Not caught earlier because the angle-consistency check
+  done at the time didn't zoom into the vertex pixels themselves.
+- **wave** (Los pollitos dicen): a small but real kink where the strip
+  meets the corner piece — the old design's tangent-matched curve was
+  only approximately continuous, not exactly.
+
+Both are exactly the class of defect border-image's corner-is-part-of-
+the-same-path construction eliminates by construction. xmarks
+(Chuchuwa) itself checked out fine — it just turned out to be an
+oversight that it was never piloted at all, not a rejected case.
+
+Since the technique is proven across every pattern category by this
+point (fused polyline, corner+edge curves, explicit arc edges,
+independent icons), rather than pilot xmarks too and ask again, flipped
+**every remaining card of all 14 proven patterns** from `frame-<name>`
+to `frame-<name>-bi` in one pass (57 cards). Verified with a dedicated
+DOM check (not just the visual spot-check): of 150 sheets, 140 now
+carry a `.frame-border-image` div with a non-empty `border-image-
+source` (zero missing, zero empty), and the remaining 10 (dots' 5
+cards x2 sides) still correctly get the old `.frame-strip` elements —
+confirms the batch rename didn't silently break a card the visual
+crops happened not to cover. Re-ran the full 150-sheet clearance scan
+too: still 0 flagged.
+
+**Lesson**: "looks consistent" (same angle at all 4 corners, same
+spacing) is not the same check as "renders cleanly at the pixel
+level" — the zigzag spike had been sitting there since the original
+connection-gap fix, visible at normal reading size, simply because
+nobody had zoomed into the actual vertex after confirming the angles
+matched. When a user reports "dodgy" on something already marked
+fixed, re-verify at native resolution before assuming it's just
+unfamiliarity with an accepted minor imperfection.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
