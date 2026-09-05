@@ -1077,7 +1077,7 @@ para ir a jugar.</div>
   </section>
 
   <!-- 4. DEBAJO DE UN BOTÓN -->
-  <section class="a4-sheet frame-loop" style="--accent:#2f6690" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-loop-bi" style="--accent:#2f6690" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -4115,6 +4115,11 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // canvas a wave period rendered so small (~1.1mm) it looked like a
   // row of dots instead of a curve; this gives ~13.5mm per period.
   wave: { size: 100, corner: "M20,10 Q8,8 10,20", edgeTop: "M20,10 Q35,3 50,10 T80,10", edgeLeft: "M10,20 Q3,35 10,50 T10,80" },
+  // loop's edge tile is the original strip art (viewBox 0 0 9 4) scaled
+  // x5 (period 9->45, baseline y=3->15) and shifted +20 into the edge
+  // band; edgeLeft is the same tile with x/y swapped. Canvas 85 = 20
+  // (corner) + 45 (one period) + 20.
+  loop: { size: 85, corner: "M20,15 Q8,8 15,20", edgeTop: "M20,15 C20,5 30,5 31.25,10 C32.5,15 42.5,15 42.5,7.5 C42.5,15 52.5,15 53.75,10 C55,5 65,5 65,15", edgeLeft: "M15,20 C5,20 5,30 10,31.25 C15,32.5 15,42.5 7.5,42.5 C15,42.5 15,52.5 10,53.75 C5,55 5,65 15,65" },
 };
 function mirrorPathX(d, w) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${w - parseFloat(x)},${y}`);
