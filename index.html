@@ -1375,7 +1375,7 @@ tras, tras, tras.</div>
   </section>
 
   <!-- 15. NARANJA DULCE, LIMÓN PARTIDO -->
-  <section class="a4-sheet frame-arches" style="--accent:#8aad3a" data-punch="left" data-country="México">
+  <section class="a4-sheet frame-arches-bi" style="--accent:#8aad3a" data-punch="left" data-country="México">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -4121,6 +4121,22 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // (corner) + 45 (one period) + 20.
   loop: { size: 85, corner: "M20,15 Q8,8 15,20", edgeTop: "M20,15 C20,5 30,5 31.25,10 C32.5,15 42.5,15 42.5,7.5 C42.5,15 52.5,15 53.75,10 C55,5 65,5 65,15", edgeLeft: "M15,20 C5,20 5,30 10,31.25 C15,32.5 15,42.5 7.5,42.5 C15,42.5 15,52.5 10,53.75 C5,55 5,65 15,65" },
 };
+// Arc ("A rx,ry rot,large-arc,sweep x,y") commands can't go through the
+// regex mirror below -- it would mirror the rx,ry pair as if it were a
+// coordinate, corrupting the radius. Patterns using arcs hand-author
+// all 4 edges directly instead of mirroring one. No corner piece here:
+// each edge's arcs start exactly at the shared corner point, same as
+// the old mask-image arches corner (which was literally `display:none`
+// -- the strips meeting at a shared point was already the design).
+const BORDER_IMAGE_EXPLICIT_EDGES = {
+  arches: {
+    size: 80,
+    edgeTop: "M20,20 A10,10 0 0 1 40,20 A10,10 0 0 1 60,20",
+    edgeBottom: "M20,60 A10,10 0 0 0 40,60 A10,10 0 0 0 60,60",
+    edgeLeft: "M20,20 A10,10 0 0 0 20,40 A10,10 0 0 0 20,60",
+    edgeRight: "M60,20 A10,10 0 0 1 60,40 A10,10 0 0 1 60,60",
+  },
+};
 function mirrorPathX(d, w) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${w - parseFloat(x)},${y}`);
 }
@@ -4144,6 +4160,10 @@ function borderImageSVG(patternKey, hex) {
       p.edgeTop, mirrorPathY(p.edgeTop, size),
       p.edgeLeft, mirrorPathX(p.edgeLeft, size),
     ];
+  } else if (BORDER_IMAGE_EXPLICIT_EDGES[patternKey]) {
+    const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
+    size = p.size;
+    pieces = [p.edgeTop, p.edgeBottom, p.edgeLeft, p.edgeRight];
   }
   const paths = pieces
     .map(d => `<path d="${d}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
