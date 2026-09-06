@@ -1198,6 +1198,20 @@ starting a new print project instead of re-deriving it.
 
 ## Gotchas / process notes for continuing this
 
+- **Physical printing can look smaller than expected — not a file bug.**
+  Sebastian: "when i printed my mine it was a bit smaller than i
+  expected, i believe it shrinks and adds a print margin." The PDF
+  itself is exactly A4 (210x297mm, confirmed via its own MediaBox) with
+  zero margin — the decorative border is deliberately inset 7mm from
+  the true page edge as a safety buffer, since almost no consumer
+  printer can print truly edge-to-edge. macOS's print dialog (Preview
+  or the system one) commonly defaults to "Scale to Fit" for a PDF
+  whose size matches the paper but whose printer reports a nonzero
+  hardware margin — that shrinks the *whole page* to fit inside the
+  printable area, rather than letting the printer clip the few mm it
+  can't reach. Fix is in the print dialog, not the file: set scale to
+  **100% / Actual Size**. The printer's typical 3-5mm hardware margin
+  then lands safely inside the built-in 7mm buffer with nothing lost.
 - **Accent colors must be globally unique.** A `sed`-style global replace
   once accidentally clobbered an existing section's color when fixing a
   duplicate — always verify with the count check below, and if fixing a
