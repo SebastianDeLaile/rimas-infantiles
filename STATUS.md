@@ -1506,6 +1506,56 @@ matched. When a user reports "dodgy" on something already marked
 fixed, re-verify at native resolution before assuming it's just
 unfamiliarity with an accepted minor imperfection.
 
+**dots migrated too, after finding the actual bug (a PDF-renderer
+incompatibility, not a spacing issue)**: Sebastian kept pushing after
+the fix above ("cinco lobitos... gap between the far right dot and the
+dot closest to it," then "looks very broken"). Every check available
+in this environment said the geometry was fine: pixel-measured every
+dot on every edge of both pages in a 300dpi Poppler render (uniform to
+within 2%), the exact CSS-pixel math for the corner junction (checks
+out to within 0.01px), five browser viewport widths, three device
+pixel ratios — all clean. Asked for a screenshot twice; the PDF file's
+own checksum matched between the project and the copy sent to
+Sebastian's inbox. All of this was real verification, and all of it
+was checking the wrong thing.
+
+The screenshot (Sebastian's actual Preview.app, on the exact PDF file
+sent) showed the answer immediately: the left/right strips render as
+solid color bars, not dots, while the top edge is fine. This is not a
+spacing bug — it's a PDF renderer incompatibility. Chromium's
+print-to-PDF serializes the repeating-circle mask-image on the old
+system's vertical strips into some PDF construct that Poppler
+(everything used to verify this so far) interprets leniently and
+correctly, but that Apple's Quartz PDF renderer — Preview.app, Safari's
+PDF viewer, and very likely macOS's own print pipeline — doesn't apply
+at all, so it just paints the strip's un-masked background-color
+rectangle. Confirmed directly with `qlmanage -t` (thumbnails use the
+same renderer as Preview): broken on dots' old mask-image system,
+clean on every already-migrated border-image pattern tested the same
+way (zigzag, arches, wave, star) — meaning the whole earlier migration
+was safe all along; this was the one holdout pattern's own latent bug,
+invisible to Poppler and to on-screen Chrome rendering alike.
+
+Reinstated the dots border-image icon entry from the earlier attempt
+(originally passed over for a minor cosmetic softness at small
+radius — see the prior entry) and flipped the remaining 5 frame-dots
+cards to frame-dots-bi. All 15 patterns are now on border-image; the
+old mask-image strip+corner system is fully retired from this project.
+Re-verified with `qlmanage -t` on the regenerated PDF: clean dots on
+all 4 sides.
+
+**Lesson**: when a user reports a visual bug that survives multiple
+rounds of "I checked and it looks fine," the bug is not necessarily in
+the geometry — it might be in a rendering path your tools don't cover
+at all. Every verification method available in this sandbox (Poppler,
+headless Chrome, Playwright) shares fundamentally similar rendering
+assumptions; none of them would have caught a PDF construct that only
+a *different* PDF engine mishandles. A real screenshot from the user's
+actual environment found in one look what extensive, careful,
+multi-angle automated checking from inside the sandbox could not — a
+timely reminder that "I can't reproduce it with my tools" is a
+statement about the tools' coverage, not proof the bug isn't real.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
