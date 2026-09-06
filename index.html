@@ -1030,7 +1030,7 @@ duermen los pollitos.</div>
   </section>
 
   <!-- 2. CINCO LOBITOS -->
-  <section class="a4-sheet frame-dots" style="--accent:#6c4a86" data-punch="left" data-country="España">
+  <section class="a4-sheet frame-dots-bi" style="--accent:#6c4a86" data-punch="left" data-country="España">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -1462,7 +1462,7 @@ una prenda.</div>
   </section>
 
   <!-- 17. HUACHÍ TORITÓ -->
-  <section class="a4-sheet frame-dots" style="--accent:#8a2035" data-punch="left" data-country="Bolivia · Perú · Chile · Argentina">
+  <section class="a4-sheet frame-dots-bi" style="--accent:#8a2035" data-punch="left" data-country="Bolivia · Perú · Chile · Argentina">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2027,7 +2027,7 @@ que lo guarde con mucho primor.
   </section>
 
   <!-- 32. A LA RUEDA RUEDA -->
-  <section class="a4-sheet frame-dots" style="--accent:#5aa876" data-punch="left" data-country="Cuba · Hispanoamérica">
+  <section class="a4-sheet frame-dots-bi" style="--accent:#5aa876" data-punch="left" data-country="Cuba · Hispanoamérica">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -2572,7 +2572,7 @@ la luna ya se metió.</div>
   </section>
 
   <!-- 47. MAMBRÚ SE FUE A LA GUERRA -->
-  <section class="a4-sheet frame-dots" style="--accent:#6a7a8a" data-punch="left">
+  <section class="a4-sheet frame-dots-bi" style="--accent:#6a7a8a" data-punch="left">
     <div class="a4-page">
     <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content">
@@ -3029,7 +3029,7 @@ y las vuelvo a guardar.</div>
   </section>
 
   <!-- 62. TAMBORÉ -->
-  <section class="a4-sheet frame-dots" style="--accent:#8f4f86" data-punch="left" data-country="Venezuela · Isla de Margarita">
+  <section class="a4-sheet frame-dots-bi" style="--accent:#8f4f86" data-punch="left" data-country="Venezuela · Isla de Margarita">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
     <div class="a4-sheet__content"><div class="band"><h2>Tamboré</h2></div><div class="scallop"></div><div class="sheet-body">
       <svg class="illus" viewBox="0 0 240 180" aria-label="Children dancing in two lines with a drum"><ellipse cx="120" cy="137" rx="43" ry="19" fill="#d78c45" stroke="#2b2440" stroke-width="3"/><path d="M77 137h86" stroke="#f7e3bd" stroke-width="4"/><circle cx="68" cy="65" r="14" fill="#f2c9a0"/><circle cx="172" cy="65" r="14" fill="#f2c9a0"/><path d="M52 117V83 q16-14 32 0v34 M156 117V83 q16-14 32 0v34" fill="#8f4f86"/><path d="M85 91l20 22 M155 91l-20 22" stroke="#2b2440" stroke-width="5" stroke-linecap="round"/></svg>
@@ -4180,15 +4180,19 @@ const BORDER_IMAGE_ICON_PATTERNS = {
   // the original mask art too -- handled as a special case in
   // iconBorderSVG rather than forcing them through the single-shape path.
   ticks: { corner: "circle", edge: "line" },
-  // dots was tried here too (path-based circle, same technique as
-  // above) but rejected: a small round shape renders crisp in the
-  // never-rescaled corner slot but visibly softer/fuzzier in the
-  // round-repeat-rescaled edge slot (large-radius icons like the ones
-  // above don't show this, small circles do). Since dots already works
-  // perfectly on the old mask-image system and never had a corner-
-  // connection problem to fix, that softness is a pure regression with
-  // no offsetting benefit -- left on the old system instead of shipping
-  // a worse result for consistency's sake.
+  // dots was tried here and initially rejected for a minor cosmetic
+  // regression (a small round shape renders crisp in the never-rescaled
+  // corner slot but visibly softer in the round-repeat-rescaled edge
+  // slot). Reinstated after discovering the OLD mask-image system dots
+  // was being kept on has a much worse problem: Chromium's print-to-PDF
+  // serializes the left/right strips' repeating circle mask into a PDF
+  // construct that Apple's Quartz PDF renderer (Preview.app, Safari's
+  // PDF viewer, macOS printing) doesn't apply at all, painting solid
+  // color bars down both sides instead of dots -- confirmed via
+  // `qlmanage -t` (uses the same renderer as Preview) on the old system,
+  // and confirmed absent on every already-migrated border-image pattern
+  // tested the same way. A slightly softer dot beats a solid bar.
+  dots: { d: "M3.3,2 C3.3,2.718 2.718,3.3 2,3.3 C1.282,3.3 0.7,2.718 0.7,2 C0.7,1.282 1.282,0.7 2,0.7 C2.718,0.7 3.3,1.282 3.3,2 Z", mode: "fill" },
 };
 function transformPath(d, ocx, ocy, cx, cy, scale) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) =>
