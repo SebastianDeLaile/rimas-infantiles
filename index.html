@@ -110,6 +110,24 @@
    needed. border-image-source is set per-card via JS (addBorderImageFrame)
    since border-image can't be tinted with background-color the way
    mask-image can. */
+/* background-image delivery for the 10 independent-icon patterns (see
+   the addBackgroundImageFrame JS comment for why this exists alongside
+   border-image) -- geometry matches the original pre-border-image mask
+   design exactly (same 7mm/11.5mm insets, same 4mm corner/strip
+   thickness), just painting color directly instead of masking a
+   background-color. */
+.frame-bgi-strip, .frame-bgi-corner { position: absolute; pointer-events: none; background-repeat: no-repeat; }
+.frame-bgi-strip-top, .frame-bgi-strip-bottom { left: 11.5mm; right: 11.5mm; height: 4mm; background-repeat: round; }
+.frame-bgi-strip-top { top: 7mm; }
+.frame-bgi-strip-bottom { bottom: 7mm; }
+.frame-bgi-strip-left, .frame-bgi-strip-right { top: 11.5mm; bottom: 11.5mm; width: 4mm; background-repeat: round; }
+.frame-bgi-strip-left { left: 7mm; }
+.frame-bgi-strip-right { right: 7mm; }
+.frame-bgi-corner { width: 4mm; height: 4mm; }
+.frame-bgi-corner-tl { top: 7mm; left: 7mm; }
+.frame-bgi-corner-tr { top: 7mm; right: 7mm; }
+.frame-bgi-corner-bl { bottom: 7mm; left: 7mm; }
+.frame-bgi-corner-br { bottom: 7mm; right: 7mm; }
 .frame-border-image {
   position: absolute;
   top: 7mm; left: 7mm; right: 7mm; bottom: 7mm;
@@ -4301,11 +4319,82 @@ function addBorderImageFrame(page, accentHex, patternKey) {
   div.style.borderImageSource = borderImageSVG(patternKey, accentHex);
   page.appendChild(div);
 }
+/* border-image, it turns out, has a real Chromium print-to-PDF quality
+   bug of its own: Sebastian found visible "little dots between X's" on
+   crosshatch, and this same investigation explains zigzag's earlier-
+   reported blur too -- both are the REPEATED portion of a border-image
+   tile specifically (the never-repeated corner slice stays crisp
+   regardless). Proved this with a throwaway isolated test: the exact
+   same SVG content rendered as a plain <img>, or as a background-image
+   with background-repeat: repeat-x/round, comes out perfectly crisp in
+   both Poppler and Quartz; only border-image degrades it. So this is
+   the fix -- background-image on real per-corner/per-edge elements
+   (closer to the original pre-border-image mask design, just painting
+   color directly via background-image instead of masking a
+   background-color) -- for the 10 patterns that are independent icons
+   with no corner-to-edge connection to preserve (never had the
+   tangent-matching problem border-image was adopted to solve in the
+   first place, so there's nothing to lose switching them). zigzag/
+   wave/loop/arches stay on border-image for now since fixing those
+   properly means either reintroducing the old tangent-matching
+   fragility or a fused-quadrant-plus-repeating-middle-tile hybrid that
+   hasn't been built yet -- their blur is a real but lower-severity
+   cosmetic issue, left as a known follow-up rather than rushed here. */
+const BG_IMAGE_ICON_PATTERNS = {
+  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, corner: { vb: "0 0 4 4", el: 'path d="M0,0 L4,4 M0,4 L4,0"' }, sw: 0.6, mode: "stroke" },
+  diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.5 L3.5,2 L2,3.5 L0.5,2 Z"' }, sw: 0.6, mode: "stroke", join: true },
+  teardrop: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,1 C4,1 4,3 3,3 C2,3 2,1 3,1 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M1,3 C1,2 3,2 3,3 C3,4 1,4 1,3 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.7 C3,0.7 3,3.3 2,3.3 C1,3.3 1,0.7 2,0.7 Z"' }, sw: 0.55, mode: "stroke" },
+  ticks: { stripTop: { vb: "0 0 3 4", el: 'line x1="1.5" y1="0.8" x2="1.5" y2="3.2"' }, stripLeft: { vb: "0 0 4 3", el: 'line x1="0.8" y1="1.5" x2="3.2" y2="1.5"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.55"' }, sw: 0.6, mode: "stroke", cornerFill: true },
+  xmarks: { stripTop: { vb: "0 0 5 4", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M1,1.3 L3,3.7 M1,3.7 L3,1.3"' }, corner: { vb: "0 0 4 4", el: 'path d="M1,1 L3,3 M3,1 L1,3"' }, sw: 0.6, mode: "stroke" },
+  plus: { stripTop: { vb: "0 0 5 4", el: 'path d="M2.5,0.8 L2.5,3.2 M1.3,2 L3.7,2"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M0.8,2.5 L3.2,2.5 M2,1.3 L2,3.7"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.8 L2,3.2 M0.8,2 L3.2,2"' }, sw: 0.6, mode: "stroke" },
+  square: { stripTop: { vb: "0 0 6 4", el: 'rect x="1.3" y="0.8" width="3.4" height="2.4"' }, stripLeft: { vb: "0 0 4 6", el: 'rect x="0.8" y="1.3" width="2.4" height="3.4"' }, corner: { vb: "0 0 4 4", el: 'rect x="1" y="1" width="2" height="2"' }, sw: 0.55, mode: "stroke" },
+  spiral: { stripTop: { vb: "0 0 7 4", el: 'path d="M3.5,3 C2.2,3 2.2,1.2 3.5,1.2 C4.4,1.2 4.4,2.4 3.6,2.4 C3.1,2.4 3.1,1.8 3.5,1.8"' }, stripLeft: { vb: "0 0 4 7", el: 'path d="M1,3.5 C1,2.2 2.8,2.2 2.8,3.5 C2.8,4.4 1.6,4.4 1.6,3.6 C1.6,3.1 2.2,3.1 2.2,3.5"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,3 C0.7,3 0.7,1.2 2,1.2 C2.9,1.2 2.9,2.4 2.1,2.4 C1.6,2.4 1.6,1.8 2,1.8"' }, sw: 0.5, mode: "stroke" },
+  star: { stripTop: { vb: "0 0 8 4", el: 'polygon points="4.00,0.40 4.38,1.47 5.52,1.51 4.62,2.20 4.94,3.29 4.00,2.65 3.06,3.29 3.38,2.20 2.48,1.51 3.62,1.47"' }, stripLeft: { vb: "0 0 4 8", el: 'polygon points="2.00,2.40 2.38,3.47 3.52,3.51 2.62,4.20 2.94,5.29 2.00,4.65 1.06,5.29 1.38,4.20 0.48,3.51 1.62,3.47"' }, corner: { vb: "0 0 4 4", el: 'polygon points="2.00,0.50 2.35,1.51 3.43,1.54 2.57,2.19 2.88,3.21 2.00,2.60 1.12,3.21 1.43,2.19 0.57,1.54 1.65,1.51"' }, mode: "fill" },
+  dots: { stripTop: { vb: "0 0 5.052632 4", el: 'circle cx="2.526316" cy="2" r="0.9"' }, stripLeft: { vb: "0 0 4 4.982143", el: 'circle cx="2" cy="2.491071" r="0.9"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.9"' }, mode: "fill" },
+};
+function bgImageDataURI(piece, hex, mode, sw, join, cornerFill) {
+  const isFillMode = mode === "fill" || cornerFill;
+  const attrs = isFillMode ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round"${join ? ' stroke-linejoin="round"' : ""}`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${piece.vb}"><${piece.el} ${attrs}/></svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+}
+function mmSizeFromViewBox(vb) {
+  const [, , w, h] = vb.split(" ").map(Number);
+  return `${w}mm ${h}mm`;
+}
+function addBackgroundImageFrame(page, accentHex, patternKey) {
+  const p = BG_IMAGE_ICON_PATTERNS[patternKey];
+  ["top", "bottom"].forEach(side => {
+    const el = document.createElement("div");
+    el.className = `frame-bgi-strip frame-bgi-strip-${side}`;
+    el.style.backgroundImage = bgImageDataURI(p.stripTop, accentHex, p.mode, p.sw, p.join, false);
+    el.style.backgroundSize = mmSizeFromViewBox(p.stripTop.vb);
+    page.appendChild(el);
+  });
+  ["left", "right"].forEach(side => {
+    const el = document.createElement("div");
+    el.className = `frame-bgi-strip frame-bgi-strip-${side}`;
+    el.style.backgroundImage = bgImageDataURI(p.stripLeft, accentHex, p.mode, p.sw, p.join, false);
+    el.style.backgroundSize = mmSizeFromViewBox(p.stripLeft.vb);
+    page.appendChild(el);
+  });
+  ["tl", "tr", "bl", "br"].forEach(corner => {
+    const el = document.createElement("div");
+    el.className = `frame-bgi-corner frame-bgi-corner-${corner}`;
+    el.style.backgroundImage = bgImageDataURI(p.corner, accentHex, p.mode, p.sw, p.join, p.cornerFill);
+    el.style.backgroundSize = mmSizeFromViewBox(p.corner.vb);
+    page.appendChild(el);
+  });
+}
 function addFrame(sheet, page, accentHex) {
   const biClass = [...sheet.classList].find(c => /^frame-.+-bi$/.test(c));
   if (biClass) {
     const patternKey = biClass.replace(/^frame-/, "").replace(/-bi$/, "");
-    addBorderImageFrame(page, accentHex, patternKey);
+    if (BG_IMAGE_ICON_PATTERNS[patternKey]) {
+      addBackgroundImageFrame(page, accentHex, patternKey);
+    } else {
+      addBorderImageFrame(page, accentHex, patternKey);
+    }
   } else {
     addFrameStrips(page);
   }
