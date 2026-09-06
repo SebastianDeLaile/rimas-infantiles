@@ -1570,6 +1570,63 @@ multi-angle automated checking from inside the sandbox could not — a
 timely reminder that "I can't reproduce it with my tools" is a
 statement about the tools' coverage, not proof the bug isn't real.
 
+**Root-caused and fixed the actual border-image bug (dots + blur, same
+cause)**: Sebastian: "the sana sana border is a bit dodgy some little
+dots between X's." Rather than re-running the earlier inconclusive
+zigzag blur investigation, isolated the question directly: does the
+exact same SVG content render cleanly through a *different* delivery
+mechanism? Three throwaway tests, not guesses:
+1. The crosshatch tile as a plain `<img>` — perfectly crisp.
+2. The same tile as a `background-image` with `background-repeat:
+   repeat-x` — perfectly crisp, tiled.
+3. Same again with `background-repeat: round` — perfectly crisp.
+
+All three clean, in both Poppler and Quartz. Only `border-image`
+degrades this content, and only its *repeated* portion — the
+never-repeated corner slice was always crisp, in every earlier test
+too, which in hindsight was the tell. This means the four levers tried
+earlier for zigzag's blur (source resolution, deviceScaleFactor,
+round-vs-repeat, stroke width) were never going to work — the bug is
+in Chromium's border-image tile rasterization itself, not in anything
+controllable from the content or CSS side of that property.
+
+Since `background-image` is proven clean, the fix is real, but it
+reintroduces the exact corner-to-edge tangent-matching fragility that
+border-image was adopted to eliminate (a separate corner asset and a
+separate repeating edge asset no longer share one continuous path).
+That fragility only matters for patterns where the corner needs to
+*connect* to the edge — zigzag, wave, loop, arches. The other 10
+patterns (diamond, xmarks, plus, square, star, teardrop, spiral,
+crosshatch, ticks, dots) are independent icons with nothing to
+connect, so there's zero risk migrating them. Did exactly that:
+reused the original pre-border-image mask geometry verbatim (same
+viewBox/path data, same 4mm/7mm/11.5mm positioning) via a new
+`addBackgroundImageFrame`, painting color directly instead of masking
+a `background-color`. This also incidentally fixes dots' earlier
+"crisp corner, soft repeated edge" regression from the same root
+cause, so dots didn't need its own compensating fix after all.
+
+zigzag/wave/loop/arches stay on border-image, softness and all, until
+either the tangent-matching work is redone by hand for those four, or
+someone builds the fused-quadrant-plus-repeating-middle-tile hybrid
+sketched out during this investigation (draw each corner + a short
+matching arm of its own pattern as one connected fixed piece via
+background-image no-repeat, then fill the remaining middle of each
+edge with a separate repeating background-image tile whose phase
+already matches because both pieces share the same underlying period)
+— noted here as the concrete next step rather than left as a vague TODO.
+
+**Lesson**: a bug that only shows up in a *specific* CSS property
+(here, specifically `border-image`, not SVG masks, not backgrounds,
+not plain images) is best isolated by testing the SAME content through
+alternate delivery mechanisms one at a time, rather than continuing to
+vary parameters *within* the suspect mechanism (resolution, scale,
+repeat mode, stroke width — none of which touch the actual code path
+that's broken). "Corner always crisp, repeated edge never crisp,
+regardless of what I change about the repeated content" was the signal
+that the bug lived in the *repeat* mechanism itself, not in anything
+upstream of it.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
