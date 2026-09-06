@@ -116,7 +116,15 @@
   box-sizing: border-box;
   border-style: solid;
   border-width: 4.5mm;
-  border-image-slice: 20;
+  /* 20 * RESOLUTION_SCALE (4, in the JS below) -- border-image-slice is
+     read against the SVG's declared intrinsic width/height, not its
+     viewBox, so it has to scale together with that width/height bump
+     (see borderImageSVG/iconBorderSVG -- note the JS comment there:
+     the bump doesn't fix the repeating-edge softness Sebastian found,
+     it's just correct to keep regardless). All the pattern path data
+     stays authored in the original small viewBox units; only the
+     declared raster size and this slice number change. */
+  border-image-slice: 80;
   border-image-repeat: round;
   pointer-events: none;
 }
@@ -725,7 +733,7 @@
 
 @media print {
   @page { size: A4; margin: 0; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; background: var(--sheet-bg); }
   .no-print { display: none !important; }
   .a4-preview { background: none; padding: 0; gap: 0; }
   .a4-sheet { box-shadow: none; width: var(--page-w); height: var(--page-h); page-break-after: always; break-after: page; }
@@ -854,12 +862,16 @@ h1, h2, h3, .display {
   }
 }
 
-/* header ribbon + scallop trim, accent color set per-sheet via --accent */
+/* header ribbon, accent color set per-sheet via --accent. Was a
+   scalloped/jagged-bottom "ticket stub" look (rounded-top band + a
+   separate .scallop bump strip right under it) -- Sebastian: "lets
+   make the heading background a plain rectangle with soft edges" --
+   now just one plain rounded rectangle; .scallop is inert below. */
 .band {
   background: var(--accent);
   color: #fbf6ea;
-  border-radius: 6mm 6mm 0 0;
-  padding: 7mm 9mm 5mm;
+  border-radius: 6mm;
+  padding: 7mm 9mm;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -878,10 +890,7 @@ h1, h2, h3, .display {
   text-transform: uppercase;
 }
 .scallop {
-  height: 4mm;
-  background-image: radial-gradient(circle at 4mm 0, var(--accent) 4mm, transparent 4.1mm);
-  background-size: 8mm 4mm;
-  background-repeat: repeat-x;
+  display: none;
 }
 
 .sheet-body {
@@ -4194,6 +4203,24 @@ const BORDER_IMAGE_ICON_PATTERNS = {
   // tested the same way. A slightly softer dot beats a solid bar.
   dots: { d: "M3.3,2 C3.3,2.718 2.718,3.3 2,3.3 C1.282,3.3 0.7,2.718 0.7,2 C0.7,1.282 1.282,0.7 2,0.7 C2.718,0.7 3.3,1.282 3.3,2 Z", mode: "fill" },
 };
+// Bumps the SVG's declared intrinsic width/height above its viewBox
+// (untouched, so no pattern path data needs to change). This does NOT
+// fix the softness Sebastian flagged on zigzag's repeating edge tiles
+// (tried: this, deviceScaleFactor up to 4, border-image-repeat:repeat
+// instead of round, and a thicker stroke -- the repeating edge stayed
+// equally soft under every one of those, in both Poppler and Quartz,
+// while the corner slice -- never repeated -- is crisp regardless and
+// *did* get visibly crisper from the stroke-width test alone. That
+// isolates it to how Chromium rasterizes a REPEATED border-image tile
+// specifically, not to source resolution, print DPI, or stroke size --
+// see the STATUS.md entry for the full elimination list before trying
+// another lever here). Left in place because it's free and correct in
+// principle (and CSS slice math already accounts for it below); it's
+// just not the fix for that bug. border-image-slice (.frame-border-image,
+// CSS) has to scale by the same factor since it's read against the
+// intrinsic size too -- a naive intrinsic-size bump alone silently
+// breaks slicing (see the loop entry in STATUS.md).
+const RESOLUTION_SCALE = 4;
 function transformPath(d, ocx, ocy, cx, cy, scale) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) =>
     `${(cx + (parseFloat(x) - ocx) * scale).toFixed(2)},${(cy + (parseFloat(y) - ocy) * scale).toFixed(2)}`);
@@ -4222,7 +4249,8 @@ function iconBorderSVG(patternKey, hex) {
     els = [...cornerCenters, ...edgeCenters]
       .map(([cx, cy]) => `<path d="${transformPath(pattern.d, 2, 2, cx, cy, scale)}" ${attrs}/>`);
   }
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${els.join("")}</svg>`;
+  const raster = size * RESOLUTION_SCALE;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${raster}" height="${raster}" viewBox="0 0 ${size} ${size}">${els.join("")}</svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 function mirrorPathX(d, w) {
@@ -4255,14 +4283,16 @@ function borderImageSVG(patternKey, hex) {
     pieces = [p.edgeTop, p.edgeBottom, p.edgeLeft, p.edgeRight];
     if (p.cornerTL) pieces.push(p.cornerTL, p.cornerTR, p.cornerBL, p.cornerBR);
     if (p.fill) {
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${pieces.map(d => `<path d="${d}" fill="${hex}"/>`).join("")}</svg>`;
+      const raster = size * RESOLUTION_SCALE;
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${raster}" height="${raster}" viewBox="0 0 ${size} ${size}">${pieces.map(d => `<path d="${d}" fill="${hex}"/>`).join("")}</svg>`;
       return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
     }
   }
   const paths = pieces
     .map(d => `<path d="${d}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
     .join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${paths}</svg>`;
+  const raster = size * RESOLUTION_SCALE;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${raster}" height="${raster}" viewBox="0 0 ${size} ${size}">${paths}</svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 function addBorderImageFrame(page, accentHex, patternKey) {
