@@ -128,6 +128,21 @@
 .frame-bgi-corner-tr { top: 7mm; right: 7mm; }
 .frame-bgi-corner-bl { bottom: 7mm; left: 7mm; }
 .frame-bgi-corner-br { bottom: 7mm; right: 7mm; }
+/* second variant for zigzag/wave/loop/arches: 4.5mm corner (matching
+   their existing approved border-image scale) instead of the icon
+   patterns' 4mm, positioned at the same 7mm/11.5mm insets. */
+.frame-bgi-strip2, .frame-bgi-corner2 { position: absolute; pointer-events: none; background-repeat: no-repeat; }
+.frame-bgi-strip2-top, .frame-bgi-strip2-bottom { left: 11.5mm; right: 11.5mm; height: 4.5mm; background-repeat: round; }
+.frame-bgi-strip2-top { top: 7mm; }
+.frame-bgi-strip2-bottom { bottom: 7mm; }
+.frame-bgi-strip2-left, .frame-bgi-strip2-right { top: 11.5mm; bottom: 11.5mm; width: 4.5mm; background-repeat: round; }
+.frame-bgi-strip2-left { left: 7mm; }
+.frame-bgi-strip2-right { right: 7mm; }
+.frame-bgi-corner2 { width: 4.5mm; height: 4.5mm; }
+.frame-bgi-corner2-tl { top: 7mm; left: 7mm; }
+.frame-bgi-corner2-tr { top: 7mm; right: 7mm; }
+.frame-bgi-corner2-bl { bottom: 7mm; left: 7mm; }
+.frame-bgi-corner2-br { bottom: 7mm; right: 7mm; }
 .frame-border-image {
   position: absolute;
   top: 7mm; left: 7mm; right: 7mm; bottom: 7mm;
@@ -4386,12 +4401,103 @@ function addBackgroundImageFrame(page, accentHex, patternKey) {
     page.appendChild(el);
   });
 }
+/* zigzag/wave/loop/arches: these DO need the corner to connect to the
+   edge (unlike the icon patterns above), which is exactly why they
+   were left on border-image while that was the only mechanism proven
+   to render cleanly. Once background-image was proven equally clean
+   (and border-image proven to be the actual bug), the missing piece
+   was how to keep the "corner is part of the same drawn path as the
+   edge" guarantee without border-image's slicing. The trick: an SVG's
+   viewBox can crop to ANY sub-rectangle of a path, including a
+   non-zero origin -- so the exact same already-verified-connected
+   quadrant path (or, for wave/loop, the exact same already-separate
+   corner/edgeTop/edgeLeft pieces) can be reused UNCHANGED, just
+   windowed through two different viewBoxes: one over the corner
+   region for a no-repeat corner element, one over one edge-arm's
+   region for a background-repeat:round edge element. Same path data,
+   same pixels at the shared boundary -- the connection is preserved
+   by construction, exactly as it was under border-image, but now
+   delivered through the mechanism that doesn't blur/fragment repeats.
+   arches has no corner piece at all (by original design -- its edges
+   already meet exactly at the shared point), so it only gets 4 edge
+   elements, no corner elements. */
+function svgURI(pathD, vb, hex, sw) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><path d="${pathD}" fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+}
+function mmFromVb(vb) {
+  const [, , w, h] = vb.split(" ").map(Number);
+  return `${(w * MM_PER_UNIT).toFixed(4)}mm ${(h * MM_PER_UNIT).toFixed(4)}mm`;
+}
+const MM_PER_UNIT = 4.5 / 20;
+function addStrip(page, side, pathD, vb, hex, sw) {
+  const el = document.createElement("div");
+  el.className = `frame-bgi-strip2 frame-bgi-strip2-${side}`;
+  el.style.backgroundImage = svgURI(pathD, vb, hex, sw);
+  el.style.backgroundSize = mmFromVb(vb);
+  page.appendChild(el);
+}
+function addCorner(page, corner, pathD, vb, hex, sw) {
+  const el = document.createElement("div");
+  el.className = `frame-bgi-corner2 frame-bgi-corner2-${corner}`;
+  el.style.backgroundImage = svgURI(pathD, vb, hex, sw);
+  el.style.backgroundSize = mmFromVb(vb);
+  page.appendChild(el);
+}
+function addConnectedBgFrame(page, accentHex, patternKey) {
+  const sw = 2.4; // viewBox units, not mm -- matches the border-image patterns' own stroke-width (2.4 units == 0.54mm at this scale)
+  if (BORDER_IMAGE_POLYLINES[patternKey]) {
+    const { size, pts } = BORDER_IMAGE_POLYLINES[patternKey];
+    const mirrorX = p => p.map(([x, y]) => [size - x, y]);
+    const mirrorY = p => p.map(([x, y]) => [x, size - y]);
+    const seg = p => "M" + p.map(pt => pt.join(",")).join(" L");
+    const tl = seg(pts), tr = seg(mirrorX(pts)), bl = seg(mirrorY(pts)), br = seg(mirrorX(mirrorY(pts)));
+    const c = 20; // corner box side, in this pattern's own units
+    addCorner(page, "tl", tl, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "tr", tr, `${size - c} 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "bl", bl, `0 ${size - c} ${c} ${c}`, accentHex, sw);
+    addCorner(page, "br", br, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
+    addStrip(page, "top", tl, `${c} 0 ${c} ${c}`, accentHex, sw);
+    addStrip(page, "bottom", bl, `${c} ${size - c} ${c} ${c}`, accentHex, sw);
+    addStrip(page, "left", tl, `0 ${c} ${c} ${c}`, accentHex, sw);
+    addStrip(page, "right", tr, `${size - c} ${c} ${c} ${c}`, accentHex, sw);
+  } else if (BORDER_IMAGE_CORNER_EDGE[patternKey]) {
+    const p = BORDER_IMAGE_CORNER_EDGE[patternKey];
+    const size = p.size, c = 20;
+    const cornerTR = mirrorPathX(p.corner, size), cornerBL = mirrorPathY(p.corner, size), cornerBR = mirrorPathX(mirrorPathY(p.corner, size), size);
+    const edgeBottom = mirrorPathY(p.edgeTop, size), edgeRight = mirrorPathX(p.edgeLeft, size);
+    addCorner(page, "tl", p.corner, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "tr", cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "bl", cornerBL, `0 ${size - c} ${c} ${c}`, accentHex, sw);
+    addCorner(page, "br", cornerBR, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
+    addStrip(page, "top", p.edgeTop, `${c} 0 ${size - 2 * c} ${c}`, accentHex, sw);
+    addStrip(page, "bottom", edgeBottom, `${c} ${size - c} ${size - 2 * c} ${c}`, accentHex, sw);
+    addStrip(page, "left", p.edgeLeft, `0 ${c} ${c} ${size - 2 * c}`, accentHex, sw);
+    addStrip(page, "right", edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw);
+  } else if (BORDER_IMAGE_EXPLICIT_EDGES[patternKey]) {
+    const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
+    const size = p.size, c = 20;
+    addStrip(page, "top", p.edgeTop, `${c} 0 ${size - 2 * c} ${c}`, accentHex, sw);
+    addStrip(page, "bottom", p.edgeBottom, `${c} ${size - c} ${size - 2 * c} ${c}`, accentHex, sw);
+    addStrip(page, "left", p.edgeLeft, `0 ${c} ${c} ${size - 2 * c}`, accentHex, sw);
+    addStrip(page, "right", p.edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw);
+    if (p.cornerTL) {
+      addCorner(page, "tl", p.cornerTL, `0 0 ${c} ${c}`, accentHex, sw);
+      addCorner(page, "tr", p.cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw);
+      addCorner(page, "bl", p.cornerBL, `0 ${size - c} ${c} ${c}`, accentHex, sw);
+      addCorner(page, "br", p.cornerBR, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
+    }
+  }
+}
+const CONNECTED_BG_PATTERNS = new Set(["zigzag", "wave", "loop", "arches"]);
 function addFrame(sheet, page, accentHex) {
   const biClass = [...sheet.classList].find(c => /^frame-.+-bi$/.test(c));
   if (biClass) {
     const patternKey = biClass.replace(/^frame-/, "").replace(/-bi$/, "");
     if (BG_IMAGE_ICON_PATTERNS[patternKey]) {
       addBackgroundImageFrame(page, accentHex, patternKey);
+    } else if (CONNECTED_BG_PATTERNS.has(patternKey)) {
+      addConnectedBgFrame(page, accentHex, patternKey);
     } else {
       addBorderImageFrame(page, accentHex, patternKey);
     }

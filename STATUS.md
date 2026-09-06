@@ -1627,6 +1627,61 @@ regardless of what I change about the repeated content" was the signal
 that the bug lived in the *repeat* mechanism itself, not in anything
 upstream of it.
 
+**Fixed the last 4 patterns (zigzag, wave, loop, arches) — the exact
+next step sketched above, built for real**: Sebastian: "the borders
+are very fuzzy needs to be fixed." These four were the only patterns
+left on `border-image` (see previous entry) because they need
+corner-to-edge visual continuity, which `background-image`'s
+separate-elements approach would normally break by reintroducing
+tangent-matching fragility.
+
+The fix: don't derive two separate assets at all. Each pattern's
+corner-plus-edge geometry was already expressed as *one continuous
+path* (a fused quadrant for zigzag; explicit corner+edge pieces sharing
+endpoints for wave/loop/arches) — that's exactly what made the old
+`border-image` slicing trick correct-by-construction in the first
+place. An SVG `viewBox` can crop to any sub-rectangle of a path's
+coordinate space, including non-zero origins, so the same path can be
+"windowed" twice: a small crop around the corner (`background-repeat:
+no-repeat`) and a crop matching one repeatable edge tile
+(`background-repeat: round`). Both crops read from the identical
+source path, so the shared boundary pixels are pixel-identical by
+construction — connection is guaranteed without touching
+`border-image` at all. Implemented as `addConnectedBgFrame` (plus
+`svgURI`/`mmFromVb`/`addStrip`/`addCorner` helpers) and routed via a
+new `CONNECTED_BG_PATTERNS` set in `addFrame`, reusing the existing
+`BORDER_IMAGE_POLYLINES` / `BORDER_IMAGE_CORNER_EDGE` /
+`BORDER_IMAGE_EXPLICIT_EDGES` path data verbatim — no new geometry was
+derived.
+
+One bug on the way: first pass set the SVG `stroke-width` to `0.54`
+intending "0.54mm," but stroke-width is in the SVG's own `viewBox`
+units, not physical mm — produced a faint, near-invisible line. Fixed
+by using `2.4` (the viewBox-unit value that equals 0.54mm at this
+pattern's established `MM_PER_UNIT = 4.5/20` scale, matching the
+original border-image stroke).
+
+Verified all four patterns (zigzag, wave, loop, arches) via a 4-card
+test pack: full-page renders plus pixel crops of all 4 corners in
+Poppler, and `qlmanage -t` thumbnails (the Quartz acid test that has
+caught every real bug in this project so far) — clean, connected,
+correctly colored corners in both renderers, no fragmentation, no
+solid-bar artifacts. Wave's corners looked slightly softer than
+zigzag's under a naive side-by-side crop; a zoomed pixel comparison
+showed this is just how anti-aliasing reads on a smooth curve (a soft
+gradient band) versus a jagged zigzag (a checkerboard stairstep) at
+the same resolution — not a regression of the border-image bug, which
+produced gross fragmentation/blur, not this. `border-image` is now
+fully retired from every pattern except `scallop` (the title-band
+decoration, unaffected by this bug in practice so left alone).
+
+**Lesson**: when a fix reuses already-correct, already-connected path
+data and only changes *how* it's delivered (not what it says), the
+verification burden shifts from "is the geometry right" (already
+proven, don't re-litigate it) to "does this delivery mechanism corrupt
+content the old one didn't" — check that narrowly, in both renderers,
+rather than re-deriving confidence from scratch.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
