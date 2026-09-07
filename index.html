@@ -4421,8 +4421,9 @@ function addBackgroundImageFrame(page, accentHex, patternKey) {
    arches has no corner piece at all (by original design -- its edges
    already meet exactly at the shared point), so it only gets 4 edge
    elements, no corner elements. */
-function svgURI(pathD, vb, hex, sw) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><path d="${pathD}" fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+function svgURI(pathD, vb, hex, sw, fill) {
+  const attrs = fill ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><path d="${pathD}" ${attrs}/></svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 function mmFromVb(vb) {
@@ -4430,17 +4431,17 @@ function mmFromVb(vb) {
   return `${(w * MM_PER_UNIT).toFixed(4)}mm ${(h * MM_PER_UNIT).toFixed(4)}mm`;
 }
 const MM_PER_UNIT = 4.5 / 20;
-function addStrip(page, side, pathD, vb, hex, sw) {
+function addStrip(page, side, pathD, vb, hex, sw, fill) {
   const el = document.createElement("div");
   el.className = `frame-bgi-strip2 frame-bgi-strip2-${side}`;
-  el.style.backgroundImage = svgURI(pathD, vb, hex, sw);
+  el.style.backgroundImage = svgURI(pathD, vb, hex, sw, fill);
   el.style.backgroundSize = mmFromVb(vb);
   page.appendChild(el);
 }
-function addCorner(page, corner, pathD, vb, hex, sw) {
+function addCorner(page, corner, pathD, vb, hex, sw, fill) {
   const el = document.createElement("div");
   el.className = `frame-bgi-corner2 frame-bgi-corner2-${corner}`;
-  el.style.backgroundImage = svgURI(pathD, vb, hex, sw);
+  el.style.backgroundImage = svgURI(pathD, vb, hex, sw, fill);
   el.style.backgroundSize = mmFromVb(vb);
   page.appendChild(el);
 }
@@ -4476,20 +4477,20 @@ function addConnectedBgFrame(page, accentHex, patternKey) {
     addStrip(page, "right", edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw);
   } else if (BORDER_IMAGE_EXPLICIT_EDGES[patternKey]) {
     const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
-    const size = p.size, c = 20;
-    addStrip(page, "top", p.edgeTop, `${c} 0 ${size - 2 * c} ${c}`, accentHex, sw);
-    addStrip(page, "bottom", p.edgeBottom, `${c} ${size - c} ${size - 2 * c} ${c}`, accentHex, sw);
-    addStrip(page, "left", p.edgeLeft, `0 ${c} ${c} ${size - 2 * c}`, accentHex, sw);
-    addStrip(page, "right", p.edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw);
+    const size = p.size, c = 20, fill = !!p.fill;
+    addStrip(page, "top", p.edgeTop, `${c} 0 ${size - 2 * c} ${c}`, accentHex, sw, fill);
+    addStrip(page, "bottom", p.edgeBottom, `${c} ${size - c} ${size - 2 * c} ${c}`, accentHex, sw, fill);
+    addStrip(page, "left", p.edgeLeft, `0 ${c} ${c} ${size - 2 * c}`, accentHex, sw, fill);
+    addStrip(page, "right", p.edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw, fill);
     if (p.cornerTL) {
-      addCorner(page, "tl", p.cornerTL, `0 0 ${c} ${c}`, accentHex, sw);
-      addCorner(page, "tr", p.cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw);
-      addCorner(page, "bl", p.cornerBL, `0 ${size - c} ${c} ${c}`, accentHex, sw);
-      addCorner(page, "br", p.cornerBR, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
+      addCorner(page, "tl", p.cornerTL, `0 0 ${c} ${c}`, accentHex, sw, fill);
+      addCorner(page, "tr", p.cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw, fill);
+      addCorner(page, "bl", p.cornerBL, `0 ${size - c} ${c} ${c}`, accentHex, sw, fill);
+      addCorner(page, "br", p.cornerBR, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw, fill);
     }
   }
 }
-const CONNECTED_BG_PATTERNS = new Set(["zigzag", "wave", "loop", "arches"]);
+const CONNECTED_BG_PATTERNS = new Set(["zigzag", "wave", "loop", "arches", "scallop"]);
 function addFrame(sheet, page, accentHex) {
   const biClass = [...sheet.classList].find(c => /^frame-.+-bi$/.test(c));
   if (biClass) {
