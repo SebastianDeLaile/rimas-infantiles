@@ -888,16 +888,6 @@ h1, h2, h3, .display {
   gap: 1.5mm;
 }
 .band h2 { font-size: 13.5mm; line-height: 1.04; text-align: center; text-wrap: balance; }
-.country-tag {
-  padding: 0.8mm 2.5mm;
-  border: 0.35mm solid rgba(255,255,255,.62);
-  border-radius: 999px;
-  background: rgba(43,36,64,.16);
-  color: #fffdf7;
-  font: 700 2.7mm/1.1 "Avenir Next", Avenir, sans-serif;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
 .scallop {
   display: none;
 }
@@ -4070,13 +4060,6 @@ fitPagesToPhone();
 phoneLayout.addEventListener("change", fitPagesToPhone);
 window.addEventListener("resize", fitPagesToPhone, { passive: true });
 document.querySelector(".card-count").textContent = ` — ${fronts.length} tarjeta${fronts.length === 1 ? "" : "s"} a doble cara`;
-function addCountryTag(sheet, country) {
-  if (!country) return;
-  const tag = document.createElement("span");
-  tag.className = "country-tag";
-  tag.textContent = country;
-  sheet.querySelector(".band")?.append(tag);
-}
 function addFrameStrips(page) {
   ["top", "bottom", "left", "right"].forEach(side => {
     const strip = document.createElement("div");
@@ -4447,8 +4430,6 @@ fronts.forEach((front, index) => {
   }
   const copy = translations[index];
   if (!copy) return;
-  const country = front.dataset.country;
-  addCountryTag(front, country);
   const art = front.querySelector(".illus")?.cloneNode(true);
   const medallion = front.querySelector(".medallion")?.cloneNode(true);
   const frameClass = [...front.classList].find(c => c.startsWith("frame-"));
@@ -4467,7 +4448,6 @@ fronts.forEach((front, index) => {
   addFrame(back, back.querySelector(".a4-page"), accent);
   if (medallion) back.querySelector(".a4-page").appendChild(medallion);
   const body = back.querySelector(".sheet-body");
-  addCountryTag(back, country);
   if (art) body.append(art);
   if (copy.movements) {
     body.classList.add("movement-body");
