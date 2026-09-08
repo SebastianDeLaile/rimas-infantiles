@@ -1682,6 +1682,64 @@ proven, don't re-litigate it) to "does this delivery mechanism corrupt
 content the old one didn't" — check that narrowly, in both renderers,
 rather than re-deriving confidence from scratch.
 
+**Follow-up: the background-image fix above still wasn't enough** —
+Sebastian: "favourites pack is still fuzzy," then sent a Preview.app
+screenshot (page 3, "Arroz con leche") after being asked what/where.
+That screenshot is what actually cracked this open. Two findings from
+it, both invisible to every tool used to verify the previous fix:
+
+1. "Pin Pon" and "Cabeza, hombros" use `scallop`, the one pattern
+   deliberately left on `border-image` in the previous entry (assumed
+   safe since it's filled shapes, not thin strokes). Migrated it into
+   the same `addConnectedBgFrame` pipeline — its path data
+   (`BORDER_IMAGE_EXPLICIT_EDGES.scallop`, already independent
+   corner/edge pieces with a `fill: true` flag) slotted in directly
+   once `svgURI`/`addStrip`/`addCorner` grew a fill-mode option.
+   Pixel-diffed old vs. new: nearly identical, meaning scallop was
+   never actually hitting the repeat-blur bug — a correct completionist
+   change, but not the fix for what Sebastian was seeing.
+2. The real finding: in the SAME screenshot, at the SAME zoom, the
+   title band's native CSS rounded-rect edge is crisp while the zigzag
+   border line one card-width away is visibly soft/feathered. That's a
+   controlled, same-image comparison ruling out "Preview just renders
+   everything soft at this zoom" — it's specific to content delivered
+   as an SVG `background-image`.
+
+Tried to reproduce locally first: `pdftoppm` at 96/150/300dpi and a
+fresh `qlmanage -t` thumbnail all still show the same zigzag crisp —
+none of them reproduce what the live screenshot shows. That's the
+same shape of problem as the original dots discovery (see the
+Poppler-vs-Quartz memory entry): a real defect that specific
+verification paths can't see. The working theory: Chromium's
+print-to-PDF flattens a background-image SVG into a raster image
+sized by whatever intrinsic pixel dimensions it declares (small, since
+none were set — the SVGs only had a `viewBox`); Quartz's *live*
+on-screen PDF view then upscales that small raster with a soft filter,
+in a way `qlmanage -t`'s thumbnail generator and Poppler's own
+from-source re-rasterization both avoid. Fix: give every background
+SVG (`svgURI` for the connected patterns, `bgImageDataURI` for the 10
+icon patterns) explicit `width`/`height` attributes at 40x the
+viewBox's own units, so whatever Chromium rasterizes has far more
+source detail to downsample from, regardless of what filter a given
+viewer later applies.
+
+Verified no regression (Poppler/qlmanage still crisp, file size
+unchanged, no overflow/JS/balance regressions) but **could not verify
+the actual fix locally** — every tool available in this sandbox failed
+to reproduce the bug in the first place, so none can confirm its
+absence either. This is now waiting on Sebastian to check a fresh
+screenshot at the same zoom against the regenerated pack.
+
+**Lesson**: when every available verification tool says "fine" but the
+report persists, don't keep varying parameters within the same tools —
+ask for a screenshot at the specific zoom/view where the user sees it,
+and look for a *same-image* control (a nearby element rendered through
+a different mechanism) to isolate whether the defect is content-
+specific or a general viewer/zoom artifact. That comparison — native
+CSS shape crisp, SVG-background line soft, same screenshot — is what
+actually pointed at the fix; more automated re-checking of border-image
+vs background-image in isolation would not have found it.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

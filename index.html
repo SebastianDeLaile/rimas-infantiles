@@ -4367,10 +4367,28 @@ const BG_IMAGE_ICON_PATTERNS = {
   star: { stripTop: { vb: "0 0 8 4", el: 'polygon points="4.00,0.40 4.38,1.47 5.52,1.51 4.62,2.20 4.94,3.29 4.00,2.65 3.06,3.29 3.38,2.20 2.48,1.51 3.62,1.47"' }, stripLeft: { vb: "0 0 4 8", el: 'polygon points="2.00,2.40 2.38,3.47 3.52,3.51 2.62,4.20 2.94,5.29 2.00,4.65 1.06,5.29 1.38,4.20 0.48,3.51 1.62,3.47"' }, corner: { vb: "0 0 4 4", el: 'polygon points="2.00,0.50 2.35,1.51 3.43,1.54 2.57,2.19 2.88,3.21 2.00,2.60 1.12,3.21 1.43,2.19 0.57,1.54 1.65,1.51"' }, mode: "fill" },
   dots: { stripTop: { vb: "0 0 5.052632 4", el: 'circle cx="2.526316" cy="2" r="0.9"' }, stripLeft: { vb: "0 0 4 4.982143", el: 'circle cx="2" cy="2.491071" r="0.9"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.9"' }, mode: "fill" },
 };
+// Chromium's print-to-PDF flattens a background-image SVG into a raster
+// XObject at whatever intrinsic pixel size the SVG declares (or a small
+// default if none is given) -- Quartz's own on-screen PDF rendering then
+// upscales that small raster with a soft interpolation filter that never
+// shows up in Poppler (which re-rasterizes from the source at whatever
+// output DPI is requested) or in `qlmanage -t` (whose thumbnail generator
+// apparently supersamples better than Preview's live view). Sebastian's own
+// Preview.app screenshot showed this directly: a native CSS rounded-rect
+// edge stayed crisp while an SVG-background zigzag line right next to it,
+// same screenshot/zoom, read as a soft blur -- proving it's specific to the
+// rasterized SVG content, not a general zoom/renderer softness. Declaring a
+// much larger intrinsic width/height (well beyond the viewBox's own units)
+// forces Chromium to rasterize far more source detail, so any later
+// upscaling -- soft filter or not -- has enough pixels to stay sharp.
+function svgIntrinsicWH(vb, scale = 40) {
+  const [, , w, h] = vb.split(" ").map(Number);
+  return `width="${w * scale}" height="${h * scale}"`;
+}
 function bgImageDataURI(piece, hex, mode, sw, join, cornerFill) {
   const isFillMode = mode === "fill" || cornerFill;
   const attrs = isFillMode ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round"${join ? ' stroke-linejoin="round"' : ""}`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${piece.vb}"><${piece.el} ${attrs}/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" ${svgIntrinsicWH(piece.vb)} viewBox="${piece.vb}"><${piece.el} ${attrs}/></svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 function mmSizeFromViewBox(vb) {
@@ -4423,7 +4441,7 @@ function addBackgroundImageFrame(page, accentHex, patternKey) {
    elements, no corner elements. */
 function svgURI(pathD, vb, hex, sw, fill) {
   const attrs = fill ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${vb}"><path d="${pathD}" ${attrs}/></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" ${svgIntrinsicWH(vb)} viewBox="${vb}"><path d="${pathD}" ${attrs}/></svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 }
 function mmFromVb(vb) {
