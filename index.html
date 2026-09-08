@@ -103,19 +103,13 @@
 .frame-corner-tr { top: 7mm; right: 7mm; transform: scaleX(-1); }
 .frame-corner-bl { bottom: 7mm; left: 7mm; transform: scaleY(-1); }
 .frame-corner-br { bottom: 7mm; right: 7mm; transform: scale(-1,-1); }
-/* Pilot: one continuous hand-drawn frame image sliced 3x3 via
-   border-image, instead of 4 separately-tiled strips + 4 separately-
-   computed corner pieces. The corner is part of the same drawn path as
-   the edge, so it's correct by construction -- no tangent-matching
-   needed. border-image-source is set per-card via JS (addBorderImageFrame)
-   since border-image can't be tinted with background-color the way
-   mask-image can. */
-/* background-image delivery for the 10 independent-icon patterns (see
-   the addBackgroundImageFrame JS comment for why this exists alongside
-   border-image) -- geometry matches the original pre-border-image mask
+/* Every border pattern is built as real inline <svg> DOM elements (see
+   the addFrame/svgFrame JS comment for the full history and why -- in
+   short, CSS background-image/border-image both get flattened to a
+   soft raster by Chromium's print-to-PDF pipeline, while genuine inline
+   SVG stays vector). Geometry matches the original pre-CSS-image mask
    design exactly (same 7mm/11.5mm insets, same 4mm corner/strip
-   thickness), just painting color directly instead of masking a
-   background-color. */
+   thickness for the 10 icon patterns, 4.5mm for the 5 connected ones). */
 .frame-bgi-strip, .frame-bgi-corner { position: absolute; pointer-events: none; background-repeat: no-repeat; }
 .frame-bgi-strip-top, .frame-bgi-strip-bottom { left: 11.5mm; right: 11.5mm; height: 4mm; background-repeat: round; }
 .frame-bgi-strip-top { top: 7mm; }
@@ -143,24 +137,6 @@
 .frame-bgi-corner2-tr { top: 7mm; right: 7mm; }
 .frame-bgi-corner2-bl { bottom: 7mm; left: 7mm; }
 .frame-bgi-corner2-br { bottom: 7mm; right: 7mm; }
-.frame-border-image {
-  position: absolute;
-  top: 7mm; left: 7mm; right: 7mm; bottom: 7mm;
-  box-sizing: border-box;
-  border-style: solid;
-  border-width: 4.5mm;
-  /* 20 * RESOLUTION_SCALE (4, in the JS below) -- border-image-slice is
-     read against the SVG's declared intrinsic width/height, not its
-     viewBox, so it has to scale together with that width/height bump
-     (see borderImageSVG/iconBorderSVG -- note the JS comment there:
-     the bump doesn't fix the repeating-edge softness Sebastian found,
-     it's just correct to keep regardless). All the pattern path data
-     stays authored in the original small viewBox units; only the
-     declared raster size and this slice number change. */
-  border-image-slice: 80;
-  border-image-repeat: round;
-  pointer-events: none;
-}
 .frame-wave .frame-strip-top, .frame-wave .frame-strip-bottom {
   -webkit-mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
   mask-image: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2010%204%22%3E%3Cpath%20d%3D%22M0%2C2%20Q2.5%2C-0.5%205%2C2%20T10%2C2%22%20fill%3D%22none%22%20stroke%3D%22black%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E");
@@ -4200,161 +4176,88 @@ const BORDER_IMAGE_EXPLICIT_EDGES = {
     fill: true,
   },
 };
-// Independent-icon patterns (no corner-to-edge connection needed --
-// same as the old mask-image design for these: a small self-contained
-// icon repeated per edge and mirrored into each corner, never touching
-// its neighbors). Icons are placed by direct coordinate transform
-// (scale + translate around the icon's own natural center), not by
-// mirroring a path string, so there's no risk of the arc-radius or
-// double-draw bugs found above -- just arithmetic on plain M/L/C
-// commands. `fill` patterns (star) are filled shapes; the rest are
-// stroked outlines, matching each one's original mask art.
-const BORDER_IMAGE_ICON_PATTERNS = {
-  diamond: { d: "M2,0.5 L3.5,2 L2,3.5 L0.5,2 Z", mode: "stroke" },
-  xmarks: { d: "M1,1 L3,3 M3,1 L1,3", mode: "stroke" },
-  plus: { d: "M2,0.8 L2,3.2 M0.8,2 L3.2,2", mode: "stroke" },
-  square: { d: "M1,1 L3,1 L3,3 L1,3 Z", mode: "stroke" },
-  teardrop: { d: "M2,0.7 C3,0.7 3,3.3 2,3.3 C1,3.3 1,0.7 2,0.7 Z", mode: "stroke" },
-  spiral: { d: "M2,3 C0.7,3 0.7,1.2 2,1.2 C2.9,1.2 2.9,2.4 2.1,2.4 C1.6,2.4 1.6,1.8 2,1.8", mode: "stroke" },
-  crosshatch: { d: "M0,0 L4,4 M0,4 L4,0", mode: "stroke" },
-  star: { d: "M2.00,0.50 L2.35,1.51 L3.43,1.54 L2.57,2.19 L2.88,3.21 L2.00,2.60 L1.12,3.21 L1.43,2.19 L0.57,1.54 L1.65,1.51 Z", mode: "fill" },
-  // ticks' corner (a dot) and edge (a line tick) are different shapes in
-  // the original mask art too -- handled as a special case in
-  // iconBorderSVG rather than forcing them through the single-shape path.
-  ticks: { corner: "circle", edge: "line" },
-  // dots was tried here and initially rejected for a minor cosmetic
-  // regression (a small round shape renders crisp in the never-rescaled
-  // corner slot but visibly softer in the round-repeat-rescaled edge
-  // slot). Reinstated after discovering the OLD mask-image system dots
-  // was being kept on has a much worse problem: Chromium's print-to-PDF
-  // serializes the left/right strips' repeating circle mask into a PDF
-  // construct that Apple's Quartz PDF renderer (Preview.app, Safari's
-  // PDF viewer, macOS printing) doesn't apply at all, painting solid
-  // color bars down both sides instead of dots -- confirmed via
-  // `qlmanage -t` (uses the same renderer as Preview) on the old system,
-  // and confirmed absent on every already-migrated border-image pattern
-  // tested the same way. A slightly softer dot beats a solid bar.
-  dots: { d: "M3.3,2 C3.3,2.718 2.718,3.3 2,3.3 C1.282,3.3 0.7,2.718 0.7,2 C0.7,1.282 1.282,0.7 2,0.7 C2.718,0.7 3.3,1.282 3.3,2 Z", mode: "fill" },
-};
-// Bumps the SVG's declared intrinsic width/height above its viewBox
-// (untouched, so no pattern path data needs to change). This does NOT
-// fix the softness Sebastian flagged on zigzag's repeating edge tiles
-// (tried: this, deviceScaleFactor up to 4, border-image-repeat:repeat
-// instead of round, and a thicker stroke -- the repeating edge stayed
-// equally soft under every one of those, in both Poppler and Quartz,
-// while the corner slice -- never repeated -- is crisp regardless and
-// *did* get visibly crisper from the stroke-width test alone. That
-// isolates it to how Chromium rasterizes a REPEATED border-image tile
-// specifically, not to source resolution, print DPI, or stroke size --
-// see the STATUS.md entry for the full elimination list before trying
-// another lever here). Left in place because it's free and correct in
-// principle (and CSS slice math already accounts for it below); it's
-// just not the fix for that bug. border-image-slice (.frame-border-image,
-// CSS) has to scale by the same factor since it's read against the
-// intrinsic size too -- a naive intrinsic-size bump alone silently
-// breaks slicing (see the loop entry in STATUS.md).
-const RESOLUTION_SCALE = 4;
-function transformPath(d, ocx, ocy, cx, cy, scale) {
-  return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) =>
-    `${(cx + (parseFloat(x) - ocx) * scale).toFixed(2)},${(cy + (parseFloat(y) - ocy) * scale).toFixed(2)}`);
-}
-function iconBorderSVG(patternKey, hex) {
-  const pattern = BORDER_IMAGE_ICON_PATTERNS[patternKey];
-  const size = 100, scale = 5;
-  const cornerCenters = [[10, 10], [90, 10], [10, 90], [90, 90]];
-  const edgeCenters = [[35, 10], [65, 10], [35, 90], [65, 90], [10, 35], [10, 65], [90, 35], [90, 65]];
-  let els;
-  if (pattern.corner === "circle") {
-    els = cornerCenters.map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="2.75" fill="${hex}"/>`);
-    if (pattern.edge === "circle") {
-      els = els.concat(edgeCenters.map(([cx, cy]) => `<circle cx="${cx}" cy="${cy}" r="2.75" fill="${hex}"/>`));
-    } else {
-      els = els.concat(edgeCenters.map(([cx, cy]) => {
-        const vertical = cy === 10 || cy === 90;
-        const [x1, y1, x2, y2] = vertical ? [cx, cy - 6, cx, cy + 6] : [cx - 6, cy, cx + 6, cy];
-        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hex}" stroke-width="3" stroke-linecap="round"/>`;
-      }));
-    }
-  } else {
-    const attrs = pattern.mode === "fill"
-      ? `fill="${hex}" stroke="none"`
-      : `fill="none" stroke="${hex}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"`;
-    els = [...cornerCenters, ...edgeCenters]
-      .map(([cx, cy]) => `<path d="${transformPath(pattern.d, 2, 2, cx, cy, scale)}" ${attrs}/>`);
-  }
-  const raster = size * RESOLUTION_SCALE;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${raster}" height="${raster}" viewBox="0 0 ${size} ${size}">${els.join("")}</svg>`;
-  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
-}
 function mirrorPathX(d, w) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${w - parseFloat(x)},${y}`);
 }
 function mirrorPathY(d, h) {
   return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${x},${h - parseFloat(y)}`);
 }
-function borderImageSVG(patternKey, hex) {
-  if (BORDER_IMAGE_ICON_PATTERNS[patternKey]) return iconBorderSVG(patternKey, hex);
-  let pieces, size;
-  if (BORDER_IMAGE_POLYLINES[patternKey]) {
-    ({ size } = BORDER_IMAGE_POLYLINES[patternKey]);
-    const pts = BORDER_IMAGE_POLYLINES[patternKey].pts;
-    const mirrorX = p => p.map(([x, y]) => [size - x, y]);
-    const mirrorY = p => p.map(([x, y]) => [x, size - y]);
-    const seg = p => "M" + p.map(pt => pt.join(",")).join(" L");
-    pieces = [seg(pts), seg(mirrorX(pts)), seg(mirrorY(pts)), seg(mirrorX(mirrorY(pts)))];
-  } else if (BORDER_IMAGE_CORNER_EDGE[patternKey]) {
-    const p = BORDER_IMAGE_CORNER_EDGE[patternKey];
-    size = p.size;
-    pieces = [
-      p.corner, mirrorPathX(p.corner, size), mirrorPathY(p.corner, size), mirrorPathX(mirrorPathY(p.corner, size), size),
-      p.edgeTop, mirrorPathY(p.edgeTop, size),
-      p.edgeLeft, mirrorPathX(p.edgeLeft, size),
-    ];
-  } else if (BORDER_IMAGE_EXPLICIT_EDGES[patternKey]) {
-    const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
-    size = p.size;
-    pieces = [p.edgeTop, p.edgeBottom, p.edgeLeft, p.edgeRight];
-    if (p.cornerTL) pieces.push(p.cornerTL, p.cornerTR, p.cornerBL, p.cornerBR);
-    if (p.fill) {
-      const raster = size * RESOLUTION_SCALE;
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${raster}" height="${raster}" viewBox="0 0 ${size} ${size}">${pieces.map(d => `<path d="${d}" fill="${hex}"/>`).join("")}</svg>`;
-      return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
-    }
+// Every pattern in this book used to be delivered as a CSS image
+// (mask-image, then border-image, then background-image) -- three
+// different mechanisms, three different bugs, all sharing one root
+// cause finally nailed down here: Chromium's print-to-PDF pipeline
+// flattens ANY CSS image reference into a raster XObject in the
+// exported PDF, no matter its source resolution (a 40x intrinsic-size
+// bump on the background-image SVGs made zero difference -- see the
+// STATUS.md entry). Quartz's own on-screen PDF view then upscales that
+// raster with a softer filter than Poppler's from-source
+// re-rasterization or qlmanage's thumbnailer use, which is why every
+// automated check in this project kept saying "crisp" while Sebastian's
+// own Preview.app screenshots kept showing real, visible blur -- and,
+// at high enough zoom/DPI, outright pixelation on the *repeated* portion
+// specifically (a corner is drawn once and stays sharp; a tiled edge is
+// cached as one small raster tile and stamped, so it hits a resolution
+// ceiling the corner never does).
+// Proved the fix with a throwaway test: the exact same zigzag path drawn
+// as a CSS background-image came out soft in Preview; the exact same
+// path drawn as a real inline <svg> DOM element -- not a CSS image at
+// all -- came out perfectly crisp, right next to a plain native CSS
+// border (also crisp) for reference. Chromium preserves genuine inline
+// SVG as vector drawing commands in the exported PDF, same as native CSS
+// shapes, so it can't hit this raster-flattening bug regardless of zoom
+// or renderer. Every pattern below is now built as real SVG elements in
+// the DOM (svgFrame/svgPathNode), never as a CSS background-image.
+//
+// Repeated tiles (every edge strip -- icons below, and the connected
+// patterns' edges further down) can't just be "the CSS repeat property,
+// but for real DOM nodes" since SVG has no such thing; each repeat is
+// instead a translated <g> copy of the tile, drawn N times into one
+// wide/tall virtual viewBox that then gets non-uniformly stretched
+// (preserveAspectRatio="none") to fill however wide the actual strip
+// div renders. N is tuned to fit the A4 edge gap (187mm/274mm, from the
+// 11.5mm insets below) almost exactly; A5 pages show very slightly
+// compressed tiles rather than a separately-tuned repeat count, because
+// the page format toggles live via a CSS custom property with no JS
+// re-run to hook a per-format regeneration into -- a minor, deliberately
+// accepted tradeoff against actually re-deriving every frame on format
+// toggle.
+const SVG_NS = "http://www.w3.org/2000/svg";
+const A4_EDGE_W_MM = 210 - 2 * 11.5;
+const A4_EDGE_H_MM = 297 - 2 * 11.5;
+function svgFrame(viewBox) {
+  const svg = document.createElementNS(SVG_NS, "svg");
+  svg.setAttribute("viewBox", viewBox);
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.style.cssText = "position:absolute; inset:0; width:100%; height:100%; display:block;";
+  return svg;
+}
+function svgPathNode(d, hex, sw, fill) {
+  const path = document.createElementNS(SVG_NS, "path");
+  path.setAttribute("d", d);
+  if (fill) {
+    path.setAttribute("fill", hex);
+  } else {
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", hex);
+    path.setAttribute("stroke-width", sw);
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
   }
-  const paths = pieces
-    .map(d => `<path d="${d}" fill="none" stroke="${hex}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`)
-    .join("");
-  const raster = size * RESOLUTION_SCALE;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${raster}" height="${raster}" viewBox="0 0 ${size} ${size}">${paths}</svg>`;
-  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+  return path;
 }
-function addBorderImageFrame(page, accentHex, patternKey) {
-  const div = document.createElement("div");
-  div.className = "frame-border-image";
-  div.style.borderImageSource = borderImageSVG(patternKey, accentHex);
-  page.appendChild(div);
+// The icon patterns' raw element markup (BG_IMAGE_ICON_PATTERNS' `el`
+// strings, e.g. 'circle cx="2" cy="2" r="0.9"') is turned into a real
+// node by parsing it as SVG -- setting innerHTML on an <svg> element
+// parses its content as SVG per spec, the simplest way to get a live
+// node for whatever element type (path/circle/rect/line/polygon) a
+// given icon uses without hand-rolling a parser for each.
+function parseIconMarkup(markup, hex, mode, sw, join, cornerFill) {
+  const isFillMode = mode === "fill" || cornerFill;
+  const attrs = isFillMode ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round"${join ? ' stroke-linejoin="round"' : ""}`;
+  const host = document.createElementNS(SVG_NS, "svg");
+  host.innerHTML = `<${markup} ${attrs}/>`;
+  return host.firstElementChild;
 }
-/* border-image, it turns out, has a real Chromium print-to-PDF quality
-   bug of its own: Sebastian found visible "little dots between X's" on
-   crosshatch, and this same investigation explains zigzag's earlier-
-   reported blur too -- both are the REPEATED portion of a border-image
-   tile specifically (the never-repeated corner slice stays crisp
-   regardless). Proved this with a throwaway isolated test: the exact
-   same SVG content rendered as a plain <img>, or as a background-image
-   with background-repeat: repeat-x/round, comes out perfectly crisp in
-   both Poppler and Quartz; only border-image degrades it. So this is
-   the fix -- background-image on real per-corner/per-edge elements
-   (closer to the original pre-border-image mask design, just painting
-   color directly via background-image instead of masking a
-   background-color) -- for the 10 patterns that are independent icons
-   with no corner-to-edge connection to preserve (never had the
-   tangent-matching problem border-image was adopted to solve in the
-   first place, so there's nothing to lose switching them). zigzag/
-   wave/loop/arches stay on border-image for now since fixing those
-   properly means either reintroducing the old tangent-matching
-   fragility or a fused-quadrant-plus-repeating-middle-tile hybrid that
-   hasn't been built yet -- their blur is a real but lower-severity
-   cosmetic issue, left as a known follow-up rather than rushed here. */
 const BG_IMAGE_ICON_PATTERNS = {
   crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, corner: { vb: "0 0 4 4", el: 'path d="M0,0 L4,4 M0,4 L4,0"' }, sw: 0.6, mode: "stroke" },
   diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.5 L3.5,2 L2,3.5 L0.5,2 Z"' }, sw: 0.6, mode: "stroke", join: true },
@@ -4367,104 +4270,114 @@ const BG_IMAGE_ICON_PATTERNS = {
   star: { stripTop: { vb: "0 0 8 4", el: 'polygon points="4.00,0.40 4.38,1.47 5.52,1.51 4.62,2.20 4.94,3.29 4.00,2.65 3.06,3.29 3.38,2.20 2.48,1.51 3.62,1.47"' }, stripLeft: { vb: "0 0 4 8", el: 'polygon points="2.00,2.40 2.38,3.47 3.52,3.51 2.62,4.20 2.94,5.29 2.00,4.65 1.06,5.29 1.38,4.20 0.48,3.51 1.62,3.47"' }, corner: { vb: "0 0 4 4", el: 'polygon points="2.00,0.50 2.35,1.51 3.43,1.54 2.57,2.19 2.88,3.21 2.00,2.60 1.12,3.21 1.43,2.19 0.57,1.54 1.65,1.51"' }, mode: "fill" },
   dots: { stripTop: { vb: "0 0 5.052632 4", el: 'circle cx="2.526316" cy="2" r="0.9"' }, stripLeft: { vb: "0 0 4 4.982143", el: 'circle cx="2" cy="2.491071" r="0.9"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.9"' }, mode: "fill" },
 };
-// Chromium's print-to-PDF flattens a background-image SVG into a raster
-// XObject at whatever intrinsic pixel size the SVG declares (or a small
-// default if none is given) -- Quartz's own on-screen PDF rendering then
-// upscales that small raster with a soft interpolation filter that never
-// shows up in Poppler (which re-rasterizes from the source at whatever
-// output DPI is requested) or in `qlmanage -t` (whose thumbnail generator
-// apparently supersamples better than Preview's live view). Sebastian's own
-// Preview.app screenshot showed this directly: a native CSS rounded-rect
-// edge stayed crisp while an SVG-background zigzag line right next to it,
-// same screenshot/zoom, read as a soft blur -- proving it's specific to the
-// rasterized SVG content, not a general zoom/renderer softness. Declaring a
-// much larger intrinsic width/height (well beyond the viewBox's own units)
-// forces Chromium to rasterize far more source detail, so any later
-// upscaling -- soft filter or not -- has enough pixels to stay sharp.
-function svgIntrinsicWH(vb, scale = 40) {
-  const [, , w, h] = vb.split(" ").map(Number);
-  return `width="${w * scale}" height="${h * scale}"`;
+function addIconCorner(page, corner, piece, hex, mode, sw, join, cornerFill) {
+  const el = document.createElement("div");
+  el.className = `frame-bgi-corner frame-bgi-corner-${corner}`;
+  const svg = svgFrame(piece.vb);
+  svg.appendChild(parseIconMarkup(piece.el, hex, mode, sw, join, cornerFill));
+  el.appendChild(svg);
+  page.appendChild(el);
 }
-function bgImageDataURI(piece, hex, mode, sw, join, cornerFill) {
-  const isFillMode = mode === "fill" || cornerFill;
-  const attrs = isFillMode ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round"${join ? ' stroke-linejoin="round"' : ""}`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" ${svgIntrinsicWH(piece.vb)} viewBox="${piece.vb}"><${piece.el} ${attrs}/></svg>`;
-  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
-}
-function mmSizeFromViewBox(vb) {
-  const [, , w, h] = vb.split(" ").map(Number);
-  return `${w}mm ${h}mm`;
+function addIconStrip(page, side, piece, hex, mode, sw, join, targetMm) {
+  const [, , tileW, tileH] = piece.vb.split(" ").map(Number);
+  const horizontal = side === "top" || side === "bottom";
+  const tileLen = horizontal ? tileW : tileH;
+  const n = Math.max(1, Math.round(targetMm / tileLen));
+  const vb = horizontal ? `0 0 ${n * tileLen} ${tileH}` : `0 0 ${tileW} ${n * tileLen}`;
+  const el = document.createElement("div");
+  el.className = `frame-bgi-strip frame-bgi-strip-${side}`;
+  const svg = svgFrame(vb);
+  for (let i = 0; i < n; i++) {
+    const g = document.createElementNS(SVG_NS, "g");
+    g.setAttribute("transform", horizontal ? `translate(${i * tileLen},0)` : `translate(0,${i * tileLen})`);
+    g.appendChild(parseIconMarkup(piece.el, hex, mode, sw, join, false));
+    svg.appendChild(g);
+  }
+  el.appendChild(svg);
+  page.appendChild(el);
 }
 function addBackgroundImageFrame(page, accentHex, patternKey) {
   const p = BG_IMAGE_ICON_PATTERNS[patternKey];
-  ["top", "bottom"].forEach(side => {
-    const el = document.createElement("div");
-    el.className = `frame-bgi-strip frame-bgi-strip-${side}`;
-    el.style.backgroundImage = bgImageDataURI(p.stripTop, accentHex, p.mode, p.sw, p.join, false);
-    el.style.backgroundSize = mmSizeFromViewBox(p.stripTop.vb);
-    page.appendChild(el);
-  });
-  ["left", "right"].forEach(side => {
-    const el = document.createElement("div");
-    el.className = `frame-bgi-strip frame-bgi-strip-${side}`;
-    el.style.backgroundImage = bgImageDataURI(p.stripLeft, accentHex, p.mode, p.sw, p.join, false);
-    el.style.backgroundSize = mmSizeFromViewBox(p.stripLeft.vb);
-    page.appendChild(el);
-  });
+  addIconStrip(page, "top", p.stripTop, accentHex, p.mode, p.sw, p.join, A4_EDGE_W_MM);
+  addIconStrip(page, "bottom", p.stripTop, accentHex, p.mode, p.sw, p.join, A4_EDGE_W_MM);
+  addIconStrip(page, "left", p.stripLeft, accentHex, p.mode, p.sw, p.join, A4_EDGE_H_MM);
+  addIconStrip(page, "right", p.stripLeft, accentHex, p.mode, p.sw, p.join, A4_EDGE_H_MM);
   ["tl", "tr", "bl", "br"].forEach(corner => {
-    const el = document.createElement("div");
-    el.className = `frame-bgi-corner frame-bgi-corner-${corner}`;
-    el.style.backgroundImage = bgImageDataURI(p.corner, accentHex, p.mode, p.sw, p.join, p.cornerFill);
-    el.style.backgroundSize = mmSizeFromViewBox(p.corner.vb);
-    page.appendChild(el);
+    addIconCorner(page, corner, p.corner, accentHex, p.mode, p.sw, p.join, p.cornerFill);
   });
-}
-/* zigzag/wave/loop/arches: these DO need the corner to connect to the
-   edge (unlike the icon patterns above), which is exactly why they
-   were left on border-image while that was the only mechanism proven
-   to render cleanly. Once background-image was proven equally clean
-   (and border-image proven to be the actual bug), the missing piece
-   was how to keep the "corner is part of the same drawn path as the
-   edge" guarantee without border-image's slicing. The trick: an SVG's
-   viewBox can crop to ANY sub-rectangle of a path, including a
-   non-zero origin -- so the exact same already-verified-connected
-   quadrant path (or, for wave/loop, the exact same already-separate
-   corner/edgeTop/edgeLeft pieces) can be reused UNCHANGED, just
-   windowed through two different viewBoxes: one over the corner
-   region for a no-repeat corner element, one over one edge-arm's
-   region for a background-repeat:round edge element. Same path data,
-   same pixels at the shared boundary -- the connection is preserved
-   by construction, exactly as it was under border-image, but now
-   delivered through the mechanism that doesn't blur/fragment repeats.
-   arches has no corner piece at all (by original design -- its edges
-   already meet exactly at the shared point), so it only gets 4 edge
-   elements, no corner elements. */
-function svgURI(pathD, vb, hex, sw, fill) {
-  const attrs = fill ? `fill="${hex}"` : `fill="none" stroke="${hex}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"`;
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" ${svgIntrinsicWH(vb)} viewBox="${vb}"><path d="${pathD}" ${attrs}/></svg>`;
-  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
-}
-function mmFromVb(vb) {
-  const [, , w, h] = vb.split(" ").map(Number);
-  return `${(w * MM_PER_UNIT).toFixed(4)}mm ${(h * MM_PER_UNIT).toFixed(4)}mm`;
-}
-const MM_PER_UNIT = 4.5 / 20;
-function addStrip(page, side, pathD, vb, hex, sw, fill) {
-  const el = document.createElement("div");
-  el.className = `frame-bgi-strip2 frame-bgi-strip2-${side}`;
-  el.style.backgroundImage = svgURI(pathD, vb, hex, sw, fill);
-  el.style.backgroundSize = mmFromVb(vb);
-  page.appendChild(el);
 }
 function addCorner(page, corner, pathD, vb, hex, sw, fill) {
   const el = document.createElement("div");
   el.className = `frame-bgi-corner2 frame-bgi-corner2-${corner}`;
-  el.style.backgroundImage = svgURI(pathD, vb, hex, sw, fill);
-  el.style.backgroundSize = mmFromVb(vb);
+  const svg = svgFrame(vb);
+  svg.appendChild(svgPathNode(pathD, hex, sw, fill));
+  el.appendChild(svg);
   page.appendChild(el);
 }
+const MM_PER_UNIT = 4.5 / 20;
+// One period of each pattern's edge motif, standalone and shifted to
+// start at its own local origin (0,0) in the same phase the matching
+// corner's own arm ends in -- so N translated copies of it, starting at
+// i=0, continue the corner's pattern exactly, the same phase-matching
+// guarantee the old "crop one shared path through two viewBoxes" trick
+// gave. Needed by hand this time (rather than cropped from the existing
+// corner path) because a genuine repeat has no single source path to
+// crop -- see the module comment above addIconStrip for the full
+// rationale. arches/scallop use SVG arc commands, which the
+// mirrorPathX/Y regex helpers can't safely touch (an arc's rx,ry pair
+// would get corrupted as if it were a coordinate) -- these two tiles are
+// hand-derived and hand-checked instead of programmatically shifted,
+// same hazard already documented on BORDER_IMAGE_EXPLICIT_EDGES.
+const CONNECTED_EDGE_TILES = {
+  zigzag: {
+    top: { d: "M0,14 L5,6 L10,14 L15,6 L20,14", vb: "0 0 20 20" },
+    left: { d: "M14,0 L6,5 L14,10 L6,15 L14,20", vb: "0 0 20 20" },
+  },
+  wave: {
+    top: { d: "M0,10 Q15,3 30,10 T60,10", vb: "0 0 60 20" },
+    left: { d: "M10,0 Q3,15 10,30 T10,60", vb: "0 0 20 60" },
+  },
+  loop: {
+    top: { d: "M0,15 C0,5 10,5 11.25,10 C12.5,15 22.5,15 22.5,7.5 C22.5,15 32.5,15 33.75,10 C35,5 45,5 45,15", vb: "0 0 45 20" },
+    left: { d: "M15,0 C5,0 5,10 10,11.25 C15,12.5 15,22.5 7.5,22.5 C15,22.5 15,32.5 10,33.75 C5,35 5,45 15,45", vb: "0 0 20 45" },
+  },
+  arches: {
+    top: { d: "M0,20 A10,10 0 0 1 20,20", vb: "0 0 20 20" },
+    left: { d: "M0,0 A10,10 0 0 0 0,20", vb: "0 0 20 20" },
+  },
+  scallop: {
+    top: { d: "M0,0 A20,20 0 0 0 40,0 Z", vb: "0 0 40 20", fill: true },
+    left: { d: "M0,0 A20,20 0 0 1 0,40 Z", vb: "0 0 20 40", fill: true },
+  },
+};
+function addConnectedStrip(page, side, tile, hex, sw, targetMm) {
+  const horizontal = side === "top" || side === "bottom";
+  const [, , tileW, tileH] = tile.vb.split(" ").map(Number);
+  const tileLenUnits = horizontal ? tileW : tileH;
+  const n = Math.max(1, Math.round(targetMm / (tileLenUnits * MM_PER_UNIT)));
+  const vb = horizontal ? `0 0 ${n * tileLenUnits} ${tileH}` : `0 0 ${tileW} ${n * tileLenUnits}`;
+  const el = document.createElement("div");
+  el.className = `frame-bgi-strip2 frame-bgi-strip2-${side}`;
+  const svg = svgFrame(vb);
+  for (let i = 0; i < n; i++) {
+    const g = document.createElementNS(SVG_NS, "g");
+    g.setAttribute("transform", horizontal ? `translate(${i * tileLenUnits},0)` : `translate(0,${i * tileLenUnits})`);
+    g.appendChild(svgPathNode(tile.d, hex, sw, !!tile.fill));
+    svg.appendChild(g);
+  }
+  el.appendChild(svg);
+  page.appendChild(el);
+}
+// arches has no corner piece at all (by original design -- its edges
+// already meet exactly at the shared point), so it only gets 4 edge
+// elements, no corner elements.
 function addConnectedBgFrame(page, accentHex, patternKey) {
-  const sw = 2.4; // viewBox units, not mm -- matches the border-image patterns' own stroke-width (2.4 units == 0.54mm at this scale)
+  const sw = 2.4; // viewBox units, not mm -- matches the corner paths' own stroke-width (2.4 units == 0.54mm at this scale)
+  const tiles = CONNECTED_EDGE_TILES[patternKey];
+  addConnectedStrip(page, "top", tiles.top, accentHex, sw, A4_EDGE_W_MM);
+  addConnectedStrip(page, "bottom", tiles.top, accentHex, sw, A4_EDGE_W_MM);
+  addConnectedStrip(page, "left", tiles.left, accentHex, sw, A4_EDGE_H_MM);
+  addConnectedStrip(page, "right", tiles.left, accentHex, sw, A4_EDGE_H_MM);
   if (BORDER_IMAGE_POLYLINES[patternKey]) {
     const { size, pts } = BORDER_IMAGE_POLYLINES[patternKey];
     const mirrorX = p => p.map(([x, y]) => [size - x, y]);
@@ -4476,30 +4389,17 @@ function addConnectedBgFrame(page, accentHex, patternKey) {
     addCorner(page, "tr", tr, `${size - c} 0 ${c} ${c}`, accentHex, sw);
     addCorner(page, "bl", bl, `0 ${size - c} ${c} ${c}`, accentHex, sw);
     addCorner(page, "br", br, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
-    addStrip(page, "top", tl, `${c} 0 ${c} ${c}`, accentHex, sw);
-    addStrip(page, "bottom", bl, `${c} ${size - c} ${c} ${c}`, accentHex, sw);
-    addStrip(page, "left", tl, `0 ${c} ${c} ${c}`, accentHex, sw);
-    addStrip(page, "right", tr, `${size - c} ${c} ${c} ${c}`, accentHex, sw);
   } else if (BORDER_IMAGE_CORNER_EDGE[patternKey]) {
     const p = BORDER_IMAGE_CORNER_EDGE[patternKey];
     const size = p.size, c = 20;
     const cornerTR = mirrorPathX(p.corner, size), cornerBL = mirrorPathY(p.corner, size), cornerBR = mirrorPathX(mirrorPathY(p.corner, size), size);
-    const edgeBottom = mirrorPathY(p.edgeTop, size), edgeRight = mirrorPathX(p.edgeLeft, size);
     addCorner(page, "tl", p.corner, `0 0 ${c} ${c}`, accentHex, sw);
     addCorner(page, "tr", cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw);
     addCorner(page, "bl", cornerBL, `0 ${size - c} ${c} ${c}`, accentHex, sw);
     addCorner(page, "br", cornerBR, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
-    addStrip(page, "top", p.edgeTop, `${c} 0 ${size - 2 * c} ${c}`, accentHex, sw);
-    addStrip(page, "bottom", edgeBottom, `${c} ${size - c} ${size - 2 * c} ${c}`, accentHex, sw);
-    addStrip(page, "left", p.edgeLeft, `0 ${c} ${c} ${size - 2 * c}`, accentHex, sw);
-    addStrip(page, "right", edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw);
   } else if (BORDER_IMAGE_EXPLICIT_EDGES[patternKey]) {
     const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
     const size = p.size, c = 20, fill = !!p.fill;
-    addStrip(page, "top", p.edgeTop, `${c} 0 ${size - 2 * c} ${c}`, accentHex, sw, fill);
-    addStrip(page, "bottom", p.edgeBottom, `${c} ${size - c} ${size - 2 * c} ${c}`, accentHex, sw, fill);
-    addStrip(page, "left", p.edgeLeft, `0 ${c} ${c} ${size - 2 * c}`, accentHex, sw, fill);
-    addStrip(page, "right", p.edgeRight, `${size - c} ${c} ${c} ${size - 2 * c}`, accentHex, sw, fill);
     if (p.cornerTL) {
       addCorner(page, "tl", p.cornerTL, `0 0 ${c} ${c}`, accentHex, sw, fill);
       addCorner(page, "tr", p.cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw, fill);
@@ -4517,8 +4417,6 @@ function addFrame(sheet, page, accentHex) {
       addBackgroundImageFrame(page, accentHex, patternKey);
     } else if (CONNECTED_BG_PATTERNS.has(patternKey)) {
       addConnectedBgFrame(page, accentHex, patternKey);
-    } else {
-      addBorderImageFrame(page, accentHex, patternKey);
     }
   } else {
     addFrameStrips(page);

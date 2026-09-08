@@ -1740,6 +1740,86 @@ CSS shape crisp, SVG-background line soft, same screenshot — is what
 actually pointed at the fix; more automated re-checking of border-image
 vs background-image in isolation would not have found it.
 
+**Root-caused and actually fixed the blur, for real this time**: the
+intrinsic-resolution bump above didn't help at all -- a fresh screenshot
+at the same zoom showed the exact same soft zigzag line. That ruled out
+"not enough source detail." The decisive test was building a one-page
+diagnostic PDF with the same zigzag path delivered three ways: a CSS
+`background-image` (current approach), a real inline `<svg>` DOM element,
+and a plain native CSS border. Sebastian's own Preview.app screenshot of
+that page was unambiguous: the CSS background-image line was soft, the
+inline SVG and the native border were both crisp. That's the real root
+cause, and it explains every border bug this project has hit across mask-
+image, border-image, and background-image alike: Chromium's print-to-PDF
+pipeline flattens *any* CSS image reference into a raster in the exported
+PDF, regardless of source resolution, while a genuine DOM element (SVG or
+otherwise) is preserved as vector drawing commands. A second test at
+900dpi (`pdftoppm -r 900`, an order of magnitude past every DPI tried
+before) made the mechanism visible even in Poppler: the corner (drawn
+once, never repeated) stayed crisp, while the repeated edge tile turned
+visibly blocky/pixelated -- a tiled background image gets rasterized and
+cached at some fixed resolution and stamped, hitting a ceiling a single
+placement never does.
+
+Fix: every one of the 15 border patterns is now built as real inline
+`<svg>` DOM elements (`svgFrame`/`svgPathNode` for the 5 "connected"
+patterns, `parseIconMarkup` for the 10 icon patterns), never as a CSS
+background-image or border-image. SVG has no equivalent of
+`background-repeat`, so a genuine repeat is built by hand: N translated
+`<g>` copies of one tile, drawn into a wide/tall virtual viewBox that
+then gets non-uniformly stretched (`preserveAspectRatio="none"`) to fill
+whatever width the strip div actually renders at. N is tuned to fit the
+A4 edge gap (187mm/274mm) almost exactly; A5 pages get the same repeat
+count slightly compressed rather than a separately-tuned N, because the
+page format toggles live via a CSS custom property with no JS re-run to
+hook a per-format regeneration into -- a deliberate, minor, accepted
+tradeoff. The 10 icon patterns' existing tile geometry (`BG_IMAGE_ICON_
+PATTERNS`) carried over unchanged. The 5 connected patterns (zigzag/
+wave/loop/arches/scallop) needed one new small standalone "one edge
+period" tile per pattern (`CONNECTED_EDGE_TILES`), hand-derived from
+their existing corner/edge path data by shifting to a local origin at
+the same phase the corner's own arm ends in -- so the first repeat
+continues the corner exactly, the same phase-matching guarantee the
+old "crop one shared path through two viewBoxes" trick gave, just
+built by hand instead of derived from a shared source path (a genuine
+repeat has no single source path left to crop). arches and scallop use
+SVG arc commands, which the existing `mirrorPathX`/`mirrorPathY` regex
+helpers can't safely touch (already a known hazard, documented on
+`BORDER_IMAGE_EXPLICIT_EDGES` from an earlier entry) -- those two tiles
+were hand-derived and hand-checked rather than programmatically shifted.
+This retired the entire border-image code path (`addBorderImageFrame`,
+`borderImageSVG`, `iconBorderSVG`, `RESOLUTION_SCALE`, the old dead
+`BORDER_IMAGE_ICON_PATTERNS` table, and the `.frame-border-image` CSS
+rule) along with the background-image delivery functions from the
+previous two entries (`bgImageDataURI`, `svgURI`, `svgIntrinsicWH`) --
+nothing in this project delivers a border via a CSS image anymore.
+
+Verified at 900dpi via Poppler (an order of magnitude past anything
+tried before, specifically chosen because it's what revealed the bug):
+all 5 connected patterns crisp with no blockiness, corners connecting
+seamlessly, and no visible seam at tile repeat boundaries either (checked
+mid-edge, not just at the corners). Spot-checked all 10 icon patterns
+full-page at 300dpi -- all crisp and evenly spaced. Generated the
+complete 150-page book (`--all`) with no errors, confirming every one of
+the 15 patterns' new code path runs cleanly. Ran the full validation
+checklist (JS syntax, div/section balance, `overflow_scan.js`) with no
+regressions from the pre-existing baseline.
+
+**Lesson**: when a fix doesn't work, the fastest way to find out why is
+a *minimal, three-way, side-by-side comparison* built specifically to
+isolate the one variable in question (delivery mechanism, here) --
+not another round of tweaking parameters within the mechanism already
+suspected. The zigzag-vs-inline-SVG-vs-native-border test took minutes
+to build and produced an unambiguous answer in one screenshot; several
+earlier rounds of parameter tweaking (resolution, DPI, repeat mode,
+stroke width, and even a first attempt at raising intrinsic SVG
+resolution) never would have found this because none of them changed
+the one thing that mattered. Once the mechanism was identified, a
+900dpi Poppler render reproduced the SAME bug locally that had
+previously only ever shown up in the user's own Preview.app -- a
+reminder that "invisible to my tools" is sometimes just "haven't pushed
+the resolution far enough," not always "different renderer."
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
