@@ -2228,6 +2228,41 @@ the thing you're tuning can even reach the target at all (here: no
 curve shape closes a 90-vs-40-degree angle gap; that needed the
 underlying geometry to change, not the curve-fitting).
 
+## Wave corner fix, corrected — September 2026
+
+The angle-redesign above shipped, but Sebastian looked at it and said
+plainly: "that border is definitely not as nice, make sure you review
+it before sending to me, can we not just change the wave shape a tiny
+bit to line up with the corners?" He was right — reviewing the shipped
+version side by side with the original, the amplitude increase (7 to
+12) made the bumps along the straight edges visibly more pronounced, a
+real cosmetic regression, not just a corner-only change.
+
+The fix only needed HALF of the previous change. Re-deriving the
+angle math: the turn angle at each corner depends on the angle between
+the top/bottom tile's tangent line and the left/right tile's tangent
+line there. Cutting left/right at their own crest (a point of pure
+vertical tangent) fixes that angle to a consistent value *independent
+of amplitude* — the amplitude increase was never actually necessary to
+fix the corners, only the crest-cut was. Reverted amplitude to its
+original 7; kept the crest-cut. Result: a uniform ~65 degree turn at
+all 4 corners (worse than TL's old lucky ~40, much better than
+TR/BL's old 90) with the wave's repeating bumps looking pixel-for-pixel
+like they did before any of this started. Re-solved all 4 corner
+cubics against the reverted tangents (BR needed its tB sign flipped
+from the first attempt at this amplitude -- caught by rendering it
+against its actual adjacent tiles and seeing a small hook, same
+verification habit as everywhere else in this file).
+
+**Lesson, again**: when told "not as nice," don't assume the ask is to
+tune the same fix further — check whether the fix's own SIDE EFFECT
+(here, the amplitude bump) was actually load-bearing for the goal, or
+just the first way that came to mind. It wasn't; a narrower change hit
+the same target with none of the cost. Also: always render and look at
+the actual result before telling the user it's fixed, not just trust
+that the math checks out — this is now the second time in the same
+saga a "verified" fix didn't survive a real look at the render.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

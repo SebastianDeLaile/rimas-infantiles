@@ -4154,22 +4154,26 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // weren't just differently-curved, they were bending through a
   // genuinely different ANGLE (TL ~40 degrees, the other three a full 90
   // -- see the CONNECTED_EDGE_TILES.wave comment for why). No corner
-  // curve fixes an angle problem. Sebastian confirmed he wanted this
-  // actually fixed rather than left as a known limitation, so the tile
-  // itself changed (amplitude raised, left/right re-cut at their own
-  // crest) to make the turn angle at all 4 corners a uniform ~51
-  // degrees, and all 4 corners below were re-solved from scratch against
-  // that new geometry -- none of the 4 are simple mirrors of each other
-  // for the reason explained above, so each is its own cubic, control
-  // points sitting on the exact required tangent line at 0.6x the
-  // corner's own chord length (same tuning as before: enough distance to
-  // spread the curvature change out and avoid a visible shoulder,
-  // without enough to overshoot into an S-curve).
+  // curve fixes an angle problem, so the left/right tile's own cut point
+  // changed (crest instead of baseline crossing -- see that same
+  // comment) to make the turn angle a uniform ~65 degrees at all 4
+  // corners, WITHOUT touching amplitude or otherwise changing how the
+  // wave looks along the straight edges (an earlier version of this fix
+  // also raised amplitude, which did get closer to TL's original ~40
+  // but visibly changed the wave's bumps -- reverted per Sebastian: "can
+  // we not just change the wave shape a tiny bit"). All 4 corners below
+  // were re-solved from scratch against the new tangents -- none of the
+  // 4 are simple mirrors of each other for the reason explained above,
+  // so each is its own cubic, control points sitting on the exact
+  // required tangent line at 0.6x the corner's own chord length (same
+  // tuning as before: enough distance to spread the curvature change
+  // out and avoid a visible shoulder, without enough to overshoot into
+  // an S-curve).
   wave: {
-    cornerTL: "M20,10 C10.76,17.39 3,8.17 3,20",
-    cornerTR: "M0,10 C9.24,2.61 17,8.17 17,20",
-    cornerBL: "M3,0 C3,11.83 10.76,2.61 20,10",
-    cornerBR: "M17,0 C17,11.83 9.24,17.39 0,10",
+    cornerTL: "M20,10 C9.28,15.00 3,8.17 3,20",
+    cornerTR: "M0,10 C10.72,5.00 17,8.17 17,20",
+    cornerBL: "M3,0 C3,11.83 9.28,5.00 20,10",
+    cornerBR: "M17,0 C17,11.83 10.72,15.00 0,10",
   },
   // loop's edge tile is the original strip art (viewBox 0 0 9 4) scaled
   // x5 (period 9->45, baseline y=3->15). TL's control point sits at
@@ -4445,27 +4449,34 @@ const CONNECTED_EDGE_TILES = {
   // here rather than via the mirrorPathX/Y regex helpers at render time
   // only because these are simple enough to hand-derive directly; both
   // were hand-checked against the un-mirrored originals.
-  // Amplitude bumped from 7 to 12 (control-point offset), and left/right
-  // re-cut at their own crest/trough (a point of pure vertical tangent)
-  // instead of their baseline crossing -- both changes purely to fix
-  // the corners below, not a redesign for its own sake. Reasoning:
-  // every corner has to bend from the top/bottom tile's tangent line to
-  // the left/right tile's tangent line, and how SHARP that bend is
-  // depends only on the angle between those two lines. At the old
-  // amplitude, top/bottom's line sat close to left's own line but far
-  // (a full 90 degrees) from right's mirrored line -- TL/BR got an easy
-  // ~40 degree turn, TR/BL got stuck with a full right angle, and no
-  // amount of corner curve-fitting closes that gap (confirmed by
-  // testing half a dozen shapes there, all showing the same tell-tale
-  // dip -- Sebastian: "ideally i want a nice rounded edge on all corner
-  // like top left"). Cutting left/right at their crest makes their
-  // tangent exactly vertical regardless of amplitude, independent of
-  // top/bottom's own angle; raising top/bottom's amplitude then brings
-  // its tangent to within ~51 degrees of vertical -- the same ~51
-  // degree turn at all 4 corners now, instead of 1 easy + 3 hard.
+  // Left/right re-cut at their own crest/trough (a point of pure
+  // vertical tangent) instead of their baseline crossing -- amplitude
+  // (7) is UNCHANGED, this is purely a change of WHERE in the wave's own
+  // repeating cycle the tile boundary sits, not a redesign of the wave
+  // itself, so the visible bumps along the straight edges look exactly
+  // like they always did. Reasoning: every corner has to bend from the
+  // top/bottom tile's tangent line to the left/right tile's tangent
+  // line, and how sharp that bend is depends only on the angle between
+  // those two lines. At the OLD (baseline-crossing) cut, that angle was
+  // ~40 degrees at TL/BR but a full 90 degrees at TR/BL, and no amount
+  // of corner curve-fitting closes a 90-degree gap (confirmed by testing
+  // half a dozen shapes there, all showing the same tell-tale dip --
+  // Sebastian: "ideally i want a nice rounded edge on all corner like
+  // top left"). A first attempt fixed this by ALSO raising the
+  // amplitude (to bring top/bottom's own angle closer to vertical too),
+  // which did make all 4 corners an even ~51 degrees, but visibly
+  // changed the wave's bumps along the straight runs -- Sebastian:
+  // "that border is definitely not as nice... can we not just change
+  // the wave shape a tiny bit". Cutting left/right at the crest instead
+  // makes their tangent exactly vertical independent of amplitude, so
+  // reverting amplitude to its original 7 still lands a uniform ~65
+  // degree turn at all 4 corners (worse than TL's old lucky 40, much
+  // better than TR/BL's old 90) with ZERO visible change to the
+  // repeating wave pattern itself -- only the corners' own curves
+  // (below) needed re-solving against the new tangents.
   wave: {
-    top: { d: "M0,10 Q15,-2 30,10 Q45,22 60,10", vb: "0 0 60 20" },
-    bottom: { d: "M0,10 Q15,22 30,10 Q45,-2 60,10", vb: "0 0 60 20" },
+    top: { d: "M0,10 Q15,3 30,10 Q45,17 60,10", vb: "0 0 60 20" },
+    bottom: { d: "M0,10 Q15,17 30,10 Q45,3 60,10", vb: "0 0 60 20" },
     left: { d: "M3,0 C3,5 5,15 10,15 C15,15 17,25 17,30 C17,35 15,45 10,45 C5,45 3,55 3,60", vb: "0 0 20 60" },
     right: { d: "M17,0 C17,5 15,15 10,15 C5,15 3,25 3,30 C3,35 5,45 10,45 C15,45 17,55 17,60", vb: "0 0 20 60" },
   },
