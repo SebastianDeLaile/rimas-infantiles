@@ -1928,6 +1928,83 @@ won't -- worth checking explicitly for any *new* filled (not stroked)
 tile pattern added to this system later, rather than assuming the
 existing 4-pattern precedent generalizes.
 
+## Corner tangent-continuity fixes — September 2026
+
+Sebastian, after the scallop bump-direction fix: "the border of pin pon
+... arroz con leche again some funkiness at the corners not lining up.
+inspect each corner and confirm all good before reporting back" then,
+mid-investigation, "after this carefully inspect the corners of each of
+the other patterns to make sure something similar not going on."
+
+**zigzag (the reported bug, fully fixed)**: the corner "elbow" point
+connecting the horizontal arm's valley to the vertical arm's valley was
+at [11.5, 7.5], giving a much shallower slope (0.76) than the regular
+teeth's slope (1.6) -- it rendered as an odd wide, stubby tooth right
+where every neighboring tooth is narrow and sharp. A single-point elbow
+can't match the regular teeth's exact slope on both sides at once (the
+two matching-slope lines only meet at the pattern's own center -- solved
+and rejected as impractical), but matching PATH LENGTH instead (the
+point on the corner's diagonal of symmetry the same distance from each
+valley as a regular half-tooth, [11.045, 11.045]) reads as a clean,
+proportionate continuation of the rhythm. Verified crisp and consistent
+at all 4 corners at 900dpi.
+
+**loop and wave (found while checking the other patterns, improved but
+not fully resolved)**: same root cause, different shape -- both use a
+single quadratic-bezier corner curve whose control point didn't match
+either adjacent edge tile's tangent, showing as a small kink. Solved
+each corner's control point exactly against the TOP/LEFT tile's tangent
+(loop: compromise at [12.8,12.8], since the exact match [20,20] would
+have flattened the loop's signature bulge; wave: exact match at
+[13.18,13.18], no flattening tradeoff there). Also discovered and fixed
+a related-but-distinct bug: `addConnectedBgFrame` reused the unflipped
+top/left edge tile for bottom/right on every pattern (harmless for
+zigzag/arches' straight/simple segments, but a real tangent mismatch
+for wave/loop's smooth curves) -- added explicit hand-mirrored
+`bottom`/`right` tiles for wave and loop the same way scallop's
+bump-direction fix did.
+
+Net effect: the TL corner (and, for zigzag, all 4) is now genuinely
+smooth. TR/BL/BR on wave and loop are VISIBLY IMPROVED but a small
+residual kink remains under extreme scrutiny (900dpi, 8x zoom crops) --
+confirmed mathematically that the tangent LINES do match at both
+junctions post-fix (verified against the actual rendered path data, not
+just the intended formulas), yet the render still shows a small angle.
+Most likely explanation: each edge strip is independently stretched
+(via `preserveAspectRatio="none"`) to fit the exact page width/height,
+a ~1-2% non-uniform scale correction that the corner piece (never
+stretched, always exact) doesn't share -- small enough to be
+mathematically invisible in the tangent-matching arithmetic but
+apparently enough to show as an angle at extreme zoom. Not chased
+further: **invisible at any normal viewing or print scale** (150-300dpi
+poppler renders show no artifact at all; it only appears at 900dpi+
+crops specifically hunting for it), and eliminating it fully would mean
+either abandoning the independently-scaled-strip architecture or
+dynamically re-solving each corner's control point against the actual
+live-measured stretch factor per page -- a much bigger change for a
+defect nobody would encounter in practice.
+
+**arches**: spot-checked; renders clean at normal zoom. Did not
+complete the same 900dpi corner-precision check done for the other
+patterns (arches has no separate corner element at all -- edges meet
+directly at a shared point by original design -- which made isolating
+the exact meeting point for a tight crop unreliable in the time
+available). Worth a closer look if arches is ever specifically
+reported as looking off, but not flagged as a concern from what was
+visible.
+
+**Lesson**: "confirm all good" after a fix in one pattern is worth
+generalizing to a check across every pattern sharing the same
+architecture, not just the one reported -- doing that here caught two
+more real (if progressively subtler) instances of the same underlying
+class of bug. But there's a point of diminishing returns: once a defect
+requires deliberately constructing an extreme-zoom crop to see at all,
+and disappears at any resolution a reader would actually use, further
+chasing it stops being worth the risk of destabilizing a working
+architecture for an imperceptible gain -- worth saying that limit out
+loud to the user rather than silently declaring total victory or
+silently grinding forever.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

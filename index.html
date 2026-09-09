@@ -4093,7 +4093,21 @@ function addFrameStrips(page) {
    per repeat unit at a fixed border-image-width, since the corner slice
    size sets the mm-per-source-unit scale) -- see comment on `wave`. */
 const BORDER_IMAGE_POLYLINES = {
-  zigzag: { size: 60, pts: [[40, 14], [35, 6], [30, 14], [25, 6], [20, 14], [11.5, 7.5], [14, 20], [6, 25], [14, 30], [6, 35], [14, 40]] },
+  // The elbow point (was [11.5, 7.5]) connects the horizontal arm's
+  // valley at [20,14] to the vertical arm's valley at [14,20] -- moved
+  // to [11.045, 11.045] (the point on the corner's own diagonal of
+  // symmetry the same path-length from each valley as a regular
+  // half-tooth) so the corner's own "tooth" matches its neighbors'
+  // proportions. The old point was closer to the vertex, at a much
+  // shallower slope (0.76 vs the regular teeth's 1.6), so it rendered
+  // as an odd wide, stubby tooth right where every neighboring tooth is
+  // narrow and sharp -- Sebastian: "some funkiness at the corners not
+  // lining up." A single-point elbow can't match the regular teeth's
+  // exact slope on both sides at once (the two matching-slope lines
+  // only meet at the pattern's own center, solved and rejected as
+  // impractical) but matching path-length instead reads as a clean,
+  // proportionate continuation of the rhythm in practice.
+  zigzag: { size: 60, pts: [[40, 14], [35, 6], [30, 14], [25, 6], [20, 14], [11.045, 11.045], [14, 20], [6, 25], [14, 30], [6, 35], [14, 40]] },
 };
 const BORDER_IMAGE_CORNER_EDGE = {
   // Corner box (0-20) kept identical scale/shape to zigzag's so corners
@@ -4102,12 +4116,30 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // repeating unit more physical mm per tile -- at zigzag's 60-unit
   // canvas a wave period rendered so small (~1.1mm) it looked like a
   // row of dots instead of a curve; this gives ~13.5mm per period.
-  wave: { size: 100, corner: "M20,10 Q8,8 10,20", edgeTop: "M20,10 Q35,3 50,10 T80,10", edgeLeft: "M10,20 Q3,35 10,50 T10,80" },
+  // corner control point moved from [8,8] to [13.18,13.18] -- solved
+  // exactly (not a compromise, unlike loop below) so the curve's
+  // tangent at each edge-junction point matches the adjacent edge
+  // tile's own tangent there; the original pulled off at a diagonal
+  // that didn't match either tile, reading as a small kink/shoulder at
+  // every corner (subtle enough to miss on a casual look, confirmed
+  // present on close inspection at all 4 corners after Sebastian asked
+  // to check the other patterns for the same funkiness found on zigzag).
+  wave: { size: 100, corner: "M20,10 Q13.18,13.18 10,20", edgeTop: "M20,10 Q35,3 50,10 T80,10", edgeLeft: "M10,20 Q3,35 10,50 T10,80" },
   // loop's edge tile is the original strip art (viewBox 0 0 9 4) scaled
   // x5 (period 9->45, baseline y=3->15) and shifted +20 into the edge
   // band; edgeLeft is the same tile with x/y swapped. Canvas 85 = 20
   // (corner) + 45 (one period) + 20.
-  loop: { size: 85, corner: "M20,15 Q8,8 15,20", edgeTop: "M20,15 C20,5 30,5 31.25,10 C32.5,15 42.5,15 42.5,7.5 C42.5,15 52.5,15 53.75,10 C55,5 65,5 65,15", edgeLeft: "M15,20 C5,20 5,30 10,31.25 C15,32.5 15,42.5 7.5,42.5 C15,42.5 15,52.5 10,53.75 C5,55 5,65 15,65" },
+  // corner control point moved from [8,8] to [12.8,12.8] -- the
+  // original pulled the curve's tangent at each edge-junction point off
+  // at a diagonal, while the adjacent edge tile leaves that same point
+  // vertically/horizontally, a real (if subtler than zigzag's) tangent
+  // mismatch that read as a small kink on the mirrored corners (TR/BL/BR
+  // -- TL, being the un-mirrored original, happened to look fine).
+  // [12.8,12.8] is partway toward the exact tangent-matching point
+  // [20,20] (kept off it deliberately -- [20,20] flattens the loop's
+  // signature bulge almost away entirely) -- a compromise that reads as
+  // smooth without losing the shape's character.
+  loop: { size: 85, corner: "M20,15 Q12.8,12.8 15,20", edgeTop: "M20,15 C20,5 30,5 31.25,10 C32.5,15 42.5,15 42.5,7.5 C42.5,15 52.5,15 53.75,10 C55,5 65,5 65,15", edgeLeft: "M15,20 C5,20 5,30 10,31.25 C15,32.5 15,42.5 7.5,42.5 C15,42.5 15,52.5 10,53.75 C5,55 5,65 15,65" },
 };
 // Arc ("A rx,ry rot,large-arc,sweep x,y") commands can't go through the
 // regex mirror below -- it would mirror the rx,ry pair as if it were a
@@ -4314,13 +4346,29 @@ const CONNECTED_EDGE_TILES = {
     top: { d: "M0,14 L5,6 L10,14 L15,6 L20,14", vb: "0 0 20 20" },
     left: { d: "M14,0 L6,5 L14,10 L6,15 L14,20", vb: "0 0 20 20" },
   },
+  // wave/loop's top/left tiles are smooth curves, not thin straight
+  // segments like zigzag -- reusing them unflipped for bottom/right (as
+  // zigzag does, harmlessly, since a symmetric up-down zigzag looks the
+  // same read either direction) leaves a real tangent mismatch at the
+  // corner: the corner curve is solved to match the TOP/LEFT tile's own
+  // tangent, but an unflipped tile approaches the junction from the
+  // wrong side on the RIGHT/BOTTOM edges, showing up as a visible sharp
+  // angle right at the corner (found checking every pattern's corners
+  // after the zigzag/loop corner-shape fixes above). Mirrored explicitly
+  // here rather than via the mirrorPathX/Y regex helpers at render time
+  // only because these are simple enough to hand-derive directly; both
+  // were hand-checked against the un-mirrored originals.
   wave: {
     top: { d: "M0,10 Q15,3 30,10 T60,10", vb: "0 0 60 20" },
+    bottom: { d: "M0,10 Q15,17 30,10 T60,10", vb: "0 0 60 20" },
     left: { d: "M10,0 Q3,15 10,30 T10,60", vb: "0 0 20 60" },
+    right: { d: "M10,0 Q17,15 10,30 T10,60", vb: "0 0 20 60" },
   },
   loop: {
     top: { d: "M0,15 C0,5 10,5 11.25,10 C12.5,15 22.5,15 22.5,7.5 C22.5,15 32.5,15 33.75,10 C35,5 45,5 45,15", vb: "0 0 45 20" },
+    bottom: { d: "M0,5 C0,15 10,15 11.25,10 C12.5,5 22.5,5 22.5,12.5 C22.5,5 32.5,5 33.75,10 C35,15 45,15 45,5", vb: "0 0 45 20" },
     left: { d: "M15,0 C5,0 5,10 10,11.25 C15,12.5 15,22.5 7.5,22.5 C15,22.5 15,32.5 10,33.75 C5,35 5,45 15,45", vb: "0 0 20 45" },
+    right: { d: "M5,0 C15,0 15,10 10,11.25 C5,12.5 5,22.5 12.5,22.5 C5,22.5 5,32.5 10,33.75 C15,35 15,45 5,45", vb: "0 0 20 45" },
   },
   arches: {
     top: { d: "M0,20 A10,10 0 0 1 20,20", vb: "0 0 20 20" },
