@@ -1820,6 +1820,74 @@ previously only ever shown up in the user's own Preview.app -- a
 reminder that "invisible to my tools" is sometimes just "haven't pushed
 the resolution far enough," not always "different renderer."
 
+## Deep content/design review and fixes — September 2026
+
+Sebastian: "have a deep review of that whole document, the content, the
+translation, the border and pictures, the layout, is there anyway to
+improve it?" Ran two parallel review passes (text/translation, visual/
+layout) covering all 75 rhymes, then fixed the concrete issues:
+
+- **Grammar**: "Los cinco patitos" and "Los esqueletos" both used
+  indicative mood after `hasta que` describing a not-yet-realized
+  repeated action, where Spanish requires the subjunctive ("vuelve" →
+  "vuelva", "se duermen" → "se duerman") — other cards in the book
+  already got this right, these two were the outliers.
+- **Quote-mark consistency**: two cards used guillemets («») or curly
+  quotes for game-dialogue lines; normalized to the plain straight
+  quotes used everywhere else in the book, including the English side.
+- **Title-band contrast**: 14 cards had white title text on accents
+  light enough to fail basic legibility (as low as 1.84:1 against the
+  band's cream text color, `#fbf6ea` — WCAG wants 3:1+ for large bold
+  text) — mostly a cluster of pale yellows/golds. Darkened all 14 to
+  ≥4.3:1, and where darkening collapsed several of them toward the same
+  muddy olive (an artifact of same-hue-different-lightness colors
+  converging once lightness is equalized for contrast), spread their
+  hues across the amber-to-olive range so they stay mutually distinct
+  rather than trading one problem for another.
+- **Two "swapped rhyme" translations replaced with real translations**:
+  "Tengo una muñeca" was paired with "Miss Polly Had a Dolly" and "Lobo,
+  ¿estás?" with "What's the Time, Mr Wolf?" — both are different,
+  unrelated English nursery rhymes sharing only a loose theme with the
+  Spanish (sick doll + doctor; a wolf game), not translations of it, so
+  all the specific charm of each original was lost. Both now have actual
+  English translations preserving their own details (the doll dressed
+  in blue, syrup given "with a fork"; the wolf naming each item of
+  clothing he's putting on). Left the OTHER swapped-rhyme cases alone
+  (Twinkle Twinkle, Itsy Bitsy Spider, Head Shoulders Knees and Toes) —
+  those Spanish versions genuinely *are* adaptations of the English
+  originals, so restoring the English there is the faithful choice, not
+  a swap.
+- **Incorrect country attribution removed**: "Cabeza, hombros, rodillas
+  y pies" was tagged `data-country="República Dominicana"`, but it's the
+  well-known English/American "Head, Shoulders, Knees and Toes" — not a
+  Dominican-origin rhyme by any version-trail reading. Tag removed
+  rather than guessing a replacement.
+- **Medallion badge retired from all 13 cards that had one** (of 26
+  illustrated cards, exactly half had the circular themed icon badge,
+  half didn't, with no visible rule — read as unfinished rather than
+  intentional). CSS kept in place, undisturbed, in case it's revived
+  consistently across all illustrated cards later.
+- **3 near-indistinguishable accent-color pairs fixed**: Pasará pasará
+  mi barquito, Tortuguita Concha, and Suri sikuri each nudged to a
+  clearly distinct shade from the card they were being confused with
+  (ΔRGB of 4-8 before, i.e. essentially the same color at a glance).
+- **Left for later, tracked below rather than done now**: the
+  illustration-style split (49 of 75 cards still flat SVG, not the
+  bespoke bitmap treatment) — a large art-generation project, not a fix,
+  explicitly deferred rather than rushed into this pass.
+
+**Lesson**: a "deep review, is there anything to improve" request on a
+large document is exactly the shape of task worth splitting into
+parallel review-only passes (here: text/translation vs. visual/layout)
+before touching any code — each pass produces a lot of intermediate
+reading/rendering that doesn't need to survive into the fix, only the
+final punch list does. Presenting that list and asking which items to
+act on (rather than just doing all of it) mattered here specifically
+because several items were genuine editorial judgment calls (is a
+swapped-rhyme translation a bug or a deliberate choice? should a
+half-applied design detail be finished or removed?) that only the
+project owner can actually decide.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
@@ -1830,3 +1898,11 @@ the resolution far enough," not always "different renderer."
 4. Optional: revisit Spain's remaining ~130 uncatalogued entries for any
    strong non-seasonal, non-duplicate picks missed in the first cull —
    the list was reviewed at title-level only, not every entry was checked.
+5. **Illustration consistency pass is only ~1/3 done.** A September 2026
+   deep review found only 26 of 75 cards (35%) have the bespoke coloured-
+   pencil/gouache bitmap treatment; the other 49 are still on the older
+   flat inline-SVG icon style, and the split is visible when browsing.
+   Continue the batch-by-batch approach from the original pass (see
+   "Illustration consistency pass" above) until every card matches.
+   Deliberately deferred rather than done as part of that review, since
+   it's a large, open-ended art-generation project rather than a fix.
