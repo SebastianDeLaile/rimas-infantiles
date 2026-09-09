@@ -4326,9 +4326,25 @@ const CONNECTED_EDGE_TILES = {
     top: { d: "M0,20 A10,10 0 0 1 20,20", vb: "0 0 20 20" },
     left: { d: "M0,0 A10,10 0 0 0 0,20", vb: "0 0 20 20" },
   },
+  // scallop's top/left tiles are filled semicircle bumps, not thin
+  // strokes -- unlike the 4 patterns above, reusing them unflipped for
+  // bottom/right produces a bump whose round side visibly faces the
+  // OUTER margin instead of the page interior (Sebastian: "the RHS and
+  // bottom borders are facing the wrong way, they should curve
+  // inwards" -- correct: a div's own local x=0/y=0 is always its
+  // visual top-left regardless of whether it's positioned via CSS
+  // `left`/`top` or `right`/`bottom`, so the "right" and "bottom"
+  // strips need their OWN mirrored tile, not the top/left one reused).
+  // The other 4 patterns have the exact same asymmetry in principle,
+  // but it's invisible there since a thin stroked zigzag/wave/loop/arch
+  // doesn't have an obvious "which side is round" the way a bold filled
+  // bump does -- confirmed by rendering all 4 corners of each at 900dpi
+  // with no visible defect, so left alone rather than fixed unseen.
   scallop: {
     top: { d: "M0,0 A20,20 0 0 0 40,0 Z", vb: "0 0 40 20", fill: true },
+    bottom: { d: "M0,20 A20,20 0 0 1 40,20 Z", vb: "0 0 40 20", fill: true },
     left: { d: "M0,0 A20,20 0 0 1 0,40 Z", vb: "0 0 20 40", fill: true },
+    right: { d: "M20,0 A20,20 0 0 0 20,40 Z", vb: "0 0 20 40", fill: true },
   },
 };
 function addConnectedStrip(page, side, tile, hex, sw, targetMm) {
@@ -4356,9 +4372,9 @@ function addConnectedBgFrame(page, accentHex, patternKey) {
   const sw = 2.4; // viewBox units, not mm -- matches the corner paths' own stroke-width (2.4 units == 0.54mm at this scale)
   const tiles = CONNECTED_EDGE_TILES[patternKey];
   addConnectedStrip(page, "top", tiles.top, accentHex, sw, A4_EDGE_W_MM);
-  addConnectedStrip(page, "bottom", tiles.top, accentHex, sw, A4_EDGE_W_MM);
+  addConnectedStrip(page, "bottom", tiles.bottom || tiles.top, accentHex, sw, A4_EDGE_W_MM);
   addConnectedStrip(page, "left", tiles.left, accentHex, sw, A4_EDGE_H_MM);
-  addConnectedStrip(page, "right", tiles.left, accentHex, sw, A4_EDGE_H_MM);
+  addConnectedStrip(page, "right", tiles.right || tiles.left, accentHex, sw, A4_EDGE_H_MM);
   if (BORDER_IMAGE_POLYLINES[patternKey]) {
     const { size, pts } = BORDER_IMAGE_POLYLINES[patternKey];
     const mirrorX = p => p.map(([x, y]) => [size - x, y]);

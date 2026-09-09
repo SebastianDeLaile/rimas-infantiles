@@ -1888,6 +1888,46 @@ swapped-rhyme translation a bug or a deliberate choice? should a
 half-applied design detail be finished or removed?) that only the
 project owner can actually decide.
 
+## Scallop right/bottom bump direction fix — September 2026
+
+Sebastian, after the corner fix above: "hmm ok but look at pin pon the
+RHS and bottom borders are facing the wrong way, the should curve
+inwards." Real bug, not a duplicate of the corner one. `addConnectedBgFrame`
+reused the SAME "top" tile for the "bottom" strip and the SAME "left"
+tile for the "right" strip, unflipped. A `<div>`'s own local x=0/y=0 is
+always its visual top-left corner regardless of whether it's positioned
+via CSS `left`/`top` or `right`/`bottom` -- so the tile's bulge, which
+correctly faces "local bottom" / "local right" for the top/left strips
+(toward the page interior from where those divs sit), faces the exact
+same local direction for the bottom/right strips too, which for THOSE
+divs points toward the outer margin instead.
+
+Only visible on scallop: its tile is a bold FILLED semicircle with an
+obvious round side and flat side, so the wrong direction reads
+immediately. The other 4 connected patterns (zigzag/wave/loop/arches)
+have the identical asymmetry in principle, but their tiles are thin
+STROKED curves without a dominant "which side is round" -- confirmed by
+re-rendering all 4 corners of each at 900dpi with no visible defect, so
+deliberately left as-is rather than fixed unseen (touching arc-based
+paths for arches with no visible bug to fix is pure risk).
+
+Fixed by giving scallop explicit `bottom`/`right` tile entries in
+`CONNECTED_EDGE_TILES` -- mirrors of `top`/`left` (flip the coordinate
+and the arc's sweep-flag, hand-derived and hand-checked rather than
+run through the `mirrorPathX`/`mirrorPathY` regex helpers, which would
+corrupt the arc's rx,ry pair as if it were a coordinate -- same hazard
+noted throughout this file for every arc-based pattern). `addConnectedBgFrame`
+now uses `tiles.bottom || tiles.top` and `tiles.right || tiles.left`,
+so the 4 unaffected patterns fall through to their existing behavior
+unchanged.
+
+**Lesson**: "reuse the same tile for both sides of an axis" is only
+safe when the tile has no strong directional character. A bold filled
+shape will expose a top-left-origin assumption that a thin stroke
+won't -- worth checking explicitly for any *new* filled (not stroked)
+tile pattern added to this system later, rather than assuming the
+existing 4-pattern precedent generalizes.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
