@@ -117,7 +117,15 @@
 .frame-bgi-strip-left, .frame-bgi-strip-right { top: 11.5mm; bottom: 11.5mm; width: 4mm; background-repeat: round; }
 .frame-bgi-strip-left { left: 7mm; }
 .frame-bgi-strip-right { right: 7mm; }
-.frame-bgi-corner { width: 4mm; height: 4mm; }
+/* 4.5mm, not 4mm -- strips start at the 11.5mm inset (left/right/top/
+   bottom above), so a corner box anchored at the 7mm inset needs to be
+   11.5-7=4.5mm wide to reach exactly that seam. A 4mm corner (matching
+   only the strip's own thickness, not this seam) left a real 0.5mm gap
+   between every corner and its strips -- invisible on an isolated icon
+   like a dot or star, but a visible break on the two patterns whose
+   icons touch to form a continuous chain (crosshatch, diamond;
+   Sebastian: "the corner doesn't join" on crosshatch). */
+.frame-bgi-corner { width: 4.5mm; height: 4.5mm; }
 .frame-bgi-corner-tl { top: 7mm; left: 7mm; }
 .frame-bgi-corner-tr { top: 7mm; right: 7mm; }
 .frame-bgi-corner-bl { bottom: 7mm; left: 7mm; }
@@ -4139,30 +4147,29 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // repeating unit more physical mm per tile -- at zigzag's 60-unit
   // canvas a wave period rendered so small (~1.1mm) it looked like a
   // row of dots instead of a curve; this gives ~13.5mm per period.
-  // TL and BR are solved exactly as a single quadratic (not a
-  // compromise, unlike loop below) and render as a clean smooth arc.
-  // TR and BL, solved the same exact way, DON'T -- verified (numerically
-  // and by eye, at 900dpi and thick real stroke-width) to still have the
-  // exactly-correct tangent LINE at both ends, but a curvature at the
-  // tile-facing end roughly 6-7x sharper than TL's own (computed via the
-  // standard Bezier curvature formula), which a thick stroke renders as
-  // a visible little shoulder even though the centerline is technically
-  // G1-smooth -- tangent-matching alone doesn't guarantee looking smooth
-  // when the two joined curves' radii differ this much. Replaced with a
-  // cubic whose two control points sit along the SAME required tangent
-  // lines but at a tuned distance (0.6x the corner's own chord length)
-  // instead of the single point the tangent-matching equations force a
-  // quadratic to use -- this stretches the curvature transition out
-  // instead of concentrating it at one point, chosen because it brings
-  // the curvature at the tile-facing end within ~5% of TL's own (0.0445
-  // vs TL's 0.0427) without the S-shaped overshoot longer tangent
-  // lengths introduce. BR's quadratic didn't need this (its own
-  // curvature was already close enough), so it's untouched.
+  //
+  // September 2026, second pass: even after fixing the tangent-mirroring
+  // bug above, TR/BL/BR still didn't read as a smooth arc like TL, even
+  // with the curvature-matched cubic below -- because TL and TR/BL/BR
+  // weren't just differently-curved, they were bending through a
+  // genuinely different ANGLE (TL ~40 degrees, the other three a full 90
+  // -- see the CONNECTED_EDGE_TILES.wave comment for why). No corner
+  // curve fixes an angle problem. Sebastian confirmed he wanted this
+  // actually fixed rather than left as a known limitation, so the tile
+  // itself changed (amplitude raised, left/right re-cut at their own
+  // crest) to make the turn angle at all 4 corners a uniform ~51
+  // degrees, and all 4 corners below were re-solved from scratch against
+  // that new geometry -- none of the 4 are simple mirrors of each other
+  // for the reason explained above, so each is its own cubic, control
+  // points sitting on the exact required tangent line at 0.6x the
+  // corner's own chord length (same tuning as before: enough distance to
+  // spread the curvature change out and avoid a visible shoulder,
+  // without enough to overshoot into an S-curve).
   wave: {
-    cornerTL: "M20,10 Q13.18,13.18 10,20",
-    cornerTR: "M0,10 C7.69,6.41 6.41,12.31 10,20",
-    cornerBL: "M10,0 C6.41,7.69 12.31,6.41 20,10",
-    cornerBR: "M10,0 Q18.75,18.75 0,10",
+    cornerTL: "M20,10 C10.76,17.39 3,8.17 3,20",
+    cornerTR: "M0,10 C9.24,2.61 17,8.17 17,20",
+    cornerBL: "M3,0 C3,11.83 10.76,2.61 20,10",
+    cornerBR: "M17,0 C17,11.83 9.24,17.39 0,10",
   },
   // loop's edge tile is the original strip art (viewBox 0 0 9 4) scaled
   // x5 (period 9->45, baseline y=3->15). TL's control point sits at
@@ -4317,7 +4324,22 @@ function parseIconMarkup(markup, hex, mode, sw, join, cornerFill) {
   return host.firstElementChild;
 }
 const BG_IMAGE_ICON_PATTERNS = {
-  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, corner: { vb: "0 0 4 4", el: 'path d="M0,0 L4,4 M0,4 L4,0"' }, sw: 0.6, mode: "stroke" },
+  // crosshatch's strip tiles are 8x4 (top/bottom) and 4x8 (left/right) --
+  // each an X spanning its own full box, touching the next tile's X at
+  // shared corner points to read as one continuous diamond chain. The
+  // old shared `corner` piece was a plain 4x4 X (45 degree diagonals),
+  // but the strips' diagonals run at a shallower ~27/63 degree angle
+  // (dy/dx=4/8=0.5, not 1) -- position-wise the old corner's diagonals
+  // did land on the right points, but at the wrong ANGLE, reading as a
+  // visible kink right where each strip met the corner (Sebastian: "the
+  // corner doesn't join"). Each of the 4 corners below is a small
+  // zigzag built by extending the actual incoming diagonal from each
+  // strip (using the pattern's own periodicity: what the tile chain
+  // would look like one half-tile further, past where the real strip
+  // stops) rather than a generic same-for-all-4 motif -- same root
+  // cause and fix shape as the wave/loop corner-mirroring bugs above,
+  // just for straight lines instead of curves.
+  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, cornerTL: { vb: "0 0 4 4", el: 'path d="M4,0 L0,2 L4,4 L2,0 L0,4"' }, cornerTR: { vb: "0 0 4 4", el: 'path d="M0,0 L4,2 L0,4 L2,0 L4,4"' }, cornerBL: { vb: "0 0 4 4", el: 'path d="M0,0 L2,4 L4,0 L0,2 L4,4"' }, cornerBR: { vb: "0 0 4 4", el: 'path d="M4,0 L2,4 L0,0 L4,2 L0,4"' }, sw: 0.6, mode: "stroke", join: true },
   diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.5 L3.5,2 L2,3.5 L0.5,2 Z"' }, sw: 0.6, mode: "stroke", join: true },
   teardrop: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,1 C4,1 4,3 3,3 C2,3 2,1 3,1 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M1,3 C1,2 3,2 3,3 C3,4 1,4 1,3 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.7 C3,0.7 3,3.3 2,3.3 C1,3.3 1,0.7 2,0.7 Z"' }, sw: 0.55, mode: "stroke" },
   ticks: { stripTop: { vb: "0 0 3 4", el: 'line x1="1.5" y1="0.8" x2="1.5" y2="3.2"' }, stripLeft: { vb: "0 0 4 3", el: 'line x1="0.8" y1="1.5" x2="3.2" y2="1.5"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.55"' }, sw: 0.6, mode: "stroke", cornerFill: true },
@@ -4340,8 +4362,17 @@ function addIconStrip(page, side, piece, hex, mode, sw, join, targetMm) {
   const [, , tileW, tileH] = piece.vb.split(" ").map(Number);
   const horizontal = side === "top" || side === "bottom";
   const tileLen = horizontal ? tileW : tileH;
+  const crossLen = horizontal ? tileH : tileW;
   const n = Math.max(1, Math.round(targetMm / tileLen));
-  const vb = horizontal ? `0 0 ${n * tileLen} ${tileH}` : `0 0 ${tileW} ${n * tileLen}`;
+  // Same fix as addConnectedStrip below: n whole tiles almost never add up
+  // to exactly targetMm, so preserveAspectRatio="none" stretches the
+  // along-axis by a small (~1-2%) factor while the cross-axis viewBox
+  // stays at the tile's nominal size -- an unequal x/y scale that skews
+  // every icon in the strip. Scaling the cross-axis by the same factor
+  // keeps the icons' own proportions (and their diagonal lines' angles)
+  // undistorted.
+  const adjustedCross = crossLen * (n * tileLen) / targetMm;
+  const vb = horizontal ? `0 0 ${n * tileLen} ${adjustedCross}` : `0 0 ${adjustedCross} ${n * tileLen}`;
   const el = document.createElement("div");
   el.className = `frame-bgi-strip frame-bgi-strip-${side}`;
   const svg = svgFrame(vb);
@@ -4361,7 +4392,8 @@ function addBackgroundImageFrame(page, accentHex, patternKey) {
   addIconStrip(page, "left", p.stripLeft, accentHex, p.mode, p.sw, p.join, A4_EDGE_H_MM);
   addIconStrip(page, "right", p.stripLeft, accentHex, p.mode, p.sw, p.join, A4_EDGE_H_MM);
   ["tl", "tr", "bl", "br"].forEach(corner => {
-    addIconCorner(page, corner, p.corner, accentHex, p.mode, p.sw, p.join, p.cornerFill);
+    const piece = p.cornerTL ? p["corner" + corner.toUpperCase()] : p.corner;
+    addIconCorner(page, corner, piece, accentHex, p.mode, p.sw, p.join, p.cornerFill);
   });
 }
 function addCorner(page, corner, pathD, vb, hex, sw, fill) {
@@ -4413,11 +4445,29 @@ const CONNECTED_EDGE_TILES = {
   // here rather than via the mirrorPathX/Y regex helpers at render time
   // only because these are simple enough to hand-derive directly; both
   // were hand-checked against the un-mirrored originals.
+  // Amplitude bumped from 7 to 12 (control-point offset), and left/right
+  // re-cut at their own crest/trough (a point of pure vertical tangent)
+  // instead of their baseline crossing -- both changes purely to fix
+  // the corners below, not a redesign for its own sake. Reasoning:
+  // every corner has to bend from the top/bottom tile's tangent line to
+  // the left/right tile's tangent line, and how SHARP that bend is
+  // depends only on the angle between those two lines. At the old
+  // amplitude, top/bottom's line sat close to left's own line but far
+  // (a full 90 degrees) from right's mirrored line -- TL/BR got an easy
+  // ~40 degree turn, TR/BL got stuck with a full right angle, and no
+  // amount of corner curve-fitting closes that gap (confirmed by
+  // testing half a dozen shapes there, all showing the same tell-tale
+  // dip -- Sebastian: "ideally i want a nice rounded edge on all corner
+  // like top left"). Cutting left/right at their crest makes their
+  // tangent exactly vertical regardless of amplitude, independent of
+  // top/bottom's own angle; raising top/bottom's amplitude then brings
+  // its tangent to within ~51 degrees of vertical -- the same ~51
+  // degree turn at all 4 corners now, instead of 1 easy + 3 hard.
   wave: {
-    top: { d: "M0,10 Q15,3 30,10 T60,10", vb: "0 0 60 20" },
-    bottom: { d: "M0,10 Q15,17 30,10 T60,10", vb: "0 0 60 20" },
-    left: { d: "M10,0 Q3,15 10,30 T10,60", vb: "0 0 20 60" },
-    right: { d: "M10,0 Q17,15 10,30 T10,60", vb: "0 0 20 60" },
+    top: { d: "M0,10 Q15,-2 30,10 Q45,22 60,10", vb: "0 0 60 20" },
+    bottom: { d: "M0,10 Q15,22 30,10 Q45,-2 60,10", vb: "0 0 60 20" },
+    left: { d: "M3,0 C3,5 5,15 10,15 C15,15 17,25 17,30 C17,35 15,45 10,45 C5,45 3,55 3,60", vb: "0 0 20 60" },
+    right: { d: "M17,0 C17,5 15,15 10,15 C5,15 3,25 3,30 C3,35 5,45 10,45 C15,45 17,55 17,60", vb: "0 0 20 60" },
   },
   loop: {
     top: { d: "M0,15 C0,5 10,5 11.25,10 C12.5,15 22.5,15 22.5,7.5 C22.5,15 32.5,15 33.75,10 C35,5 45,5 45,15", vb: "0 0 45 20" },

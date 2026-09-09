@@ -2161,6 +2161,73 @@ two joined curves' curvature differs a lot — worth checking curvature,
 not just tangent, whenever a "smooth" join still looks off after the
 tangent lines provably match.
 
+## Wave corner angle redesign + crosshatch corner fix — September 2026
+
+After the curvature fix above shipped, Sebastian looked again and said
+the corners still weren't right: "ideally i want a nice rounded edge on
+all corner like top left." Investigating properly (not just re-tuning
+the corner curve again) found the real cause: TL and TR/BL/BR weren't
+just differently *curved*, they were bending through a genuinely
+different *angle*. The turn angle at a corner is fixed by the angle
+between the top/bottom tile's tangent line and the left/right tile's
+tangent line there — and because the top edge is one continuous,
+unmirrored strip while left/right are a mirrored pair, that angle
+works out to ~40 degrees at TL/BR and a full 90 degrees at TR/BL, at
+the wave's original amplitude. No corner curve fixes an angle problem;
+every candidate tested (half a dozen quadratic and cubic shapes) at
+that same 90-degree TR/BL turn showed the same dip.
+
+Fixed by changing the tile geometry itself, not just the corner:
+raised the wave's amplitude (7 to 12, in control-point-offset terms)
+and re-cut the left/right tiles at their own crest/trough — a point of
+naturally pure vertical tangent, independent of amplitude — instead of
+their baseline crossing. Together these bring the turn angle to a
+uniform ~51 degrees at all 4 corners, instead of 1 easy + 3 hard. All
+4 corners were then re-solved from scratch against the new tile
+tangents (still no simple mirroring between them, same reason as
+before) using the same cubic-at-0.6x-chord-length approach as the
+previous pass. Verified at 900dpi: all 4 corners now read as the same
+smooth arc as TL.
+
+**Also found while re-checking arches/scallop/zigzag for regressions**:
+crosshatch (used by "Sana, sana & Que llueva" and 4 other cards) had
+two unrelated, real bugs of its own, reported as "the corner doesn't
+join, and also the whole pattern looks a bit clipped":
+
+1. The icon-pattern corner box (`.frame-bgi-corner`, used by all 10
+   "icon" patterns — crosshatch, diamond, dots, star, etc., a separate,
+   older system from the 5 "connected" patterns above) was sized 4mm,
+   but the strips it has to meet start at the 11.5mm inset — a corner
+   anchored at 7mm needs to be 4.5mm wide to reach that seam, not 4mm.
+   That 0.5mm gap was invisible on an isolated icon like a dot or star,
+   but a visible break on crosshatch and diamond, whose icons touch
+   edge-to-edge to form a continuous chain. Fixed by sizing the corner
+   box to 4.5mm, matching the "connected" patterns' own convention.
+2. Crosshatch's corner content was a single generic 45-degree X reused
+   unmirrored at all 4 corners, but the strip tiles' diagonals run at a
+   shallower ~27/63 degree angle (an 8x4 tile, not 4x4) — positionally
+   the old X did land on the right points, but at the wrong angle, a
+   visible kink right at the seam. Replaced with 4 per-corner zigzags,
+   each built by extending the actual incoming diagonal from its two
+   adjacent strips (using the pattern's own periodicity — what the tile
+   chain would look like one half-tile further than where the real
+   strip stops). Needed `stroke-linejoin: round` too — the first
+   attempt, correct in point-position, rendered as a 5-pointed-star-like
+   spike because sharp zigzag turns default to a `miter` join, which
+   extends arbitrarily far past the vertex at a sharp enough angle; only
+   visible with the real (fairly thick) stroke width, not in a quick
+   thin-line sanity check.
+
+Also applied the same non-uniform-viewBox-stretch fix from the
+`addConnectedStrip` fix above to `addIconStrip` (the older icon-pattern
+strip renderer) — same root cause, same fix, for all 10 icon patterns.
+
+**Lesson**: when a fix "sort of" works but the reporter says it's still
+not right, resist re-tuning the same knob a third time — check whether
+the thing you're tuning can even reach the target at all (here: no
+curve shape closes a 90-vs-40-degree angle gap; that needed the
+underlying geometry to change, not the curve-fitting).
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
