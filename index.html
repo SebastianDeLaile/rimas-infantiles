@@ -4110,36 +4110,87 @@ const BORDER_IMAGE_POLYLINES = {
   zigzag: { size: 60, pts: [[40, 14], [35, 6], [30, 14], [25, 6], [20, 14], [11.045, 11.045], [14, 20], [6, 25], [14, 30], [6, 35], [14, 40]] },
 };
 const BORDER_IMAGE_CORNER_EDGE = {
+  // All 4 corners are now hand-derived per-corner (own "0 0 20 20" box,
+  // no mirroring at render time). Earlier this session TR/BL/BR were
+  // produced by mirroring the TL corner's own control point via
+  // mirrorPathX/Y -- that mirrors the ENDPOINTS correctly (they really
+  // are each other's reflection), but NOT the control point, because
+  // the tangent each corner has to match comes from a DIFFERENT
+  // tile-relationship than TL's: the top/bottom edge is one continuous
+  // unmirrored strip end-to-end (same tile, both ends), while left/right
+  // really are a mirrored pair -- so a corner control point solved for
+  // "top-tile's tangent + left-tile's tangent" doesn't mirror into a
+  // valid solution for "top-tile's tangent (same tile!) + right-tile's
+  // (mirrored) tangent". Rendered at 900dpi this showed up as a real,
+  // sharp V-kink at TR/BL/BR -- not the "invisible at normal viewing
+  // resolution" residual kink the September 2026 tangent-continuity
+  // pass had assumed; Sebastian's own screenshots of "Los pollitos
+  // dicen" at ordinary Preview.app zoom showed it plainly. Each corner
+  // below is now solved the same way TL originally was: find the
+  // control point whose tangent LINE at each end matches that end's
+  // actual adjacent-tile tangent line exactly (a vertical/horizontal or
+  // vertical/horizontal-equivalent pair of linear constraints, solved
+  // directly -- no mirroring of a control point computed for a
+  // different pair of constraints).
+  //
   // Corner box (0-20) kept identical scale/shape to zigzag's so corners
   // read as the same physical size across patterns. Canvas widened to
   // 100 (edge band 20-80, 60 units) purely to give the edge's own
   // repeating unit more physical mm per tile -- at zigzag's 60-unit
   // canvas a wave period rendered so small (~1.1mm) it looked like a
   // row of dots instead of a curve; this gives ~13.5mm per period.
-  // corner control point moved from [8,8] to [13.18,13.18] -- solved
-  // exactly (not a compromise, unlike loop below) so the curve's
-  // tangent at each edge-junction point matches the adjacent edge
-  // tile's own tangent there; the original pulled off at a diagonal
-  // that didn't match either tile, reading as a small kink/shoulder at
-  // every corner (subtle enough to miss on a casual look, confirmed
-  // present on close inspection at all 4 corners after Sebastian asked
-  // to check the other patterns for the same funkiness found on zigzag).
-  wave: { size: 100, corner: "M20,10 Q13.18,13.18 10,20", edgeTop: "M20,10 Q35,3 50,10 T80,10", edgeLeft: "M10,20 Q3,35 10,50 T10,80" },
+  // TL and BR are solved exactly as a single quadratic (not a
+  // compromise, unlike loop below) and render as a clean smooth arc.
+  // TR and BL, solved the same exact way, DON'T -- verified (numerically
+  // and by eye, at 900dpi and thick real stroke-width) to still have the
+  // exactly-correct tangent LINE at both ends, but a curvature at the
+  // tile-facing end roughly 6-7x sharper than TL's own (computed via the
+  // standard Bezier curvature formula), which a thick stroke renders as
+  // a visible little shoulder even though the centerline is technically
+  // G1-smooth -- tangent-matching alone doesn't guarantee looking smooth
+  // when the two joined curves' radii differ this much. Replaced with a
+  // cubic whose two control points sit along the SAME required tangent
+  // lines but at a tuned distance (0.6x the corner's own chord length)
+  // instead of the single point the tangent-matching equations force a
+  // quadratic to use -- this stretches the curvature transition out
+  // instead of concentrating it at one point, chosen because it brings
+  // the curvature at the tile-facing end within ~5% of TL's own (0.0445
+  // vs TL's 0.0427) without the S-shaped overshoot longer tangent
+  // lengths introduce. BR's quadratic didn't need this (its own
+  // curvature was already close enough), so it's untouched.
+  wave: {
+    cornerTL: "M20,10 Q13.18,13.18 10,20",
+    cornerTR: "M0,10 C7.69,6.41 6.41,12.31 10,20",
+    cornerBL: "M10,0 C6.41,7.69 12.31,6.41 20,10",
+    cornerBR: "M10,0 Q18.75,18.75 0,10",
+  },
   // loop's edge tile is the original strip art (viewBox 0 0 9 4) scaled
-  // x5 (period 9->45, baseline y=3->15) and shifted +20 into the edge
-  // band; edgeLeft is the same tile with x/y swapped. Canvas 85 = 20
-  // (corner) + 45 (one period) + 20.
-  // corner control point moved from [8,8] to [12.8,12.8] -- the
-  // original pulled the curve's tangent at each edge-junction point off
-  // at a diagonal, while the adjacent edge tile leaves that same point
-  // vertically/horizontally, a real (if subtler than zigzag's) tangent
-  // mismatch that read as a small kink on the mirrored corners (TR/BL/BR
-  // -- TL, being the un-mirrored original, happened to look fine).
-  // [12.8,12.8] is partway toward the exact tangent-matching point
-  // [20,20] (kept off it deliberately -- [20,20] flattens the loop's
-  // signature bulge almost away entirely) -- a compromise that reads as
-  // smooth without losing the shape's character.
-  loop: { size: 85, corner: "M20,15 Q12.8,12.8 15,20", edgeTop: "M20,15 C20,5 30,5 31.25,10 C32.5,15 42.5,15 42.5,7.5 C42.5,15 52.5,15 53.75,10 C55,5 65,5 65,15", edgeLeft: "M15,20 C5,20 5,30 10,31.25 C15,32.5 15,42.5 7.5,42.5 C15,42.5 15,52.5 10,53.75 C5,55 5,65 15,65" },
+  // x5 (period 9->45, baseline y=3->15). TL's control point sits at
+  // [12.8,12.8], 40% of the way from the original (wrong) [8,8] toward
+  // the exact tangent-matching point [20,20] -- kept off the exact point
+  // deliberately since [20,20] flattens the loop's signature bulge
+  // almost away entirely, and renders as a clean smooth arc.
+  // TR/BL/BR, same as wave above, need more than a single-point
+  // quadratic to look smooth: the two tiles they join have a much
+  // sharper curvature right at the junction than TL's own tiles do, so
+  // even an exact tangent-line match there reads as a visible little
+  // shoulder under a real stroke width. Built the same way as wave's
+  // TR/BL fix -- a cubic with both control points sitting on the exact
+  // required tangent lines (here just vertical for the top/bottom-tile
+  // side, horizontal for the left/right-tile side, since loop's tiles
+  // are vertical/horizontal at every tile boundary) at 0.6x the
+  // corner's own chord length, which stretches the curvature change out
+  // instead of concentrating it at one point. Each solved fresh from
+  // its own two tiles' actual tangent lines (not mirrored from another
+  // corner) for the same reason wave's couldn't be mirrored either: the
+  // top/bottom tile is one continuous unmirrored strip end-to-end, so
+  // TR's "top-tile side" isn't TL's "top-tile side" reflected.
+  loop: {
+    cornerTL: "M20,15 Q12.8,12.8 15,20",
+    cornerTR: "M0,15 C0,19.24 0.76,20 5,20",
+    cornerBL: "M15,0 C19.24,0 20,0.76 20,5",
+    cornerBR: "M5,0 C0.76,0 0,0.76 0,5",
+  },
 };
 // Arc ("A rx,ry rot,large-arc,sweep x,y") commands can't go through the
 // regex mirror below -- it would mirror the rx,ry pair as if it were a
@@ -4189,12 +4240,6 @@ const BORDER_IMAGE_EXPLICIT_EDGES = {
     fill: true,
   },
 };
-function mirrorPathX(d, w) {
-  return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${w - parseFloat(x)},${y}`);
-}
-function mirrorPathY(d, h) {
-  return d.replace(/(-?[\d.]+),(-?[\d.]+)/g, (m, x, y) => `${x},${h - parseFloat(y)}`);
-}
 // Every pattern in this book used to be delivered as a CSS image
 // (mask-image, then border-image, then background-image) -- three
 // different mechanisms, three different bugs, all sharing one root
@@ -4409,8 +4454,26 @@ function addConnectedStrip(page, side, tile, hex, sw, targetMm) {
   const horizontal = side === "top" || side === "bottom";
   const [, , tileW, tileH] = tile.vb.split(" ").map(Number);
   const tileLenUnits = horizontal ? tileW : tileH;
+  const crossUnits = horizontal ? tileH : tileW;
   const n = Math.max(1, Math.round(targetMm / (tileLenUnits * MM_PER_UNIT)));
-  const vb = horizontal ? `0 0 ${n * tileLenUnits} ${tileH}` : `0 0 ${tileW} ${n * tileLenUnits}`;
+  // The along-axis viewBox size is forced to exactly n tiles, then that
+  // whole strip is stretched (via preserveAspectRatio="none") to fill
+  // the physical edge length exactly -- a repeat count rarely divides
+  // A4_EDGE_*_MM evenly, so this is always a small (~1%) stretch. Left
+  // at the tile's nominal cross-axis size, the strip's physical box
+  // (fixed at 4.5mm, matching the corner) would end up scaled
+  // differently along its two axes -- proven (not just suspected, per
+  // the September 2026 tangent-continuity pass's caveat) to distort the
+  // tangent SLOPE right where the strip meets its corner, producing a
+  // small but real visible kink even when the corner's own control
+  // point exactly matches the tile's un-stretched tangent (found on
+  // wave's corners from Sebastian's "Los pollitos" screenshots).
+  // Scaling the cross-axis viewBox size by the same along-axis stretch
+  // factor makes both axes scale identically, eliminating the slope
+  // distortion -- the strip's rendered thickness shifts by the same
+  // ~1%, imperceptible since it's a uniform scale, not a shape change.
+  const adjustedCross = crossUnits * (n * tileLenUnits * MM_PER_UNIT) / targetMm;
+  const vb = horizontal ? `0 0 ${n * tileLenUnits} ${adjustedCross}` : `0 0 ${adjustedCross} ${n * tileLenUnits}`;
   const el = document.createElement("div");
   el.className = `frame-bgi-strip2 frame-bgi-strip2-${side}`;
   const svg = svgFrame(vb);
@@ -4465,12 +4528,11 @@ function addConnectedBgFrame(page, accentHex, patternKey) {
     addCorner(page, "br", br, `0 0 ${c} ${c}`, accentHex, sw);
   } else if (BORDER_IMAGE_CORNER_EDGE[patternKey]) {
     const p = BORDER_IMAGE_CORNER_EDGE[patternKey];
-    const size = p.size, c = 20;
-    const cornerTR = mirrorPathX(p.corner, size), cornerBL = mirrorPathY(p.corner, size), cornerBR = mirrorPathX(mirrorPathY(p.corner, size), size);
-    addCorner(page, "tl", p.corner, `0 0 ${c} ${c}`, accentHex, sw);
-    addCorner(page, "tr", cornerTR, `${size - c} 0 ${c} ${c}`, accentHex, sw);
-    addCorner(page, "bl", cornerBL, `0 ${size - c} ${c} ${c}`, accentHex, sw);
-    addCorner(page, "br", cornerBR, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
+    const c = 20;
+    addCorner(page, "tl", p.cornerTL, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "tr", p.cornerTR, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "bl", p.cornerBL, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "br", p.cornerBR, `0 0 ${c} ${c}`, accentHex, sw);
   } else if (BORDER_IMAGE_EXPLICIT_EDGES[patternKey]) {
     const p = BORDER_IMAGE_EXPLICIT_EDGES[patternKey];
     const size = p.size, c = 20, fill = !!p.fill;

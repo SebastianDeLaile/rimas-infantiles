@@ -2088,6 +2088,79 @@ is a sign to treat any edge-tile reuse (`tiles.bottom || tiles.top`,
 `tiles.right || tiles.left`) as a default that needs verifying per
 pattern, not a safe fallback.
 
+## Wave/loop corner curvature fix — September 2026
+
+The zigzag right/bottom fix above shipped, but Sebastian sent fresh
+screenshots of "Los pollitos dicen" (wave pattern) showing TR/BL/BR
+still visibly wrong — not the earlier hidden-geometry bug, a different
+one: the corner curve met the edge strip at a real, visible V-shaped
+crease, while TL stayed a clean smooth arc as always.
+
+Root cause, found by re-deriving each corner's required tangent from
+its own two adjacent tiles rather than trusting the existing
+mirror-based formula: TR/BL/BR's corner control point was being
+produced by mirroring TL's own control point (`mirrorPathX`/`mirrorPathY`
+with the pattern's full-size constant). That mirrors the two
+*endpoints* correctly — they really are each other's reflection — but
+NOT the control point, because the tangent each corner must match comes
+from a different tile relationship than TL's: the top edge is one
+continuous, unmirrored strip end-to-end (same tile, both ends), while
+left/right (or top/bottom) really are a mirrored pair. A control point
+solved for "top-tile's tangent + left-tile's tangent" doesn't mirror
+into a valid solution for "top-tile's tangent (same tile!) + right-tile's
+(mirrored) tangent." This is the same family of mistake as the zigzag
+phase bug and the scallop bump-direction bug earlier this session —
+mirroring a piece that isn't actually symmetric the way it looks.
+
+Fixed by solving each of TR/BL/BR fresh from its own two tiles' actual
+tangent lines, instead of mirroring TL's formula — `BORDER_IMAGE_CORNER_EDGE`
+now stores four independent `cornerTL/TR/BL/BR` paths per pattern and
+`addConnectedBgFrame` just places them, no more `mirrorPathX`/`mirrorPathY`
+(deleted, now fully unused).
+
+That fix alone still weren't clean at 900dpi: tangent LINES matched
+exactly (verified both analytically and by sampling the live rendered
+path with `getPointAtLength` at a tiny epsilon), but a real stroke
+width turned a *curvature* mismatch into a visible little shoulder —
+the corner's curvature right at the join was 6-7x sharper than TL's own
+(by the standard Bezier curvature formula), and tangent-matching alone
+doesn't fix that. Replaced the single-quadratic-control-point corners
+with a cubic whose two control points sit on the same required tangent
+lines but pulled out to a tuned distance (0.6x the corner's own chord
+length) instead of the one point the matching equations force a
+quadratic to — this stretches the curvature transition out instead of
+concentrating it at one point. Tuned by directly computing curvature at
+each cubic candidate's endpoint and picking the distance that lands
+closest to TL's own (already-good) curvature, then confirmed by eye at
+real stroke width. Applied to wave's TR/BL and loop's TR/BL/BR (wave's
+BR and loop's TL already had close-enough curvature with a plain
+quadratic, so those two were left alone rather than changed unseen).
+
+Also found and fixed a second, smaller contributor along the way: each
+edge strip's own viewBox got stretched non-uniformly (`preserveAspectRatio="none"`
+fits a whole number of tiles to the exact physical edge length, which
+rarely divides evenly) while its cross-axis stayed at the tile's
+nominal size — a small unequal x/y scale that also skews tangent
+slopes right at the corner. `addConnectedStrip` now scales the
+cross-axis viewBox size by the same stretch factor, keeping the scale
+uniform in both directions. This affects all 5 connected patterns
+(zigzag/wave/loop/arches/scallop); re-verified all 4 corners of each
+at 900dpi afterward and found no regression.
+
+Along the way, found (but did NOT fix, out of scope for this pass) a
+pre-existing, separate gap in arches' top-right corner — confirmed
+present in the already-shipped previous commit too, so not something
+introduced here. Arches has no corner piece by design (its arcs are
+meant to meet at one exact shared point), and something about where
+the top/right strips actually land doesn't quite hit that point.
+Worth a proper look next time arches comes up.
+
+**Lesson**: tangent-line matching (G1 continuity) is necessary but not
+sufficient for a corner to look smooth under a real stroke width if the
+two joined curves' curvature differs a lot — worth checking curvature,
+not just tangent, whenever a "smooth" join still looks off after the
+tangent lines provably match.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
@@ -2106,3 +2179,10 @@ pattern, not a safe fallback.
    "Illustration consistency pass" above) until every card matches.
    Deliberately deferred rather than done as part of that review, since
    it's a large, open-ended art-generation project rather than a fix.
+6. Arches border has a small pre-existing gap right at its top-right
+   corner (found while re-checking all 5 connected patterns during the
+   September 2026 wave/loop curvature fix, confirmed already present
+   before that fix — not a regression). Arches has no corner piece by
+   design (arcs meant to meet at one exact point); something about
+   where the top/right strips land doesn't quite hit it. Not
+   investigated further since it wasn't what was reported.
