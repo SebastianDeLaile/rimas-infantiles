@@ -2051,6 +2051,43 @@ minutes once framed that way, after several tangent-matching detours
 that were real improvements but not the actual cause of what Sebastian
 was seeing.
 
+## Zigzag right/bottom edge phase mismatch — September 2026
+
+Right after the corner-geometry fix above landed, Sebastian flagged one
+more issue from a fresh screenshot: the corner elbow itself now looked
+right, but the right and bottom edges showed a visible gap/phase jump
+partway down before the regular teeth resumed. His diagnosis, stated
+directly: "the bottom and rhs edges just need to flip the zigzag
+pattern so they line up with the corner."
+
+That diagnosis was correct, and it caught a wrong assumption I'd made
+earlier in this same pass: I had reasoned that a symmetric up-down
+zigzag "looks the same read either direction," so reusing the
+unflipped top/left tile for the bottom/right edges seemed harmless.
+It isn't. A `<div>`'s own local (0,0) is always its visual top-left,
+regardless of whether it's positioned via CSS `left`/`top` or
+`right`/`bottom` — so a tile authored to start on a "down" tooth and
+end on an "up" tooth reads with the opposite phase when placed against
+the bottom/right edges without being mirrored first, producing exactly
+the kind of seam/gap Sebastian saw where it met the (already-correct)
+corner.
+
+Fixed the same way as scallop's earlier bump-direction bug (see above):
+added explicit, separately-mirrored `bottom` and `right` tile entries
+to `CONNECTED_EDGE_TILES.zigzag`, rather than reusing `top`/`left`.
+Verified at both 300dpi and 900dpi across all four corners of a fresh
+render — continuous, gap-free connections with correctly matched tooth
+phase on every edge.
+
+**Lesson**: "this pattern is symmetric so direction shouldn't matter"
+is not a safe assumption to make from the pattern's shape alone — it
+has to be checked against how the tile is actually *placed* (local
+origin vs. CSS anchor side), the same root cause as the earlier scallop
+bug. Two independent instances of the same mistake in one review pass
+is a sign to treat any edge-tile reuse (`tiles.bottom || tiles.top`,
+`tiles.right || tiles.left`) as a default that needs verifying per
+pattern, not a safe fallback.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

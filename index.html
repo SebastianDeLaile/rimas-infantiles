@@ -4342,15 +4342,25 @@ const MM_PER_UNIT = 4.5 / 20;
 // hand-derived and hand-checked instead of programmatically shifted,
 // same hazard already documented on BORDER_IMAGE_EXPLICIT_EDGES.
 const CONNECTED_EDGE_TILES = {
+  // bottom/right are top/left mirrored within the tile's own 20-unit
+  // box (not the pattern's full 60-unit space) -- reusing top/left
+  // unflipped was assumed harmless for a "symmetric" zigzag, but it
+  // isn't: the phase doesn't continue from the corner, showing up as a
+  // visible gap partway down the edge (Sebastian: "the bottom and rhs
+  // edges just need to flip the zigzag pattern so they line up with the
+  // corner").
   zigzag: {
     top: { d: "M0,14 L5,6 L10,14 L15,6 L20,14", vb: "0 0 20 20" },
+    bottom: { d: "M0,6 L5,14 L10,6 L15,14 L20,6", vb: "0 0 20 20" },
     left: { d: "M14,0 L6,5 L14,10 L6,15 L14,20", vb: "0 0 20 20" },
+    right: { d: "M6,0 L14,5 L6,10 L14,15 L6,20", vb: "0 0 20 20" },
   },
   // wave/loop's top/left tiles are smooth curves, not thin straight
   // segments like zigzag -- reusing them unflipped for bottom/right (as
-  // zigzag does, harmlessly, since a symmetric up-down zigzag looks the
-  // same read either direction) leaves a real tangent mismatch at the
-  // corner: the corner curve is solved to match the TOP/LEFT tile's own
+  // zigzag ALSO used to do, before the fix above -- assumed harmless
+  // for a symmetric-looking zigzag until it wasn't) leaves a real
+  // tangent mismatch at the corner: the corner curve is solved to match
+  // the TOP/LEFT tile's own
   // tangent, but an unflipped tile approaches the junction from the
   // wrong side on the RIGHT/BOTTOM edges, showing up as a visible sharp
   // angle right at the corner (found checking every pattern's corners
