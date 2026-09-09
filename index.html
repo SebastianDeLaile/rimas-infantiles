@@ -4124,21 +4124,32 @@ const BORDER_IMAGE_EXPLICIT_EDGES = {
     edgeLeft: "M20,20 A10,10 0 0 0 20,40 A10,10 0 0 0 20,60",
     edgeRight: "M60,20 A10,10 0 0 1 60,40 A10,10 0 0 1 60,60",
   },
-  // scallop: filled semicircle bumps (was a CSS radial-gradient on the
-  // strips, not an SVG mask, plus a separately-fixed quarter-circle
-  // corner wedge -- see the fill-direction lesson above). One bump per
-  // 40-unit edge tile (radius 20, matching the corner scale), touching
-  // the corner boundary exactly like the old design's adjacent circles
-  // touching at each tile edge. Corner wedge reused verbatim from the
-  // already-fixed corner art (scaled x5), hand-derived for the other 3
-  // corners rather than mirrored -- same arc-radius mirroring hazard as
-  // arches.
+  // scallop: filled semicircle bumps, one per 40-unit edge tile (radius
+  // 20, matching the corner scale), touching the corner boundary exactly
+  // like the old design's adjacent circles touching at each tile edge.
+  // The corners were originally a quarter-circle wedge shaped like a
+  // plain rounded-rectangle corner (concave as seen from the page's
+  // actual corner point -- material recedes from the sharp tip, the
+  // opposite curve direction from the edge bumps, which are convex and
+  // add material bulging INTO the page). Sebastian: "either the curves
+  // should all face either in or out not a mix" -- correct fix, not just
+  // a stylistic nitpick: it read as two different curve languages
+  // meeting at the corner. Replaced with a quarter-circle PIE SLICE
+  // whose vertex is the corner's own outer tip (rather than the arc's
+  // center sitting at the tip, the tip itself is now fully filled and
+  // the arc bulges away from it toward the page interior) -- same
+  // family of curve as the edge bumps, so the whole border now reads as
+  // one continuous chain of touching circles all bulging the same way,
+  // corners included. Hand-derived for all 4 corners rather than
+  // mirrored -- same arc-radius mirroring hazard as arches (mirroring
+  // an arc's endpoint via the regex helpers would corrupt the rx,ry
+  // pair as if it were a coordinate).
   scallop: {
     size: 80,
-    cornerTL: "M0,20 A20,20 0 0 1 20,0 L20,20 Z",
-    cornerTR: "M80,20 A20,20 0 0 0 60,0 L60,20 Z",
-    cornerBL: "M0,60 A20,20 0 0 0 20,80 L20,60 Z",
-    cornerBR: "M80,60 A20,20 0 0 1 60,80 L60,60 Z",
+    cornerTL: "M20,0 A20,20 0 0 1 0,20 L0,0 Z",
+    cornerTR: "M60,0 A20,20 0 0 0 80,20 L80,0 Z",
+    cornerBL: "M20,80 A20,20 0 0 0 0,60 L0,80 Z",
+    cornerBR: "M60,80 A20,20 0 0 1 80,60 L80,80 Z",
     edgeTop: "M20,0 A20,20 0 0 0 60,0 Z",
     edgeBottom: "M20,80 A20,20 0 0 1 60,80 Z",
     edgeLeft: "M0,20 A20,20 0 0 1 0,60 Z",
