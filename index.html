@@ -4424,16 +4424,35 @@ function addConnectedBgFrame(page, accentHex, patternKey) {
   addConnectedStrip(page, "left", tiles.left, accentHex, sw, A4_EDGE_H_MM);
   addConnectedStrip(page, "right", tiles.right || tiles.left, accentHex, sw, A4_EDGE_H_MM);
   if (BORDER_IMAGE_POLYLINES[patternKey]) {
-    const { size, pts } = BORDER_IMAGE_POLYLINES[patternKey];
-    const mirrorX = p => p.map(([x, y]) => [size - x, y]);
-    const mirrorY = p => p.map(([x, y]) => [x, size - y]);
-    const seg = p => "M" + p.map(pt => pt.join(",")).join(" L");
-    const tl = seg(pts), tr = seg(mirrorX(pts)), bl = seg(mirrorY(pts)), br = seg(mirrorX(mirrorY(pts)));
+    // zigzag's pts array is the FULL 11-point quadrant (both the
+    // horizontal and vertical arms), authored that way for the old
+    // border-image slicing trick which needed one continuous path to
+    // slice from. Only pts[4..6] -- the two arm-attachment valleys and
+    // the elbow between them -- fall inside the 20x20 corner box; the
+    // rest is dead weight, only ever hidden via the corner <svg>'s own
+    // viewBox cropping it away. That "large mostly-clipped path, small
+    // visible viewBox" shape is unique to this branch (every other
+    // pattern's corner path is already just the visible geometry) and
+    // is the one structural difference that lines up with a real,
+    // reproducible bug Sebastian found: Preview.app's own live
+    // rendering (not qlmanage's thumbnailer, not Poppler -- both show
+    // this file correctly) showed the elbow as a bloated, disproportionate
+    // shape despite the exported PDF's path data being verified correct
+    // by two independent renderers. Extracting just the 3 relevant
+    // points into their own minimal, unclipped path removes the one
+    // architectural oddity that could explain a renderer-specific
+    // artifact nothing else in this file exhibits.
+    const { pts } = BORDER_IMAGE_POLYLINES[patternKey];
     const c = 20; // corner box side, in this pattern's own units
+    const cornerPts = pts.slice(4, 7); // [armEndH, elbow, armEndV]
+    const mirrorX = p => p.map(([x, y]) => [c - x, y]);
+    const mirrorY = p => p.map(([x, y]) => [x, c - y]);
+    const seg = p => "M" + p.map(pt => pt.join(",")).join(" L");
+    const tl = seg(cornerPts), tr = seg(mirrorX(cornerPts)), bl = seg(mirrorY(cornerPts)), br = seg(mirrorX(mirrorY(cornerPts)));
     addCorner(page, "tl", tl, `0 0 ${c} ${c}`, accentHex, sw);
-    addCorner(page, "tr", tr, `${size - c} 0 ${c} ${c}`, accentHex, sw);
-    addCorner(page, "bl", bl, `0 ${size - c} ${c} ${c}`, accentHex, sw);
-    addCorner(page, "br", br, `${size - c} ${size - c} ${c} ${c}`, accentHex, sw);
+    addCorner(page, "tr", tr, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "bl", bl, `0 0 ${c} ${c}`, accentHex, sw);
+    addCorner(page, "br", br, `0 0 ${c} ${c}`, accentHex, sw);
   } else if (BORDER_IMAGE_CORNER_EDGE[patternKey]) {
     const p = BORDER_IMAGE_CORNER_EDGE[patternKey];
     const size = p.size, c = 20;

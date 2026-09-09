@@ -2005,6 +2005,52 @@ architecture for an imperceptible gain -- worth saying that limit out
 loud to the user rather than silently declaring total victory or
 silently grinding forever.
 
+## zigzag corner: a real Preview.app-only regression, root-caused — September 2026
+
+After the corner-tangent fixes above, Sebastian sent a fresh screenshot
+(new filename, ruling out a stale-Preview-cache repeat of the earlier
+"solid bars" incident) still showing the corner elbow as a bloated,
+disproportionate shape on "Arroz con leche" -- despite that exact file
+rendering correctly under BOTH `pdftoppm`/Poppler and `qlmanage -t`
+(Quartz's thumbnailer) when checked directly. A real, reproducible
+three-way renderer disagreement: two tools say the PDF is correct, one
+(Preview's own live view) says it isn't, on the identical file.
+
+Root cause, found by comparing zigzag's corner-generation code against
+every other pattern's: zigzag's `pts` array is the full 11-point
+quadrant (both arms), authored that way originally for the old
+border-image slicing trick, which needed one continuous path to slice
+from. Only pts[4..6] -- the two arm-attachment valleys and the elbow --
+fall inside the visible 20x20 corner box; the rest is hidden purely by
+the corner `<svg>`'s own viewBox cropping it away. Every other
+pattern's corner path (wave, loop, arches, scallop) is already just the
+visible geometry, with nothing hidden. That "large mostly-clipped path"
+shape was unique to zigzag, and is the only structural difference that
+lines up with a defect exactly one specific renderer's live view
+exposed. Fixed by extracting just the 3 relevant points into their own
+minimal, unclipped path per corner (mirrored within the 20-unit corner
+box itself, not the pattern's full 60-unit space) -- same visible
+coordinates (verified against the live-rendered path data before and
+after), zero hidden geometry.
+
+**Could not verify the fix directly** -- by definition, since neither
+tool that already showed this file as correct can confirm whether the
+one tool that showed it as broken now agrees. Waiting on a fresh
+screenshot from an actually-reopened Preview window.
+
+**Lesson**: when a user insists a screenshot is current and two
+independent verification tools both disagree with it on the identical
+file, the answer isn't "trust the tools" or "trust the user" -- it's
+that a real three-way renderer disagreement is itself informative.
+Instead of re-litigating which tool is right, compare the SUSPECT
+content's own construction against equivalent content that *isn't*
+showing the bug (every other border pattern's corner, right there in
+the same file) for the one structural difference that could plausibly
+explain a renderer-specific artifact -- that comparison found this in
+minutes once framed that way, after several tangent-matching detours
+that were real improvements but not the actual cause of what Sebastian
+was seeing.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
