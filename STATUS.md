@@ -2729,6 +2729,40 @@ variable-length text block) is what was silently causing the
 inconsistency -- worth checking for this pattern specifically whenever
 "why does X move around depending on content" comes up.
 
+## Illustration-position fix, follow-up: fill the leftover space — September 2026
+
+Immediate follow-up, from a screenshot of the freshly-generated
+favourites-pack-v17.pdf: pinning the illustration to a fixed top
+offset (previous entry) fixed the drift, but on a short verse ("Tengo
+una muñeca") it left the illustration+verse block huddled right under
+the band with a big dead gap filling roughly the bottom half of the
+card.
+
+Fixed by giving just the `.verse` (or `.combo-row`, for the 2-column
+layout) `margin-top: auto; margin-bottom: auto` -- a standard flexbox
+trick: in a `flex-start` column, an auto-margined child soaks up the
+leftover space and centers itself within it, while the OTHER child
+(the illustration) stays exactly where flex-start already pinned it.
+Best of both: illustration position stays consistent card-to-card, but
+short-verse cards no longer look half-empty -- the verse just settles
+into the middle of whatever room is left below the picture.
+
+Explicitly excluded `.movement-body` from this rule: those cards stack
+several children (verse, movement list, verse) that already fill the
+page on their own, and auto-margining just the first one would center
+unevenly instead of leaving the deliberate movement-body layout alone.
+
+Verified against the same 5-tier set from the previous entry: "Tengo
+una muñeca" (the reported case) now centers its verse nicely instead
+of stranding it near the top; "Los pollitos dicen" and the "Sana, sana"
+combo-row both still show the illustration pinned in place with the
+verse shifted down into the free space; the long-verse and
+very-long-verse examples are near enough to full that the auto margins
+have little visible effect (as expected, no regression); movement-body
+stayed pixel-identical (excluded, as intended). Full validation suite
+(syntax, div/section balance, overflow_scan, 150-page generation) all
+clean.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

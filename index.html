@@ -922,6 +922,25 @@ h1, h2, h3, .display {
   color: #2b2440;
   max-width: 130mm;
 }
+/* Pinning the illustration to a fixed top offset (flex-start above)
+   fixed its position drifting card-to-card, but on short verses it
+   left the illustration+verse block huddled at the top with a big
+   dead gap below (Sebastian's screenshot of "Tengo una muñeca" -- a
+   short verse leaving roughly half the card blank). Giving just the
+   verse (or combo-row, for the 2-column layout) auto top/bottom
+   margins lets IT soak up the leftover space and center within
+   whatever's left below the illustration, while the illustration
+   itself stays exactly where flex-start put it -- best of both: a
+   consistent illustration position AND a card that still looks
+   filled. Excluded on movement-body, which has multiple stacked
+   children (verse, movement list, verse) that already fill the page
+   on their own and would center unevenly with only the first one
+   getting the auto margins. */
+.sheet-body:not(.movement-body) > .verse,
+.sheet-body:not(.movement-body) > .combo-row {
+  margin-top: auto;
+  margin-bottom: auto;
+}
 .combo-row { display: flex; gap: 10mm; width: 100%; align-items: flex-start; justify-content: center; }
 .combo-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4mm; }
 .combo-col .verse { font-size: 5.8mm; }
