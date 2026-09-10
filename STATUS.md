@@ -2509,14 +2509,15 @@ what the annotation showed.
 
 Fixed by solving for BOTH constraints simultaneously per axis (right-
 tip margin AND row-center match; bottom-tip margin AND column-center
-match). For a perfect equal-arm shape this has exactly one solution:
-center exactly at the corner box's own natural center (2,2 in the
-4.5-unit box) -- which, being fully symmetric, is the same shape
-unmirrored at all 4 corners again (simpler than the previous per-
-corner version, and doesn't need the overflow allowance for
-teardrop/square). Verified by measuring the actual rendered pixel
-centers of the corner shape vs. 2-3 row shapes -- matched to within
-sub-pixel rounding on all three patterns, all 4 corners.
+match), for the TL corner: center (2,2) in the 4.5-unit box. Verified
+by measuring the actual rendered pixel centers of the corner shape vs.
+2-3 row shapes -- matched to within sub-pixel rounding.
+
+**Correction (see the entry below):** at the time, this was assumed to
+be reusable unmirrored at all 4 corners on the theory that (2,2) is
+"the box's own natural center." It isn't -- the box's true center is
+(2.25,2.25) -- so TL was fixed but TR/BL/BR were still wrong, just not
+yet re-checked.
 
 **Lesson**: a shape sitting at a seam has to satisfy independent
 constraints on BOTH axes (rhythm/margin on the touching axis, center-
@@ -2527,6 +2528,59 @@ measured against neighbors. Caught here specifically because Sebastian
 drew the reference line himself rather than describing the symptom in
 words -- worth remembering that a straight edge/ruler is often a
 faster way to SHOW a misalignment than it is to explain in prose.
+
+## Crosshatch Quartz gap; diamond/teardrop/square corner mirroring; teardrop true circles — September 2026
+
+Seventh round, from one annotated screenshot plus a compact list of
+four issues: "the style is ok but there is a gap to fill" (crosshatch);
+"the elefante the other 3 corners dont line up. same with cucu cucu";
+"the corners arent circles they should be" (teardrop).
+
+**Crosshatch gap.** The prior fix trimmed the corner's two straight
+lines back to their exact mutual crossing point, forming a sharp ~37
+degree interior angle. That's mathematically exact and renders as a
+clean joint in Poppler (`pdftoppm`), but Quartz's own thumbnailer
+(`qlmanage -t`) draws a visible sliver gap at that same vertex --
+confirmed side by side, same PDF, same coordinates, two renderers
+disagreeing (see [[verification_quartz_pdf_gap]]). Rather than nudge
+coordinates to paper over one renderer's quirk, replaced both straight
+segments with a single quadratic Bezier sharing their old crossing
+point as its control point -- identical tangent directions at both
+ends, but no discrete interior joint for a renderer to get wrong.
+Re-verified via `qlmanage -t -s 3000` on the actual page: gap is gone.
+
+**Diamond/teardrop/square, other 3 corners.** The previous entry's
+"(2,2) is the box's own natural center, so it's fine unmirrored at all
+4 corners" was wrong -- the 4.5-unit box's true center is (2.25,2.25).
+(2,2) only satisfies TL's own two alignment constraints; TR/BL/BR each
+need their own solution, which is (2,2) mirrored across the relevant
+axis: TR=(2.5,2), BL=(2,2.5), BR=(2.5,2.5) for diamond and teardrop;
+square's rect analogously (x/y 0.3 vs 0.8). Split each pattern's single
+shared `corner` field into explicit `cornerTL/TR/BL/BR` fields (the
+rendering code already supported this dual mode via `p.cornerTL`
+truthiness -- no code change needed, just data). Verified by rendering
+all 4 corners of "Un elefante" (diamond) and "Cucú cantaba la rana"
+(teardrop) at 900dpi and visually confirming each corner shape sits
+exactly on both its row's and column's centerline.
+
+**Teardrop circles.** The "circle" shapes (strip and corner alike)
+were a hand-drawn 2-segment cubic Bezier using the full radius as the
+control-point offset instead of the correct kappa (~0.5523) factor --
+renders as a visibly egg-shaped oval, confirmed by overlaying a true
+`<circle>` of the same radius in an isolated test. Replaced every
+teardrop piece (stripTop, stripLeft, all 4 corners) with real SVG
+`<circle>` elements -- `parseIconMarkup` already handles arbitrary
+element markup generically, so no rendering-code change was needed
+here either, just swapping the path string for a circle string.
+Verified visually post-render: uniform ring width all the way around,
+no bulge/pinch.
+
+**Lesson**: this is the third time this session a shape got assumed
+"symmetric enough to reuse unmirrored" and wasn't (wave/loop's tangent
+mirroring earlier, crosshatch's corner angle, now this) -- worth
+treating "is this actually the box's true center / a valid mirror" as
+a thing to check explicitly, in coordinates, every time a per-corner
+shape is derived from one corner's solution, not just asserted.
 
 ## Suggested next steps
 
