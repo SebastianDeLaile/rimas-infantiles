@@ -4792,18 +4792,51 @@ function addFrame(sheet, page, accentHex) {
     addFrameStrips(page);
   }
 }
+function verseTier(verseText) {
+  const lines = verseText.trim().split(/\n/).length;
+  if (lines > 22) return "very-long-verse";
+  if (lines > 10) return "long-verse";
+  return "";
+}
+const VERSE_TIER_RANK = { "": 0, "long-verse": 1, "very-long-verse": 2 };
 function sizeVerseForLength(body, verseText) {
   if (!body || body.classList.contains("very-long-verse")) return;
   // Only ever upgrades to a smaller tier based on literal newline count --
   // never removes an existing long-verse, since some cards need it for
   // long individual lines that wrap to extra visual lines (not captured
   // by a \n count) rather than for having many literal lines.
-  const lines = verseText.trim().split(/\n/).length;
-  if (lines > 22) {
+  const tier = verseTier(verseText);
+  if (tier === "very-long-verse") {
     body.classList.remove("long-verse");
     body.classList.add("very-long-verse");
-  } else if (lines > 10) {
+  } else if (tier === "long-verse") {
     body.classList.add("long-verse");
+  }
+}
+// Front and back used to size themselves independently -- the front from
+// its own (Spanish) verse text plus whatever static tier class it was
+// authored with, the back from the English translation's own line count,
+// starting from a class-less body every time. Since a translation's line
+// count routinely differs from the original's, and a static override on
+// the front never had anywhere to travel TO on the dynamically-built
+// back, the two sides frequently landed in different tiers -- different
+// illustration size, different font size, on the front and back of the
+// SAME card (found via audit: 17 of 75 cards, after Sebastian caught it
+// on "Tengo una muñeca"). Fixed by computing ONE tier per card from BOTH
+// texts (plus any static override already on the front) and applying it
+// to both sides identically -- whichever side needed the smaller/more
+// compact tier now determines it for both, which only ever makes the
+// OTHER side more conservative (smaller content, more headroom), never
+// less, so this can't introduce a new overflow.
+function pairVerseTier(frontBody, backBody, frontText, backText) {
+  const existing = frontBody.classList.contains("very-long-verse") ? "very-long-verse"
+    : frontBody.classList.contains("long-verse") ? "long-verse" : "";
+  const winner = [existing, verseTier(frontText), verseTier(backText)]
+    .reduce((best, t) => VERSE_TIER_RANK[t] > VERSE_TIER_RANK[best] ? t : best, "");
+  if (!winner) return;
+  for (const body of [frontBody, backBody]) {
+    body.classList.remove("long-verse", "very-long-verse");
+    body.classList.add(winner);
   }
 }
 fronts.forEach((front, index) => {
@@ -4812,11 +4845,11 @@ fronts.forEach((front, index) => {
   const frontBody = front.querySelector(".sheet-body");
   const frontVerse = front.querySelector(".verse");
   const noAutoShrink = frontBody?.classList.contains("no-auto-shrink");
-  if (frontVerse && !noAutoShrink) {
-    sizeVerseForLength(frontBody, frontVerse.textContent);
-  }
   const copy = translations[index];
-  if (!copy) return;
+  if (!copy) {
+    if (frontVerse && !noAutoShrink) sizeVerseForLength(frontBody, frontVerse.textContent);
+    return;
+  }
   const art = front.querySelector(".illus")?.cloneNode(true);
   const medallion = front.querySelector(".medallion")?.cloneNode(true);
   const frameClass = [...front.classList].find(c => c.startsWith("frame-"));
@@ -4867,7 +4900,7 @@ fronts.forEach((front, index) => {
     verse.className = "verse";
     verse.textContent = copy.verse;
     body.append(verse);
-    if (!noAutoShrink) sizeVerseForLength(body, copy.verse);
+    if (!noAutoShrink && frontVerse) pairVerseTier(frontBody, body, frontVerse.textContent, copy.verse);
   }
   front.after(back);
 });

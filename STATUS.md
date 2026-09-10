@@ -2811,6 +2811,68 @@ side. Worth a quick audit of the other ~38 long-verse cards at some
 point to confirm none of them have the same front/back drift -- not
 done here since only this one was reported.
 
+## Front/back verse-tier audit and fix, book-wide — September 2026
+
+Sebastian: "yeah audit it, can we build them through the same path?"
+-- following up on the Tengo una muñeca / Sana sana entry above, which
+flagged this as a likely book-wide issue rather than two isolated
+cards.
+
+**Audit.** Wrote a throwaway Playwright script (loads index.html the
+same way generate_print_pack.js does, waits for the print JS to run,
+then walks every front/back pair comparing rendered `.illus` width and
+which of `long-verse`/`very-long-verse`/`movement-body` each side's
+`.sheet-body` ended up with). Result: 17 of 75 cards (23%) had a real
+front/back mismatch -- 13 where the front was `long-verse` and the
+back wasn't ("Las mañanitas," "Cabeza, hombros, rodillas y pies,"
+"Aserrín, aserrán," and 10 others), and 4 the other way around
+("Suri sikuri," "El sebucán," "Los Chimichimitos," "El chiriguare" --
+where the English translation happened to run longer than the Spanish
+original). Two of the 13 are in the favourites pack that already went
+out in earlier rounds this session, undetected until this audit.
+
+**Root cause, and "same path."** Front and back have always been built
+through genuinely different code: front is static HTML (verse
+hardcoded, occasionally with a hand-authored tier class), back is
+generated fresh in JS from the `translations` array on every load. The
+print script (`fronts.forEach`) called `sizeVerseForLength` TWICE,
+independently -- once on the front using the Spanish verse's own line
+count (respecting any pre-existing static class), once on the fresh,
+class-less back body using the English translation's line count. A
+translation's line count routinely differs from the original's, so
+the two sides frequently landed in different tiers with no way to
+notice at authoring time (the mismatch only shows up rendered,
+side-by-side).
+
+Rather than trying to make the AUTHORING paths identical (front will
+always be static HTML per-card, back will always be JS-generated --
+that's a deliberate, working split, not itself the bug), fixed it
+where it actually matters: replaced the two independent
+`sizeVerseForLength` calls with one `pairVerseTier(frontBody, backBody,
+frontText, backText)` that computes tiers from BOTH texts (plus any
+static override still on the front) and applies the SAME resulting
+tier to both sides. Whichever side needed the more compact tier now
+sets it for both -- this can only make the OTHER side MORE
+conservative (smaller illustration/font, more headroom), never less,
+so it can't introduce a new overflow on either side.
+
+**Verification.** Re-ran the same audit script after the fix: 0
+mismatches across all 75 cards (down from 17). Rendered "Las
+mañanitas" and "Suri sikuri" (one from each mismatch direction) side
+by side to confirm visually. Full validation suite (syntax, div/section
+balance, overflow_scan, 150-page generation) all clean; div count
+dropped by 4 from the earlier Sana-sana fix, unrelated to this change.
+
+**Lesson**: "same output" claims between two independently-computed
+things are exactly the kind of thing that looks fine until you
+actually render and measure both sides -- this is the same family of
+bug as the diamond/xmarks corner-mirroring issues earlier in the
+session, just at the layout level instead of the SVG-geometry level.
+Worth writing a quick measurement script instead of eyeballing when a
+reported bug on ONE card raises the question "does this happen
+elsewhere too" -- it took only a few minutes and found 16 more cases
+that would otherwise have surfaced one screenshot at a time.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
