@@ -4396,28 +4396,29 @@ const BG_IMAGE_ICON_PATTERNS = {
   // shape to the shared seam) as the strip has to ITS OWN tile edge, not
   // the same absolute coordinate.
   //
-  // Sebastian's fix, and the one applied here: keep the strips' own
-  // non-square (elongated) shapes exactly as they are on both edges, but
-  // make the corner a PERFECT (equal-width/height) version sized to the
-  // LARGER of the two strip dimensions, and position it so each tip
-  // touching a real seam sits exactly one strip-margin (1mm for
-  // diamond, 1mm for square) back from that seam -- matching the
-  // strip's own rhythm exactly rather than approximately. This isn't
-  // symmetric enough to reuse one shape for all 4 corners (unlike
-  // crosshatch's touch-point corners, which only ever reference the
-  // box's OWN edges and so are scale-independent) -- corner boxes are
-  // now "0 0 4.5 4.5" (matching the corrected 1mm/unit scale) with
-  // explicit cornerTL/TR/BL/BR, each solved from its own two seams.
-  diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'path d="M1.5,-0.5 L3.5,1.5 L1.5,3.5 L-0.5,1.5 Z"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'path d="M3,-0.5 L5,1.5 L3,3.5 L1,1.5 Z"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'path d="M1.5,1 L3.5,3 L1.5,5 L-0.5,3 Z"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'path d="M3,1 L5,3 L3,5 L1,3 Z"' }, sw: 0.6, mode: "stroke", join: true },
-  // teardrop's strip shape is already circular (2x2 both orientations,
-  // no elongation mismatch to resolve) so the corner keeps the same
-  // shape -- only its POSITION changes, per corner, to hit the same
-  // exact margin (2mm) from each real seam that the strip itself uses.
-  teardrop: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,1 C4,1 4,3 3,3 C2,3 2,1 3,1 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M1,3 C1,2 3,2 3,3 C3,4 1,4 1,3 Z"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'path d="M1.5,0.5 C2.5,0.5 2.5,2.5 1.5,2.5 C0.5,2.5 0.5,0.5 1.5,0.5 Z"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'path d="M3,0.5 C4,0.5 4,2.5 3,2.5 C2,2.5 2,0.5 3,0.5 Z"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'path d="M1.5,2 C2.5,2 2.5,4 1.5,4 C0.5,4 0.5,2 1.5,2 Z"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'path d="M3,2 C4,2 4,4 3,4 C2,4 2,2 3,2 Z"' }, sw: 0.55, mode: "stroke" },
+  // First attempt (margin-matched, per-corner) fixed the RHYTHM
+  // (spacing to the first strip diamond) but not a second, independent
+  // requirement: the corner shape's CROSS-axis center -- its vertical
+  // position for the row it joins, its horizontal position for the
+  // column -- needs to match the strip's own center line too, not just
+  // its near-edge margin. Sebastian's own annotated screenshot (a
+  // straight line drawn through every row diamond's center) showed the
+  // corner diamond sitting visibly off that line -- confirmed
+  // mathematically: margin-matching alone put the corner's center at
+  // physical (8.5mm, 8.5mm) while the row/column's own center is
+  // (9mm, 9mm), a real 0.5mm offset. Solving for BOTH constraints at
+  // once (right-tip margin AND row-center match; bottom-tip margin AND
+  // column-center match) for a PERFECT equal-arm shape forces the
+  // center to exactly the box's own natural center (2,2) -- which,
+  // being fully symmetric, is the SAME shape unmirrored at all 4
+  // corners again (simpler than the per-corner version, and for
+  // teardrop/square doesn't even need the overflow allowance).
+  diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, corner: { vb: "0 0 4.5 4.5", el: 'path d="M2,0 L4,2 L2,4 L0,2 Z"' }, sw: 0.6, mode: "stroke", join: true },
+  teardrop: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,1 C4,1 4,3 3,3 C2,3 2,1 3,1 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M1,3 C1,2 3,2 3,3 C3,4 1,4 1,3 Z"' }, corner: { vb: "0 0 4.5 4.5", el: 'path d="M2,1 C3,1 3,3 2,3 C1,3 1,1 2,1 Z"' }, sw: 0.55, mode: "stroke" },
   ticks: { stripTop: { vb: "0 0 3 4", el: 'line x1="1.5" y1="0.8" x2="1.5" y2="3.2"' }, stripLeft: { vb: "0 0 4 3", el: 'line x1="0.8" y1="1.5" x2="3.2" y2="1.5"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.55"' }, sw: 0.6, mode: "stroke", cornerFill: true },
   xmarks: { stripTop: { vb: "0 0 5 4", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M1,1.3 L3,3.7 M1,3.7 L3,1.3"' }, corner: { vb: "0 0 4 4", el: 'path d="M0.8,1 L3.2,3 M3.2,1 L0.8,3"' }, sw: 0.6, mode: "stroke" },
   plus: { stripTop: { vb: "0 0 5 4", el: 'path d="M2.5,0.8 L2.5,3.2 M1.3,2 L3.7,2"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M0.8,2.5 L3.2,2.5 M2,1.3 L2,3.7"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.8 L2,3.2 M0.8,2 L3.2,2"' }, sw: 0.6, mode: "stroke" },
-  square: { stripTop: { vb: "0 0 6 4", el: 'rect x="1.3" y="0.8" width="3.4" height="2.4"' }, stripLeft: { vb: "0 0 4 6", el: 'rect x="0.8" y="1.3" width="2.4" height="3.4"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'rect x="0.1" y="0.1" width="3.4" height="3.4"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'rect x="1" y="0.1" width="3.4" height="3.4"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'rect x="0.1" y="1" width="3.4" height="3.4"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'rect x="1" y="1" width="3.4" height="3.4"' }, sw: 0.55, mode: "stroke" },
+  square: { stripTop: { vb: "0 0 6 4", el: 'rect x="1.3" y="0.8" width="3.4" height="2.4"' }, stripLeft: { vb: "0 0 4 6", el: 'rect x="0.8" y="1.3" width="2.4" height="3.4"' }, corner: { vb: "0 0 4.5 4.5", el: 'rect x="0.3" y="0.3" width="3.4" height="3.4"' }, sw: 0.55, mode: "stroke" },
   spiral: { stripTop: { vb: "0 0 7 4", el: 'path d="M3.5,3 C2.2,3 2.2,1.2 3.5,1.2 C4.4,1.2 4.4,2.4 3.6,2.4 C3.1,2.4 3.1,1.8 3.5,1.8"' }, stripLeft: { vb: "0 0 4 7", el: 'path d="M1,3.5 C1,2.2 2.8,2.2 2.8,3.5 C2.8,4.4 1.6,4.4 1.6,3.6 C1.6,3.1 2.2,3.1 2.2,3.5"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,3 C0.7,3 0.7,1.2 2,1.2 C2.9,1.2 2.9,2.4 2.1,2.4 C1.6,2.4 1.6,1.8 2,1.8"' }, sw: 0.5, mode: "stroke" },
   star: { stripTop: { vb: "0 0 8 4", el: 'polygon points="4.00,0.40 4.38,1.47 5.52,1.51 4.62,2.20 4.94,3.29 4.00,2.65 3.06,3.29 3.38,2.20 2.48,1.51 3.62,1.47"' }, stripLeft: { vb: "0 0 4 8", el: 'polygon points="2.00,2.40 2.38,3.47 3.52,3.51 2.62,4.20 2.94,5.29 2.00,4.65 1.06,5.29 1.38,4.20 0.48,3.51 1.62,3.47"' }, corner: { vb: "0 0 4 4", el: 'polygon points="2.00,0.50 2.35,1.51 3.43,1.54 2.57,2.19 2.88,3.21 2.00,2.60 1.12,3.21 1.43,2.19 0.57,1.54 1.65,1.51"' }, mode: "fill" },
   dots: { stripTop: { vb: "0 0 5.052632 4", el: 'circle cx="2.526316" cy="2" r="0.9"' }, stripLeft: { vb: "0 0 4 4.982143", el: 'circle cx="2" cy="2.491071" r="0.9"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.9"' }, mode: "fill" },

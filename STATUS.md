@@ -2487,6 +2487,47 @@ clean shape. Color-coding each element live and screenshotting found
 this in one step, faster than continuing to reason about coordinates
 in the abstract.
 
+## Diamond/teardrop/square: cross-axis center alignment — September 2026
+
+Sixth round: 3 new screenshots, this time with markup. Crosshatch's
+was a genuine remaining slope-tightness issue (see the entry below,
+still under discussion with Sebastian as of this writing). But
+"Un elefante" and "Cucú cantaba la rana" had a real, different,
+previously-missed bug: Sebastian drew a straight line through every
+row diamond's center, and the corner diamond visibly sat off that
+line.
+
+Root cause: the earlier "margin-matched, per-corner" fix for
+diamond/teardrop/square solved for the RIGHT MARGIN (distance from the
+touching tip to the seam, matching the strip's own margin) but never
+checked the shape's position on the OTHER axis -- its CROSS-axis
+center, e.g. a diamond's vertical position for the row it's joining.
+Computed the actual numbers: margin-matching alone put the corner
+diamond's center at physical (8.5mm, 8.5mm), but the row's own center
+line sits at (9mm, 9mm) -- a real, measurable 0.5mm offset, exactly
+what the annotation showed.
+
+Fixed by solving for BOTH constraints simultaneously per axis (right-
+tip margin AND row-center match; bottom-tip margin AND column-center
+match). For a perfect equal-arm shape this has exactly one solution:
+center exactly at the corner box's own natural center (2,2 in the
+4.5-unit box) -- which, being fully symmetric, is the same shape
+unmirrored at all 4 corners again (simpler than the previous per-
+corner version, and doesn't need the overflow allowance for
+teardrop/square). Verified by measuring the actual rendered pixel
+centers of the corner shape vs. 2-3 row shapes -- matched to within
+sub-pixel rounding on all three patterns, all 4 corners.
+
+**Lesson**: a shape sitting at a seam has to satisfy independent
+constraints on BOTH axes (rhythm/margin on the touching axis, center-
+alignment on the cross axis) -- solving only one and assuming the
+other "probably lines up" is exactly the kind of thing that looks fine
+in an isolated test but is wrong by a small, real amount once actually
+measured against neighbors. Caught here specifically because Sebastian
+drew the reference line himself rather than describing the symptom in
+words -- worth remembering that a straight edge/ruler is often a
+faster way to SHOW a misalignment than it is to explain in prose.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
