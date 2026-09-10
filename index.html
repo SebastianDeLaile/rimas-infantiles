@@ -4442,8 +4442,18 @@ const BG_IMAGE_ICON_PATTERNS = {
   // corner's center mirrored per corner the same way as diamond's.
   teardrop: { stripTop: { vb: "0 0 6 4", el: 'circle cx="3" cy="2" r="1"' }, stripLeft: { vb: "0 0 4 6", el: 'circle cx="2" cy="3" r="1"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'circle cx="2" cy="2" r="1"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'circle cx="2.5" cy="2" r="1"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'circle cx="2" cy="2.5" r="1"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'circle cx="2.5" cy="2.5" r="1"' }, sw: 0.55, mode: "stroke" },
   ticks: { stripTop: { vb: "0 0 3 4", el: 'line x1="1.5" y1="0.8" x2="1.5" y2="3.2"' }, stripLeft: { vb: "0 0 4 3", el: 'line x1="0.8" y1="1.5" x2="3.2" y2="1.5"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.55"' }, sw: 0.6, mode: "stroke", cornerFill: true },
-  xmarks: { stripTop: { vb: "0 0 5 4", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M1,1.3 L3,3.7 M1,3.7 L3,1.3"' }, corner: { vb: "0 0 4 4", el: 'path d="M0.8,1 L3.2,3 M3.2,1 L0.8,3"' }, sw: 0.6, mode: "stroke" },
-  plus: { stripTop: { vb: "0 0 5 4", el: 'path d="M2.5,0.8 L2.5,3.2 M1.3,2 L3.7,2"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M0.8,2.5 L3.2,2.5 M2,1.3 L2,3.7"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.8 L2,3.2 M0.8,2 L3.2,2"' }, sw: 0.6, mode: "stroke" },
+  // Same class of bug as diamond/teardrop/square above, just not
+  // reported until now (Chuchuwa/Estrellita): corner used a single
+  // shared "0 0 4 4" viewBox in a box that's actually 4.5mm, so 1 unit
+  // = 1.125mm here vs 1mm/unit in the strips -- the corner X/cross came
+  // out ~12.5% oversized, and (being unmirrored) only ever centered
+  // correctly at TL. Fixed the same way: viewBox corrected to
+  // "0 0 4.5 4.5", corner split into per-corner fields with center
+  // mirrored to (2,2)/(2.5,2)/(2,2.5)/(2.5,2.5) -- same universal
+  // center points as diamond/teardrop/square, since they come from the
+  // same shared strip/box geometry, not from the motif shape itself.
+  xmarks: { stripTop: { vb: "0 0 5 4", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M1,1.3 L3,3.7 M1,3.7 L3,1.3"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'path d="M0.8,1 L3.2,3 M3.2,1 L0.8,3"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'path d="M0.8,1.5 L3.2,3.5 M3.2,1.5 L0.8,3.5"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'path d="M1.3,1.5 L3.7,3.5 M3.7,1.5 L1.3,3.5"' }, sw: 0.6, mode: "stroke" },
+  plus: { stripTop: { vb: "0 0 5 4", el: 'path d="M2.5,0.8 L2.5,3.2 M1.3,2 L3.7,2"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M0.8,2.5 L3.2,2.5 M2,1.3 L2,3.7"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'path d="M2,0.8 L2,3.2 M0.8,2 L3.2,2"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'path d="M2.5,0.8 L2.5,3.2 M1.3,2 L3.7,2"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'path d="M2,1.3 L2,3.7 M0.8,2.5 L3.2,2.5"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'path d="M2.5,1.3 L2.5,3.7 M1.3,2.5 L3.7,2.5"' }, sw: 0.6, mode: "stroke" },
   // Same cross-axis-center mirroring fix as diamond/teardrop above --
   // a single unmirrored rect at all 4 corners left TR/BL/BR off-center.
   square: { stripTop: { vb: "0 0 6 4", el: 'rect x="1.3" y="0.8" width="3.4" height="2.4"' }, stripLeft: { vb: "0 0 4 6", el: 'rect x="0.8" y="1.3" width="2.4" height="3.4"' }, cornerTL: { vb: "0 0 4.5 4.5", el: 'rect x="0.3" y="0.3" width="3.4" height="3.4"' }, cornerTR: { vb: "0 0 4.5 4.5", el: 'rect x="0.8" y="0.3" width="3.4" height="3.4"' }, cornerBL: { vb: "0 0 4.5 4.5", el: 'rect x="0.3" y="0.8" width="3.4" height="3.4"' }, cornerBR: { vb: "0 0 4.5 4.5", el: 'rect x="0.8" y="0.8" width="3.4" height="3.4"' }, sw: 0.55, mode: "stroke" },

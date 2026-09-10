@@ -2582,6 +2582,36 @@ treating "is this actually the box's true center / a valid mirror" as
 a thing to check explicitly, in coordinates, every time a per-corner
 shape is derived from one corner's solution, not just asserted.
 
+## Xmarks/plus corner scale + mirroring — September 2026
+
+Eighth round: "chu chu wa and estrillita, the corner icons are slighlty
+mis aligned / different size." Same latent bug documented (but not yet
+fixed) in the earlier "Diamond/teardrop/square: cross-axis center
+alignment" entry, now confirmed on two more patterns: xmarks
+(Chuchuwa) and plus (Estrellita). The corner box is 4.5mm physically,
+but xmarks/plus's shared `corner` field still used the original
+"0 0 4 4" viewBox (1.125mm/unit) against the strips' 1mm/unit -- the
+corner X/cross came out about 12.5% oversized, and being a single
+unmirrored field, was only ever centered right at TL.
+
+Fixed exactly like diamond/teardrop/square: viewBox corrected to
+"0 0 4.5 4.5", `corner` split into `cornerTL/TR/BL/BR`, centers
+mirrored to (2,2)/(2.5,2)/(2,2.5)/(2.5,2.5) -- the same universal
+points used for every other pattern, since they come from the shared
+strip/box geometry, not the motif itself. Kept the exact same arm-
+reach shape (no redesign to a "perfect" symmetric cross, since that
+wasn't what was reported and X/plus's strip shapes already read fine
+elongated). Verified by rendering Chuchuwa and Estrellita at 900dpi
+and visually confirming all 4 corners on each: correct size (matching
+row/column icons) and centered exactly on both centerlines.
+
+**Still open, not yet reported:** `ticks`, `spiral`, `star`, and `dots`
+carry the identical unmirrored "0 0 4 4" `corner` field and almost
+certainly have the same bug -- spiral in particular will need actual
+coordinate mirroring (reflection), not just a center shift, since its
+corner motif isn't a simple symmetric shape like a cross or dot.
+Deliberately left alone this round since it wasn't what was reported.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
