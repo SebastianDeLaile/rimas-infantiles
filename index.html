@@ -4296,7 +4296,18 @@ function svgFrame(viewBox) {
   const svg = document.createElementNS(SVG_NS, "svg");
   svg.setAttribute("viewBox", viewBox);
   svg.setAttribute("preserveAspectRatio", "none");
-  svg.style.cssText = "position:absolute; inset:0; width:100%; height:100%; display:block;";
+  // overflow:visible overrides the SVG default (root <svg> elements clip
+  // to their own viewBox unless told otherwise) -- needed by the
+  // diamond/square/teardrop corner fix below, whose shapes deliberately
+  // extend a little past the corner box on the two sides that don't
+  // touch a real seam (there's nothing else drawn in that blank margin
+  // space, so the overflow is invisible in practice). Without this the
+  // "unused" tip gets sliced off flat instead of coming to a point --
+  // exactly the defect that slipped through the previous fix's own
+  // verification screenshots, which happened to crop past it (Sebastian:
+  // "you need to look yourself at the corners... the elephant and two
+  // frog poems all look dodgy").
+  svg.style.cssText = "position:absolute; inset:0; width:100%; height:100%; display:block; overflow:visible;";
   return svg;
 }
 function svgPathNode(d, hex, sw, fill) {

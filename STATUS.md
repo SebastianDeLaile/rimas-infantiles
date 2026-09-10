@@ -2401,6 +2401,54 @@ viewBox audited too, everywhere that box is reused -- this whole
 one place without checking every consumer of that box's coordinate
 system.
 
+## Icon-pattern corner clipping, actually fixed — September 2026
+
+Fourth round on this corner saga: "corners still dodgy, sana sana, un
+elefante, images in inbox" -- and, mid-investigation, a direct
+instruction that landed: "you need to look yourself at the corners
+before saying you are finished." Went back to the actual rendered
+pages (not just the isolated geometry tests used to derive the fix)
+and found it immediately: the diamond corner's "unused" tip -- the one
+that doesn't touch a real seam, deliberately positioned at a small
+negative coordinate in the previous fix -- was sliced off flat instead
+of coming to a point. Visible at 900dpi on every corner where the
+previous fix's math called for an out-of-box coordinate.
+
+Root cause: SVG root elements clip to their own viewBox by default
+(`overflow: hidden` in the UA stylesheet) unless told otherwise. The
+diamond/square/teardrop corner fix intentionally let the shape's
+far/unused tip land a little outside the 4.5-unit box -- correct
+geometry, but never checked against how the actual `<svg>` element
+handles content past its own edges, so it got clipped. Every previous
+verification screenshot in this specific sub-saga happened to crop
+tight enough around the "business end" of each corner (the part that
+touches the seam) to miss the clipped tip sitting just outside that
+crop -- the isolated Playwright test HTML used to derive the geometry
+doesn't clip by default the same way, so it never caught it either.
+
+Fixed with one line: `svgFrame()` (shared by every pattern, connected
+and icon alike) now sets `overflow: visible` explicitly. Nothing else
+is drawn in the small margin area a tip pokes into, so the previously-
+clipped corner now renders as a complete point with no other visible
+side effect -- confirmed by re-checking a wave-pattern corner (whose
+own geometry never extends past its box) renders identically before
+and after.
+
+Went back and looked at all 4 corners of all 4 affected patterns
+(crosshatch, diamond, teardrop, square) at 900dpi before calling this
+done, not just the one corner from the reported screenshot.
+
+**Lesson**: a fix's own verification method needs to match the ACTUAL
+render path, not a simplified stand-in for it. The isolated
+Playwright/thin-line geometry tests used throughout this session are
+great for checking touch-points and tangent angles, but they don't
+reproduce every rendering behavior (SVG's default overflow clipping,
+in this case) that the real `addIconCorner`/`svgFrame` pipeline has.
+When a fix is verified only in the simplified harness and shipped
+straight to the real file without a final look at the ACTUAL generated
+page, exactly this kind of gap gets through -- confirmed 4 times in
+this one corner saga before the habit changed.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
