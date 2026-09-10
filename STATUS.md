@@ -2763,6 +2763,54 @@ stayed pixel-identical (excluded, as intended). Full validation suite
 (syntax, div/section balance, overflow_scan, 150-page generation) all
 clean.
 
+## Tengo una muñeca / Sana sana fixes — September 2026
+
+Sebastian: "tengo una muneca pictures are different size on different
+sides, all pictures should be the same size, and the text a bit bigger
+also and sana sana have the text all in the middle not split
+vertically."
+
+**Tengo una muñeca.** Front and back illustrations were genuinely
+different sizes -- root cause: the front's `.sheet-body` had a static
+`long-verse` class in the HTML (68mm illustration, 5.95mm font), but
+the BACK page is built fresh in JS (`<div class="sheet-body"></div>`,
+no class carried over) and gets its OWN tier independently from the
+English translation's own line count. The Spanish verse is only 7
+lines -- well under the `>10` threshold that would ever trigger
+long-verse dynamically -- so this was a stray/incorrect class on the
+front only, not a real long-verse card at all (the actual long-verse
+cards, ~38 of them, all have verses that genuinely run long). Removed
+the class; front and back now both use the default tier, which also
+directly gives the bigger text Sebastian asked for (6.9mm vs 5.95mm)
+as a side effect of the same fix.
+
+**Sana sana & Que llueva.** Was the only card in the whole book (still
+is -- checked) built with a `combo-row`/`combo-col` two-column split,
+each column holding one of the two combined rhymes ("Sana, sana" and
+"Que llueva") -- but the card's own ENGLISH translation was already a
+single plain verse, not split, so front and back didn't match either.
+Rewrote the front to match the back's structure: one `.verse` div with
+both rhymes stacked, blank line between them. Deleted the now-dead
+`combo-row`/`combo-col`/`combo-illus` CSS (confirmed nothing else used
+it) and simplified the verse auto-margin rule from the previous entry
+(no longer needs to also target `.combo-row`).
+
+Verified by rendering both cards' front AND back side by side: Tengo
+una muñeca's illustrations now match pixel-for-pixel in size; Sana
+sana's text is a single centered block on both sides, matching the
+English layout it should have matched from the start. Full validation
+suite clean (div count dropped by 4, expected -- two combo-col
+wrappers removed, still balanced).
+
+**Lesson**: any card whose FRONT static HTML has a tier class or a
+special layout not mirrored by its own translation entry is a latent
+front/back mismatch, since the two sides are built through completely
+separate code paths (static HTML vs generated from a JS translations
+array) that only happen to agree when nobody manually overrides one
+side. Worth a quick audit of the other ~38 long-verse cards at some
+point to confirm none of them have the same front/back drift -- not
+done here since only this one was reported.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

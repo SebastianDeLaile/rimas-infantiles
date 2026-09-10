@@ -927,24 +927,18 @@ h1, h2, h3, .display {
    left the illustration+verse block huddled at the top with a big
    dead gap below (Sebastian's screenshot of "Tengo una muñeca" -- a
    short verse leaving roughly half the card blank). Giving just the
-   verse (or combo-row, for the 2-column layout) auto top/bottom
-   margins lets IT soak up the leftover space and center within
-   whatever's left below the illustration, while the illustration
-   itself stays exactly where flex-start put it -- best of both: a
-   consistent illustration position AND a card that still looks
-   filled. Excluded on movement-body, which has multiple stacked
+   verse auto top/bottom margins lets IT soak up the leftover space
+   and center within whatever's left below the illustration, while the
+   illustration itself stays exactly where flex-start put it -- best
+   of both: a consistent illustration position AND a card that still
+   looks filled. Excluded on movement-body, which has multiple stacked
    children (verse, movement list, verse) that already fill the page
    on their own and would center unevenly with only the first one
    getting the auto margins. */
-.sheet-body:not(.movement-body) > .verse,
-.sheet-body:not(.movement-body) > .combo-row {
+.sheet-body:not(.movement-body) > .verse {
   margin-top: auto;
   margin-bottom: auto;
 }
-.combo-row { display: flex; gap: 10mm; width: 100%; align-items: flex-start; justify-content: center; }
-.combo-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4mm; }
-.combo-col .verse { font-size: 5.8mm; }
-.sheet-body .illus.combo-illus { width: 88mm; max-height: 52mm; }
 
 .sheet-body.long-verse { gap: 3.5mm; }
 .sheet-body.long-verse .illus { width: 68mm; max-height: 62mm; }
@@ -1164,23 +1158,18 @@ no llora ni hace así.</div>
       <div class="band"><h2>Sana, sana &amp; Que llueva</h2></div>
       <div class="scallop"></div>
       <div class="sheet-body">
-        <img class="illus painting combo-illus" src="assets/sana-sana.png" alt="Una niña con impermeable amarillo y su amigo rana le venda la rodilla">
-        <div class="combo-row">
-          <div class="combo-col">
-            <div class="verse">Sana, sana,
+        <img class="illus painting" src="assets/sana-sana.png" alt="Una niña con impermeable amarillo y su amigo rana le venda la rodilla">
+        <div class="verse">Sana, sana,
 colita de rana,
 si no sana hoy
-sanará mañana.</div>
-          </div>
-          <div class="combo-col">
-            <div class="verse">Que llueva, que llueva,
+sanará mañana.
+
+Que llueva, que llueva,
 la Virgen de la Cueva,
 los pajaritos cantan,
 las nubes se levantan.
 ¡Que sí, que no,
 que caiga un chaparrón!</div>
-          </div>
-        </div>
       </div>
     </div>
     </div>
@@ -1774,7 +1763,7 @@ en las puertas del zaguán,
     <div class="a4-sheet__content">
       <div class="band"><h2>Tengo una muñeca</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/tengo-muneca.png" alt="Una niña arropa a su muñeca vestida de azul y le da una cucharada de jarabe">
         <div class="verse">Tengo una muñeca vestida de azul,
 con su camisita y su canesú.
