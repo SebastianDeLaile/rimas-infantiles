@@ -2684,6 +2684,51 @@ candidates before reasoning too far ahead on this kind of arc math --
 confirmed a second time this session that intuition about which
 direction an arc bulges is not reliable without actually looking.
 
+## Illustration placement made consistent across cards — September 2026
+
+Sebastian: "how about the internal placement within each card, would
+be nice to have it all very consistent," then, unprompted, the actual
+requirement: "eg picture always in same spot - although appreciate
+sometimes heading is 2 lines."
+
+Root cause: `.sheet-body` (the illustration+verse container on every
+default-tier card) was `justify-content: center` -- the illustration
+and verse were centered TOGETHER as one block within the space below
+the heading band, so the illustration's vertical position drifted
+based on how much vertical space the VERSE took up: a short verse
+(e.g. "Los pollitos dicen") let the illustration sit low-ish (centered
+in a mostly-empty body), while a long verse pushed the whole block up,
+putting the illustration much closer to the band. `movement-body`
+cards (Chuchuwa-style) already used `justify-content: flex-start` for
+unrelated reasons and were never affected by this drift.
+
+Fixed by changing the default `.sheet-body` to `justify-content:
+flex-start` too, matching movement-body's existing approach -- the
+illustration now always starts at the same fixed offset below the
+band (padding-top: 7mm), regardless of verse length. A 2-line heading
+still makes the band taller, so the illustration sits slightly lower
+on those cards -- expected and explicitly fine per Sebastian's own
+caveat, not a bug.
+
+Verified by rendering matched before/after pairs for one card from
+each of the 5 layout tiers (default/short verse: "Los pollitos dicen";
+combo-row + 2-line heading: "Sana, sana & Que llueva"; long-verse:
+"A la víbora de la mar"; very-long-verse: "El señor don Gato";
+movement-body control: "Chuchuwa") -- the illustration's top edge now
+lines up consistently across same-heading-height cards, the 2-line
+heading case sits appropriately lower, movement-body is pixel-identical
+(unaffected, as expected), and none of the long/very-long tiers show
+any new overflow (if anything, top-anchoring gives MORE bottom
+clearance than centering did, since all the slack that used to split
+above/below now collects below). Confirmed via the full 150-page
+generation, div/section balance, and overflow_scan (0 flagged).
+
+**Lesson**: `justify-content: center` on a flex container holding two
+differently-sized things (a fixed-position anchor need + a
+variable-length text block) is what was silently causing the
+inconsistency -- worth checking for this pattern specifically whenever
+"why does X move around depending on content" comes up.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
