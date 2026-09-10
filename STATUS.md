@@ -2634,6 +2634,56 @@ at 900dpi: all 4 corners now read as clean, equal-armed X's, visibly
 distinct from the elongated row/column X's, same visual language as
 the diamond corner fix.
 
+## Scallop border thinned — September 2026
+
+Tenth round: "the pin pon style border seems a bit more intense than
+the others - are there options to ease it up." Offered opacity/outline
+options via a mockup; Sebastian skipped past that and just said "can
+we just make it a bit thinner but the same pattern."
+
+Root cause of the "intensity": scallop is the only FILLED (not
+stroked) connected pattern, and its bumps reach the full 4.5mm depth
+of the border band, so it reads as a solid, heavy band of color next
+to every other (thin-outline) pattern's much airier look.
+
+First instinct -- just add `fill-opacity` -- was the wrong lever for
+what was actually asked ("thinner," not "lighter"), so it was
+discarded in favor of an actual size reduction. That turned out to be
+much less trivial than the ask suggested. Reducing the STRIP bumps'
+radius is genuinely simple (an SVG arc's `rx`/`ry` are independent, so
+shrinking just the depth-axis radius while leaving the along-edge
+radius alone keeps the touching-rhythm and tile count untouched). The
+CORNER was the hard part: it's a vertex-centered quarter circle whose
+radius is mathematically forced to equal the fixed distance from the
+true page corner to each strip's own seam point (the box's own fixed
+20-unit size) -- shrinking that radius outright either misses the seam
+(a gap -- confirmed by rendering it) or, kept circular through the
+SAME two fixed seam points instead, actually makes the bulge BIGGER,
+not smaller (also confirmed by rendering several radii side by side --
+counter-intuitive on paper, obvious once seen). Landed on: seam point
+-> short straight "shelf" toward the vertex -> the smaller radius-14
+arc (still vertex-centered, so it still exactly matches the strips'
+new depth) -> a second shelf back out to the other seam -> line to the
+vertex. Depth taken from 20 to 14 on both strip and corner (about 30%
+thinner).
+
+Verified by rendering the corner against real strip tiles at high zoom
+before touching the actual file (caught the "arc bulges MORE with a
+naively smaller shared-endpoint radius" surprise this way, and
+confirmed the final shelf+small-arc construction closes both seams
+with zero gap) -- then rendered all 4 corners of the actual Pin Pon
+page at 900dpi and confirmed the same.
+
+**Lesson**: for a filled (not stroked) pattern, "intensity" and
+"thinness" are literally about how much of the band's depth is solid
+color, which is a genuinely different, harder lever to pull than for
+a stroked outline -- and geometry that's forced by a shared, fixed
+seam point (as scallop's vertex-centered corner is) can behave
+counter-intuitively when only one dimension of it is scaled. Render
+candidates before reasoning too far ahead on this kind of arc math --
+confirmed a second time this session that intuition about which
+direction an arc bulges is not reliable without actually looking.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

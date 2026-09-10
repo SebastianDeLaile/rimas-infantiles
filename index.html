@@ -4237,12 +4237,36 @@ const BORDER_IMAGE_EXPLICIT_EDGES = {
   // mirrored -- same arc-radius mirroring hazard as arches (mirroring
   // an arc's endpoint via the regex helpers would corrupt the rx,ry
   // pair as if it were a coordinate).
+  // Sebastian: "the pin pon style border seems a bit more intense than
+  // the others - are there options to ease it up" -- then, asked for
+  // options: "can we just make it a bit thinner but the same pattern."
+  // Scallop's the only filled (not stroked) pattern, and its bumps
+  // reach the FULL depth of the 4.5mm band (radius 20 = the band's own
+  // width), so it reads as a much heavier, more solid band of color
+  // than every other (thin-outline) pattern -- that's the "intensity."
+  // Thinned by reducing each bump's radius from 20 to 14 (the DEPTH
+  // only -- the along-edge radius that sets the touching-bump rhythm is
+  // untouched, so the spacing/count along every edge is unchanged).
+  // The corner needed more care than a simple radius swap: it's a
+  // vertex-centered quarter circle whose radius has to exactly equal
+  // the distance from the true page corner to each strip's own seam
+  // point (this box's fixed 20-unit size) -- shrinking that radius
+  // outright would either miss the seam entirely (gap) or, kept
+  // circular through the same two fixed seam points, actually bulge
+  // MORE not less (verified by rendering both and comparing). Fixed by
+  // building the corner as seam -> short straight "shelf" -> the
+  // smaller radius-14 arc (still vertex-centered, so still exactly
+  // matches the strips' own new depth) -> a second shelf back out to
+  // the other seam -> line to the vertex. Confirmed by rendering the
+  // corner against 2 real strip tiles at high zoom: both seams close
+  // with no gap, and the corner's bulge now visually matches the
+  // thinner strips instead of standing out as a much bigger blob.
   scallop: {
     size: 80,
-    cornerTL: "M20,0 A20,20 0 0 1 0,20 L0,0 Z",
-    cornerTR: "M60,0 A20,20 0 0 0 80,20 L80,0 Z",
-    cornerBL: "M20,80 A20,20 0 0 0 0,60 L0,80 Z",
-    cornerBR: "M60,80 A20,20 0 0 1 80,60 L80,80 Z",
+    cornerTL: "M20,0 L14,0 A14,14 0 0 1 0,14 L0,20 L0,0 Z",
+    cornerTR: "M60,0 L66,0 A14,14 0 0 0 80,14 L80,20 L80,0 Z",
+    cornerBL: "M20,80 L14,80 A14,14 0 0 0 0,66 L0,60 L0,80 Z",
+    cornerBR: "M60,80 L66,80 A14,14 0 0 1 80,66 L80,60 L80,80 Z",
     edgeTop: "M20,0 A20,20 0 0 0 60,0 Z",
     edgeBottom: "M20,80 A20,20 0 0 1 60,80 Z",
     edgeLeft: "M0,20 A20,20 0 0 1 0,60 Z",
@@ -4639,11 +4663,17 @@ const CONNECTED_EDGE_TILES = {
   // doesn't have an obvious "which side is round" the way a bold filled
   // bump does -- confirmed by rendering all 4 corners of each at 900dpi
   // with no visible defect, so left alone rather than fixed unseen.
+  // Depth reduced from 20 to 14 (see the matching comment on the
+  // BORDER_IMAGE_EXPLICIT_EDGES.scallop corner above) -- only the
+  // radius perpendicular to each edge (the "how deep does the bump
+  // reach into the page" one), NOT the radius along the edge (which
+  // sets the touching-bump spacing/count and must stay 20 so nothing
+  // about the rhythm or tile count changes).
   scallop: {
-    top: { d: "M0,0 A20,20 0 0 0 40,0 Z", vb: "0 0 40 20", fill: true },
-    bottom: { d: "M0,20 A20,20 0 0 1 40,20 Z", vb: "0 0 40 20", fill: true },
-    left: { d: "M0,0 A20,20 0 0 1 0,40 Z", vb: "0 0 20 40", fill: true },
-    right: { d: "M20,0 A20,20 0 0 0 20,40 Z", vb: "0 0 20 40", fill: true },
+    top: { d: "M0,0 A20,14 0 0 0 40,0 Z", vb: "0 0 40 20", fill: true },
+    bottom: { d: "M0,20 A20,14 0 0 1 40,20 Z", vb: "0 0 40 20", fill: true },
+    left: { d: "M0,0 A14,20 0 0 1 0,40 Z", vb: "0 0 20 40", fill: true },
+    right: { d: "M20,0 A14,20 0 0 0 20,40 Z", vb: "0 0 20 40", fill: true },
   },
 };
 function addConnectedStrip(page, side, tile, hex, sw, targetMm) {
