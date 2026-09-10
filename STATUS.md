@@ -2263,6 +2263,46 @@ the actual result before telling the user it's fixed, not just trust
 that the math checks out — this is now the second time in the same
 saga a "verified" fix didn't survive a real look at the render.
 
+## Wave corner fix, corrected again — September 2026
+
+The "revert amplitude, keep the crest-cut" fix above still wasn't
+right: "again not very nice wave compare to original where just left
+corner was smooth." Comparing the shipped render directly against the
+pre-fix original, side by side crops confirmed it: the vertical edges'
+bump rhythm had visibly tightened up -- smaller, more frequent-looking
+waves instead of the original's wide, gentle ones. Not a matter of
+taste this time; an actual, checkable difference once put next to the
+original.
+
+Root cause: the "crest-cut" left/right tiles from that pass were
+hand-built as a fresh cubic approximation (guessed Hermite tangent
+lengths for a plausible-looking S-curve) instead of being mathematically
+re-derived from the ORIGINAL quadratic wave -- so despite matching
+amplitude, period, and endpoint tangent direction, the curve's actual
+shape in between was subtly different, changing the rhythm. Compounding
+that, the crest position used (3 / 17) was also wrong -- a quadratic
+Bezier's actual peak deviates from baseline by only HALF its control
+point's offset when the segment is symmetric (amplitude 7 control
+point -> true peak at 6.5 / 13.5, not 3 / 17).
+
+Fixed properly this time: took the ORIGINAL wave tile's two quadratic
+segments and split them via De Casteljau subdivision at t=0.5 (exactly
+the crest, for these symmetric segments), then reassembled starting
+from that split point -- the actual same curve, re-parametrized to
+start at a different phase, not a new curve built to resemble it.
+Re-solved all 4 corners against the corrected tangent points (6.5/13.5,
+not 3/17). Verified by rendering side by side against the untouched
+original file: matching crops of the vertical edge now overlay
+essentially exactly, bump-for-bump, with the corner the only real
+difference.
+
+**Lesson, a third time on the same feature**: "should be identical, I
+only changed X" is a claim to verify by direct A/B render comparison
+against the actual prior version, not by reasoning about what X should
+theoretically preserve. Two fix attempts in a row on this exact wave
+corner shipped on the strength of that reasoning alone and both were
+visibly wrong once actually looked at side by side.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

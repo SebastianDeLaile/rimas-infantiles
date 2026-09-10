@@ -4156,12 +4156,11 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // -- see the CONNECTED_EDGE_TILES.wave comment for why). No corner
   // curve fixes an angle problem, so the left/right tile's own cut point
   // changed (crest instead of baseline crossing -- see that same
-  // comment) to make the turn angle a uniform ~65 degrees at all 4
-  // corners, WITHOUT touching amplitude or otherwise changing how the
-  // wave looks along the straight edges (an earlier version of this fix
-  // also raised amplitude, which did get closer to TL's original ~40
-  // but visibly changed the wave's bumps -- reverted per Sebastian: "can
-  // we not just change the wave shape a tiny bit"). All 4 corners below
+  // comment for the full story, including a wrong-crest-position bug in
+  // the first attempt at this that visibly changed the wave's rhythm
+  // and had to be redone) to make the turn angle a uniform ~65 degrees
+  // at all 4 corners, without touching amplitude or otherwise changing
+  // how the wave looks along the straight edges. All 4 corners below
   // were re-solved from scratch against the new tangents -- none of the
   // 4 are simple mirrors of each other for the reason explained above,
   // so each is its own cubic, control points sitting on the exact
@@ -4170,10 +4169,10 @@ const BORDER_IMAGE_CORNER_EDGE = {
   // out and avoid a visible shoulder, without enough to overshoot into
   // an S-curve).
   wave: {
-    cornerTL: "M20,10 C9.28,15.00 3,8.17 3,20",
-    cornerTR: "M0,10 C10.72,5.00 17,8.17 17,20",
-    cornerBL: "M3,0 C3,11.83 9.28,5.00 20,10",
-    cornerBR: "M17,0 C17,11.83 10.72,15.00 0,10",
+    cornerTL: "M20,10 C10.87,14.26 6.5,9.92 6.5,20",
+    cornerTR: "M0,10 C9.13,5.74 13.5,9.92 13.5,20",
+    cornerBL: "M6.5,0 C6.5,10.08 10.87,5.74 20,10",
+    cornerBR: "M13.5,0 C13.5,10.08 9.13,14.26 0,10",
   },
   // loop's edge tile is the original strip art (viewBox 0 0 9 4) scaled
   // x5 (period 9->45, baseline y=3->15). TL's control point sits at
@@ -4471,14 +4470,33 @@ const CONNECTED_EDGE_TILES = {
   // makes their tangent exactly vertical independent of amplitude, so
   // reverting amplitude to its original 7 still lands a uniform ~65
   // degree turn at all 4 corners (worse than TL's old lucky 40, much
-  // better than TR/BL's old 90) with ZERO visible change to the
-  // repeating wave pattern itself -- only the corners' own curves
-  // (below) needed re-solving against the new tangents.
+  // better than TR/BL's old 90) with -- attempted, but not achieved on
+  // the first try -- zero visible change to the repeating wave pattern
+  // itself. That first attempt hand-built the crest-cut left/right
+  // tiles as a fresh cubic approximation (guessing tangent-handle
+  // lengths for a "nice S-curve") rather than actually re-deriving them
+  // from the ORIGINAL quadratic wave -- and got the crest position
+  // wrong in the process (used the control point's own offset, 3/17,
+  // when a quadratic's actual peak deviation from baseline is HALF the
+  // control point's offset for a symmetric segment, i.e. 6.5/13.5).
+  // Sebastian caught the result: "again not very nice wave compare to
+  // original where just left corner was smooth" -- a real, visible
+  // rhythm change (tighter, more frequent-looking bumps on the vertical
+  // edges), not the "identical bumps" the comment above claimed.
+  // Redone properly this time: the crest-cut tiles below are the
+  // ORIGINAL quadratic wave's own two segments, split at their exact
+  // midpoint via De Casteljau subdivision (t=0.5, which is exactly the
+  // crest for a quadratic with symmetric endpoints) and reassembled
+  // starting from that split point -- the mathematically correct
+  // "same curve, different starting phase," not a hand-approximation.
+  // Confirmed by rendering directly against the ORIGINAL (pre-fix) file
+  // side by side: same bump width, same rhythm, same everything except
+  // the corner treatment.
   wave: {
     top: { d: "M0,10 Q15,3 30,10 Q45,17 60,10", vb: "0 0 60 20" },
     bottom: { d: "M0,10 Q15,17 30,10 Q45,3 60,10", vb: "0 0 60 20" },
-    left: { d: "M3,0 C3,5 5,15 10,15 C15,15 17,25 17,30 C17,35 15,45 10,45 C5,45 3,55 3,60", vb: "0 0 20 60" },
-    right: { d: "M17,0 C17,5 15,15 10,15 C5,15 3,25 3,30 C3,35 5,45 10,45 C15,45 17,55 17,60", vb: "0 0 20 60" },
+    left: { d: "M6.5,0 Q6.5,7.5 10,15 Q17,30 10,45 Q6.5,52.5 6.5,60", vb: "0 0 20 60" },
+    right: { d: "M13.5,0 Q13.5,7.5 10,15 Q3,30 10,45 Q13.5,52.5 13.5,60", vb: "0 0 20 60" },
   },
   loop: {
     top: { d: "M0,15 C0,5 10,5 11.25,10 C12.5,15 22.5,15 22.5,7.5 C22.5,15 32.5,15 33.75,10 C35,5 45,5 45,15", vb: "0 0 45 20" },
