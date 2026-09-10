@@ -2930,6 +2930,42 @@ different failure mode from every other consistency bug this session
 (which were all geometry/layout), worth remembering that the fix
 sometimes lives in the asset, not the code around it.
 
+## Cabeza, hombros regenerated — September 2026
+
+Follow-up to the framing-crop entry above: Sebastian offered "happy for
+you to use the openai api to generate a new image if the crop isnt
+good or its the wrong shape." Re-checked all 5 images that needed
+side-padding to reach the 112:84 box at full card scale (not just an
+isolated swatch): Estrellita, Tengo una muñeca, Las mañanitas, and
+Barco chiquitito all read well after the crop fix -- their compositions
+already have enough natural horizontal spread. **Cabeza, hombros,
+rodillas y pies** didn't: a single narrow standing child, still
+visibly small with dead space on both sides even after cropping,
+because the SOURCE pose itself is basically portrait-shaped (arms at
+sides) -- no crop can fix a composition that's the wrong shape to
+begin with.
+
+Regenerated via `scripts/generate_illustration.py` (gpt-image-1).
+First attempt used `--ref` against the existing image plus another
+card for style continuity -- came back with a visible opaque
+background wash and barely any wider a pose, unusable. Second attempt
+dropped the reference images entirely and asked directly for a WIDE
+action pose (arms and legs spread, mid-motion) with an explicit
+transparent background -- worked well on the first try. (Note: the
+Read tool's own preview rendered the transparent PNG against a
+solid-color backdrop that looked like an opaque wash; had to composite
+it against the actual page cream color locally to confirm the alpha
+channel was genuinely transparent before trusting it.)
+
+Ran the same crop/pad pipeline as the batch fix (content bbox + 6%
+margin, pad to 112:84 minimum ratio) on the new image, then re-ran the
+full verification stack: front/back audit (0 mismatches, since front
+and back clone the same file), effective-width check (112mm, matching
+every other painting), overflow_scan, and a fresh render of the actual
+card to confirm the pose reads naturally for "touch your head,
+shoulders, knees" and fills the frame the way the rest of the pack
+does.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
