@@ -2350,6 +2350,57 @@ shape that quietly isn't) has now shown up in 3 unrelated pattern
 families this session (wave/loop's corner curves, crosshatch's corner
 angle, and now diamond/teardrop/xmarks/square's corner proportions).
 
+## Icon-pattern corner scale bug, fixed properly — September 2026
+
+Third round on this: "corners still dodgy, sana sana, un elefante,
+images in inbox." Crosshatch turned out fine on re-inspection (the
+simplified corner from the previous pass holds up); "Un elefante"
+(diamond) had a real, screenshot-confirmed problem the previous fix
+had missed: an uneven gap between the corner diamond and the first
+strip diamond, unlike the even gaps between strip diamonds themselves.
+
+Root cause, finally run down: earlier this session the icon-pattern
+corner box's CSS size was changed from 4mm to 4.5mm (to close the
+corner/strip touching gap on crosshatch). That's a real physical size
+change, but the corner viewBox stayed "0 0 4 4" -- so its scale became
+1.125mm/unit while every strip tile is 1mm/unit. For crosshatch's
+touch-point corners that didn't matter (a coordinate like "the box's
+own edge" is scale-independent, always the right edge regardless of
+the box's physical size), which is why crosshatch never had this
+symptom. But diamond's corner shape was sized in absolute coordinates
+meant to match the STRIP's own physical diamond size -- under the
+wrong scale, it came out a real ~12% too big, and repositioning it via
+simple recentering (rather than matching the strip's own margin-to-seam
+distance) left an inconsistent gap on top of that.
+
+Fixed per Sebastian's own specification: keep the strips' elongated,
+direction-appropriate diamonds exactly as they are, but make the
+corner a PERFECT (equal-width/height) diamond sized to the LARGER of
+the two strip dimensions, positioned so each tip touching a real seam
+sits exactly one strip-margin back from that seam -- matching the
+strip's rhythm exactly, not approximately. Same treatment applied to
+`square` (had the identical elongation mismatch) and `teardrop` (no
+elongation mismatch since its strip shape is already circular, but
+still needed the same per-corner exact-margin repositioning). All 3
+corner boxes now use "0 0 4.5 4.5" viewBox (matching the real 1mm/unit
+scale) with explicit cornerTL/TR/BL/BR, since a shape positioned to hit
+an exact off-center margin isn't symmetric enough to reuse unmirrored
+across all 4 corners.
+
+**Not yet fixed, same latent bug**: `xmarks`, `ticks`, `plus`, `spiral`,
+`star`, `dots` still have corner viewBox "0 0 4 4" against the 4.5mm
+box -- xmarks and spiral have the same real elongation-mismatch
+diamond/square had (smaller magnitude, not yet reported); ticks/plus/
+dots are either scale-safe by construction (dot at the corner, or a
+symmetric cross/circle) or close enough that it hasn't been reported.
+Worth the same fix if/when it's noticed.
+
+**Lesson**: a CSS size change on a shared box (the corner) needs its
+viewBox audited too, everywhere that box is reused -- this whole
+3-round saga traced back to one dimension changing (4mm to 4.5mm) in
+one place without checking every consumer of that box's coordinate
+system.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
