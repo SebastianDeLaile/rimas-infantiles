@@ -2612,6 +2612,28 @@ coordinate mirroring (reflection), not just a center shift, since its
 corner motif isn't a simple symmetric shape like a cross or dot.
 Deliberately left alone this round since it wasn't what was reported.
 
+## Xmarks corner made symmetric — September 2026
+
+Ninth round, right after the previous fix: "are the x's symmetrical,
+it should follow the same pattern... corner is symmetrical and
+top/bottom, sides angles different ways." Right catch -- the previous
+round fixed xmarks' scale and mirroring but just reused stripTop's
+elongated reach (1.2 x-reach, 1.0 y-reach) for the corner, carrying an
+axis bias into a spot that touches both the top strip's orientation
+and the side strip's orientation equally. That's the same design
+problem diamond had (and was already fixed for): strips elongated per
+axis, corner a perfect (symmetric) shape at the larger dimension.
+
+Fixed by making the corner X's reach 1.2 in both directions (the
+larger of stripTop's 1.2/1.0 and stripLeft's 1.0/1.2) instead of
+reusing either strip's elongated reach -- centers unchanged from the
+previous round's mirroring fix. `plus` didn't need this: its cross was
+already symmetric (1.2 reach both ways) in both strip and corner from
+the start, so nothing to change there. Verified by rendering Chuchuwa
+at 900dpi: all 4 corners now read as clean, equal-armed X's, visibly
+distinct from the elongated row/column X's, same visual language as
+the diamond corner fix.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
