@@ -4355,14 +4355,20 @@ const BG_IMAGE_ICON_PATTERNS = {
   // the two extended lines cross EACH OTHER inside the box, and at the
   // strip's real stroke width that reads as a busy, congested knot, not
   // a clean corner (Sebastian: "corners of sana sana are dodgy", from an
-  // actual print-pack screenshot). Simplified to just the two short
-  // segments nearest each strip -- same starting point and angle as
-  // before (still no positional or angle mismatch), just stopping
-  // halfway rather than crossing all the way to the far shared point.
-  // Leaves a small gap in the corner's own interior, which reads as the
-  // border turning a corner rather than as broken, and looks like a
-  // continuation of the strips' own X motif instead of a dense tangle.
-  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, cornerTL: { vb: "0 0 4 4", el: 'path d="M4,0 L0,2 M0,4 L2,0"' }, cornerTR: { vb: "0 0 4 4", el: 'path d="M0,0 L4,2 M2,0 L4,4"' }, cornerBL: { vb: "0 0 4 4", el: 'path d="M0,0 L2,4 M0,2 L4,4"' }, cornerBR: { vb: "0 0 4 4", el: 'path d="M4,0 L2,4 M4,2 L0,4"' }, sw: 0.6, mode: "stroke", join: true },
+  // actual print-pack screenshot). Second fix cut each line back to just
+  // the short half nearest its own strip -- fixed the knot, but the two
+  // trimmed segments no longer shared an endpoint (they still crossed
+  // each other, just further apart), so each one left a short loose
+  // "stub" past the crossing with nothing to connect it to, visible as
+  // a stray spike at 900dpi and in a real screenshot (Sebastian: "all
+  // still clearly off" -- correct, verified by color-coding each path
+  // segment live in the browser to confirm it was this stub, not
+  // something else). Fixed properly this time by trimming BOTH incoming
+  // diagonals to stop exactly at the point where they'd cross each
+  // other (solved directly, not eyeballed) and joining them there --
+  // one shared vertex, no dangling stub, no congested knot, and both
+  // strip-facing angles are still the untouched originals.
+  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, cornerTL: { vb: "0 0 4 4", el: 'path d="M4,0 L1.33,1.33 L0,4"' }, cornerTR: { vb: "0 0 4 4", el: 'path d="M0,0 L2.67,1.33 L4,4"' }, cornerBL: { vb: "0 0 4 4", el: 'path d="M0,0 L1.33,2.67 L4,4"' }, cornerBR: { vb: "0 0 4 4", el: 'path d="M4,0 L2.67,2.67 L0,4"' }, sw: 0.6, mode: "stroke", join: true },
   // diamond/square/teardrop below: the corner motif used to be
   // independently hand-drawn, roughly centered but not actually scaled
   // to match either strip's own proportions -- diamond's corner, for

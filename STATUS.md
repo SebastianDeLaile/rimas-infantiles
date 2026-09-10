@@ -2449,6 +2449,44 @@ straight to the real file without a final look at the ACTUAL generated
 page, exactly this kind of gap gets through -- confirmed 4 times in
 this one corner saga before the habit changed.
 
+## Crosshatch corner spike, fixed properly — September 2026
+
+Fifth round: "all still clearly off... 3 new screenshots in inbox."
+Diamond and teardrop, re-checked at 900dpi against the actual current
+file, are genuinely clean now (complete diamonds/circles, consistent
+spacing, no clipping) -- the overflow:visible fix from the previous
+round held up. Crosshatch was still visibly broken: a short stray
+"spike" poking out of the corner, not part of any clean diamond shape.
+
+Root cause, found by color-coding each individual path segment live in
+the browser (corner in red, each strip tile a different color, then
+screenshotting) rather than reasoning about coordinates: the
+"simplified" 2-segment corner fix from a few rounds back trimmed each
+incoming diagonal back from the earlier congested-knot design, but the
+two trimmed segments never actually shared an endpoint -- they still
+crossed each other further out, just past where each one now stopped.
+That left two short, unconnected loose ends dangling past the
+crossing, with nothing drawn beyond them -- exactly the kind of stray
+"stub" that reads as a spike at real stroke width.
+
+Fixed by solving directly for the point where the two incoming
+diagonals actually cross, trimming BOTH segments to stop exactly
+there, and joining them at that one shared vertex -- a clean two-
+segment "V", no dangling ends, no self-crossing knot, and the two
+strip-facing angles are untouched (still exactly what the strip's own
+diagonal requires). Verified against actual rendered corners this time
+(not just the isolated candidate test), all 4 corners, before calling
+it done.
+
+**Lesson**: "simplify a busy design by trimming it" needs to preserve
+CONNECTIVITY, not just remove length -- two lines that used to meet at
+a shared far point still cross each other somewhere even after
+shortening; if you don't solve for exactly where and stop there, you
+get dangling loose ends instead of a shorter version of the same
+clean shape. Color-coding each element live and screenshotting found
+this in one step, faster than continuing to reason about coordinates
+in the abstract.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
