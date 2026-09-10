@@ -2966,6 +2966,75 @@ card to confirm the pose reads naturally for "touch your head,
 shoulders, knees" and fills the frame the way the rest of the pack
 does.
 
+## Stray long-verse classes, book-wide — the REAL size-variance bug — September 2026
+
+Sebastian, after the framing-crop and regeneration work: "hmm they
+really still look like they vary a lot in size sana sana is much
+smaller than los pottlits." Measured the actual rendered widths (not
+source-file bounding boxes this time -- the earlier framing pass
+checked the wrong thing) and he was completely right, but the cause
+had nothing to do with cropping: Sana sana's illustration was
+literally rendering at 257px (68mm) while Los pollitos rendered at
+423px (112mm) -- two different CSS tiers entirely.
+
+**Root cause, part 1 (self-inflicted):** un-splitting Sana sana's
+combo-row into one `.verse` block (an earlier fix this session) merged
+two short stanzas into an 11-line block of text -- one line over the
+`>10` long-verse threshold. Before that fix, `front.querySelector
+('.verse')` only ever saw the FIRST combo-column's 4-line stanza, so
+the merge silently changed which tier the card qualified for. Fixed by
+adding `no-auto-shrink` (verified the full 11-line verse fits fine
+unshrunk -- overflow_scan stayed clean).
+
+**Root cause, part 2 (pre-existing, much bigger):** while checking
+whether other favourites had the same problem, found that **Aserrín,
+aserrán**, **Las mañanitas**, and **Cabeza, hombros, rodillas y pies**
+all carry a static `long-verse` class in their front HTML despite
+their verse -- on EITHER side, Spanish or English -- never exceeding
+8-9 lines. Exactly the same stray-class pattern as the already-fixed
+"Tengo una muñeca" (from two rounds ago), just not caught at the time
+because the earlier audit only checked for front/back MISMATCHES, not
+whether the agreed-upon tier was actually warranted by either text.
+Wrote a proper audit this time: for every card with a long-verse or
+very-long-verse class, check the front AND back verse line counts
+against that tier's own threshold independently, flag any tier that
+neither side's text actually earns. Result: **10 more** stray cards
+turned up among the plain-SVG-icon set (not in the favourites pack,
+so never previously reported): El florón, La farolera, La mar estaba
+serena, Señora Santa Ana, Un dos tres momia es, Pajarito del cielo,
+Los esqueletos, Gallinita ciega, Ratón que te pilla el gato, and Niño
+Manuelito (this last one's front verse uses `<br>` instead of literal
+newlines, so a naive newline count read "1 line" -- had to verify
+against its back translation's line count, and separately confirm
+none of the other 9 had the same `<br>` quirk before trusting their
+counts). Total: 13 stray classes removed book-wide (3 favourites + 10
+unreported SVG-icon cards), on top of the front/back sync fix from two
+rounds ago.
+
+Cabeza hombros' newly-regenerated wide-pose illustration (previous
+entry) now displays at its FULL intended 112mm size rather than the
+68mm long-verse box it was wrongly stuck in -- meaning the earlier
+"regenerate for a wider pose" fix was real and worth keeping, but was
+never going to fully solve the size complaint on its own, since the
+box it was rendering into was wrong to begin with.
+
+Verified: re-ran the stray-tier audit after all 13 fixes (0 remaining,
+down from 13), the front/back mismatch audit (0, unchanged), and
+overflow_scan (0 flagged) -- an unshrunk long-verse card was the
+overflow risk to check for, and none tripped it. Rendered a couple of
+the previously-unreported SVG-icon fixes (El florón) to confirm they
+look proportionate at the larger size.
+
+**Lesson**: checking "do front and back match" isn't the same as
+checking "is this class even correct" -- a stray tier applied
+IDENTICALLY and by coincidence-of-translation-length to both sides
+would have sailed through the earlier front/back-parity audit with
+flying colors while still being wrong (as it was for 2 of these 3
+newly-found favourites: both sides under 9 lines, both wrongly
+long-verse, "matching" each other perfectly). The right audit checks
+each rule against its own stated threshold, not just whether two
+independently-wrong things happen to agree.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
