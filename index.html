@@ -4335,20 +4335,42 @@ const BG_IMAGE_ICON_PATTERNS = {
   // (dy/dx=4/8=0.5, not 1) -- position-wise the old corner's diagonals
   // did land on the right points, but at the wrong ANGLE, reading as a
   // visible kink right where each strip met the corner (Sebastian: "the
-  // corner doesn't join"). Each of the 4 corners below is a small
-  // zigzag built by extending the actual incoming diagonal from each
-  // strip (using the pattern's own periodicity: what the tile chain
-  // would look like one half-tile further, past where the real strip
-  // stops) rather than a generic same-for-all-4 motif -- same root
-  // cause and fix shape as the wave/loop corner-mirroring bugs above,
-  // just for straight lines instead of curves.
-  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, cornerTL: { vb: "0 0 4 4", el: 'path d="M4,0 L0,2 L4,4 L2,0 L0,4"' }, cornerTR: { vb: "0 0 4 4", el: 'path d="M0,0 L4,2 L0,4 L2,0 L4,4"' }, cornerBL: { vb: "0 0 4 4", el: 'path d="M0,0 L2,4 L4,0 L0,2 L4,4"' }, cornerBR: { vb: "0 0 4 4", el: 'path d="M4,0 L2,4 L0,0 L4,2 L0,4"' }, sw: 0.6, mode: "stroke", join: true },
-  diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.5 L3.5,2 L2,3.5 L0.5,2 Z"' }, sw: 0.6, mode: "stroke", join: true },
-  teardrop: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,1 C4,1 4,3 3,3 C2,3 2,1 3,1 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M1,3 C1,2 3,2 3,3 C3,4 1,4 1,3 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.7 C3,0.7 3,3.3 2,3.3 C1,3.3 1,0.7 2,0.7 Z"' }, sw: 0.55, mode: "stroke" },
+  // corner doesn't join").
+  //
+  // First fix drew the FULL extension of both incoming diagonals (the
+  // pattern's own periodicity: what the tile chain would look like one
+  // half-tile further, past where the real strip stops), meeting at a
+  // shared point in the corner's far side -- geometrically correct, but
+  // the two extended lines cross EACH OTHER inside the box, and at the
+  // strip's real stroke width that reads as a busy, congested knot, not
+  // a clean corner (Sebastian: "corners of sana sana are dodgy", from an
+  // actual print-pack screenshot). Simplified to just the two short
+  // segments nearest each strip -- same starting point and angle as
+  // before (still no positional or angle mismatch), just stopping
+  // halfway rather than crossing all the way to the far shared point.
+  // Leaves a small gap in the corner's own interior, which reads as the
+  // border turning a corner rather than as broken, and looks like a
+  // continuation of the strips' own X motif instead of a dense tangle.
+  crosshatch: { stripTop: { vb: "0 0 8 4", el: 'path d="M0,0 L8,4 M0,4 L8,0"' }, stripLeft: { vb: "0 0 4 8", el: 'path d="M0,0 L4,8 M4,0 L0,8"' }, cornerTL: { vb: "0 0 4 4", el: 'path d="M4,0 L0,2 M0,4 L2,0"' }, cornerTR: { vb: "0 0 4 4", el: 'path d="M0,0 L4,2 M2,0 L4,4"' }, cornerBL: { vb: "0 0 4 4", el: 'path d="M0,0 L2,4 M0,2 L4,4"' }, cornerBR: { vb: "0 0 4 4", el: 'path d="M4,0 L2,4 M4,2 L0,4"' }, sw: 0.6, mode: "stroke", join: true },
+  // diamond/square/xmarks/teardrop below: the corner motif used to be
+  // independently hand-drawn, roughly centered but not actually scaled
+  // to match either strip's own proportions -- diamond's corner, for
+  // instance, was a plain 3x3 (equal width/height) diamond next to
+  // strip diamonds that are a elongated 4x3 (stripTop) or 3x4
+  // (stripLeft). Visually that reads as a different SHAPE at the
+  // corner, not just the same diamond rotated (Sebastian, on "One
+  // Elephant Went Out to Play": "the diamonds are slightly different on
+  // top/bottom vs sides vs corners not just rotated"). Each corner
+  // below is now the stripTop shape's own exact proportions, just
+  // re-centered from stripTop's 6-wide (or 5-wide) box into the
+  // corner's 4-wide box -- literally the same shape, unrotated, sitting
+  // in the corner, rather than an independently-sized approximation.
+  diamond: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,0.5 L5,2 L3,3.5 L1,2 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M0.5,3 L2,5 L3.5,3 L2,1 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.5 L4,2 L2,3.5 L0,2 Z"' }, sw: 0.6, mode: "stroke", join: true },
+  teardrop: { stripTop: { vb: "0 0 6 4", el: 'path d="M3,1 C4,1 4,3 3,3 C2,3 2,1 3,1 Z"' }, stripLeft: { vb: "0 0 4 6", el: 'path d="M1,3 C1,2 3,2 3,3 C3,4 1,4 1,3 Z"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,1 C3,1 3,3 2,3 C1,3 1,1 2,1 Z"' }, sw: 0.55, mode: "stroke" },
   ticks: { stripTop: { vb: "0 0 3 4", el: 'line x1="1.5" y1="0.8" x2="1.5" y2="3.2"' }, stripLeft: { vb: "0 0 4 3", el: 'line x1="0.8" y1="1.5" x2="3.2" y2="1.5"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.55"' }, sw: 0.6, mode: "stroke", cornerFill: true },
-  xmarks: { stripTop: { vb: "0 0 5 4", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M1,1.3 L3,3.7 M1,3.7 L3,1.3"' }, corner: { vb: "0 0 4 4", el: 'path d="M1,1 L3,3 M3,1 L1,3"' }, sw: 0.6, mode: "stroke" },
+  xmarks: { stripTop: { vb: "0 0 5 4", el: 'path d="M1.3,1 L3.7,3 M3.7,1 L1.3,3"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M1,1.3 L3,3.7 M1,3.7 L3,1.3"' }, corner: { vb: "0 0 4 4", el: 'path d="M0.8,1 L3.2,3 M3.2,1 L0.8,3"' }, sw: 0.6, mode: "stroke" },
   plus: { stripTop: { vb: "0 0 5 4", el: 'path d="M2.5,0.8 L2.5,3.2 M1.3,2 L3.7,2"' }, stripLeft: { vb: "0 0 4 5", el: 'path d="M0.8,2.5 L3.2,2.5 M2,1.3 L2,3.7"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,0.8 L2,3.2 M0.8,2 L3.2,2"' }, sw: 0.6, mode: "stroke" },
-  square: { stripTop: { vb: "0 0 6 4", el: 'rect x="1.3" y="0.8" width="3.4" height="2.4"' }, stripLeft: { vb: "0 0 4 6", el: 'rect x="0.8" y="1.3" width="2.4" height="3.4"' }, corner: { vb: "0 0 4 4", el: 'rect x="1" y="1" width="2" height="2"' }, sw: 0.55, mode: "stroke" },
+  square: { stripTop: { vb: "0 0 6 4", el: 'rect x="1.3" y="0.8" width="3.4" height="2.4"' }, stripLeft: { vb: "0 0 4 6", el: 'rect x="0.8" y="1.3" width="2.4" height="3.4"' }, corner: { vb: "0 0 4 4", el: 'rect x="0.3" y="0.8" width="3.4" height="2.4"' }, sw: 0.55, mode: "stroke" },
   spiral: { stripTop: { vb: "0 0 7 4", el: 'path d="M3.5,3 C2.2,3 2.2,1.2 3.5,1.2 C4.4,1.2 4.4,2.4 3.6,2.4 C3.1,2.4 3.1,1.8 3.5,1.8"' }, stripLeft: { vb: "0 0 4 7", el: 'path d="M1,3.5 C1,2.2 2.8,2.2 2.8,3.5 C2.8,4.4 1.6,4.4 1.6,3.6 C1.6,3.1 2.2,3.1 2.2,3.5"' }, corner: { vb: "0 0 4 4", el: 'path d="M2,3 C0.7,3 0.7,1.2 2,1.2 C2.9,1.2 2.9,2.4 2.1,2.4 C1.6,2.4 1.6,1.8 2,1.8"' }, sw: 0.5, mode: "stroke" },
   star: { stripTop: { vb: "0 0 8 4", el: 'polygon points="4.00,0.40 4.38,1.47 5.52,1.51 4.62,2.20 4.94,3.29 4.00,2.65 3.06,3.29 3.38,2.20 2.48,1.51 3.62,1.47"' }, stripLeft: { vb: "0 0 4 8", el: 'polygon points="2.00,2.40 2.38,3.47 3.52,3.51 2.62,4.20 2.94,5.29 2.00,4.65 1.06,5.29 1.38,4.20 0.48,3.51 1.62,3.47"' }, corner: { vb: "0 0 4 4", el: 'polygon points="2.00,0.50 2.35,1.51 3.43,1.54 2.57,2.19 2.88,3.21 2.00,2.60 1.12,3.21 1.43,2.19 0.57,1.54 1.65,1.51"' }, mode: "fill" },
   dots: { stripTop: { vb: "0 0 5.052632 4", el: 'circle cx="2.526316" cy="2" r="0.9"' }, stripLeft: { vb: "0 0 4 4.982143", el: 'circle cx="2" cy="2.491071" r="0.9"' }, corner: { vb: "0 0 4 4", el: 'circle cx="2" cy="2" r="0.9"' }, mode: "fill" },

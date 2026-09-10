@@ -2303,6 +2303,53 @@ theoretically preserve. Two fix attempts in a row on this exact wave
 corner shipped on the strength of that reasoning alone and both were
 visibly wrong once actually looked at side by side.
 
+## Crosshatch corner simplified; 4 icon-pattern corners resized — September 2026
+
+Two more real bugs, both found from actual print-pack screenshots rather
+than in-editor renders. Sebastian: "corners of sana sana are dodgy look
+at inbox screenshot", and separately, on "One Elephant Went Out to
+Play": "the diamonds are slightly different on top/bottom vs sides vs
+corners not just rotated what is going on there."
+
+**Crosshatch**: the per-corner zigzag fix earlier this session was
+positionally correct (right points, right angles -- confirmed against
+the actual strip diagonals) but drew the FULL extension of both
+incoming lines to a shared far point, and those two extended lines
+cross each other inside the small corner box. At the pattern's real
+stroke width that reads as a dense, congested knot, not a corner --
+technically right, visibly wrong, and only obvious from an actual
+print-pack screenshot at normal viewing zoom, not from the isolated
+thin-line geometry checks used to derive it. Fixed by keeping only the
+short half of each line nearest its own strip (same start point and
+angle, just stopping before the crossing) -- reads as the strip's own
+X motif turning a corner instead of a tangle.
+
+**Diamond (and, found while fixing it, teardrop/xmarks/square too)**:
+these 4 patterns' corner motif was an independently hand-sized shape
+that was never actually checked against the strip tiles' own
+proportions. Diamond's corner was a plain equal-width/height (3x3)
+diamond next to strip diamonds that are a distinctly elongated 4x3 or
+3x4 -- a genuinely different shape at the corner, not the same diamond
+rotated, exactly as Sebastian described. Fixed by recentering each
+corner motif to literally the stripTop shape's own exact coordinates
+(not an independent approximation) -- same shape, unrotated, sitting in
+the corner. xmarks and square had the same issue at a smaller scale;
+teardrop leaned slightly the other way (elongated corner next to round
+strips). All 4 fixed the same way. (`ticks` and `plus` were checked and
+are fine -- ticks deliberately swaps to a dot at the corner since a
+tick mark has no natural corner orientation, and plus's cross arms are
+already equal-length in every orientation by construction. `spiral`,
+`star`, and `dots` were also checked and already matched reasonably
+well.)
+
+**Lesson**: for any pattern built from hand-authored per-piece shapes
+(strip vs corner) rather than one shape reused via transform, always
+diff the corner's actual proportions against the strip's, not just
+eyeball it once -- this class of bug (an independently-sized "matching"
+shape that quietly isn't) has now shown up in 3 unrelated pattern
+families this session (wave/loop's corner curves, crosshatch's corner
+angle, and now diamond/teardrop/xmarks/square's corner proportions).
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
