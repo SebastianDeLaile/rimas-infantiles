@@ -2873,6 +2873,63 @@ reported bug on ONE card raises the question "does this happen
 elsewhere too" -- it took only a few minutes and found 16 more cases
 that would otherwise have surfaced one screenshot at a time.
 
+## Illustration artwork framing made consistent — September 2026
+
+Sebastian, right after the front/back tier audit: "are the images all
+the same size aross the whole pack? they look slightly different."
+
+**This turned out NOT to be the same bug as the tier audit, or even a
+code bug at all.** Measured the actual rendered CSS box for every
+"painting"-style illustration (26 of 75 cards use these bespoke
+PNGs; the other 49 use flat inline-SVG icons) -- box width was
+already a perfectly consistent 112mm for all 26, so the CSS/layout
+side was fine. The real cause was in the ARTWORK itself: each PNG has
+a transparent background, and how much of the canvas the actual
+painted subject fills varies enormously between images -- from ~79%
+(Pin Pon, well-framed) down to ~37-42% (Cabeza hombros, Estrellita --
+tiny subject floating in a sea of transparent padding). Rendering a
+grid of all 13 favourites-pack illustrations side by side made this
+completely obvious in a way the CSS numbers alone didn't show.
+
+**Fix.** Wrote a Python/Pillow script: for each of the 16 offending
+images (out of 26 -- the other 10 already fill their canvas edge to
+edge), compute the tight bounding box of non-transparent content, add
+a small margin (6% of the larger dimension), and crop to it. First
+pass just did this directly -- shrank the padding beautifully, but
+for a few images (Cabeza hombros, Estrellita, Tengo una muñeca...)
+the SUBJECT itself is naturally taller than it is wide, so a tight
+crop gave a portrait-ish aspect ratio that pushed the OTHER css
+constraint (max-height:86mm) into binding instead of width, shrinking
+the effective on-page width back down to as little as 63mm --
+trading one inconsistency for another, caught by re-measuring rather
+than assuming success. Second pass added a floor: if the tight crop's
+aspect ratio would come out below 112/84 (~1.33 -- the same box shape
+the already-good 10 images already use), pad the SHORTER dimension
+symmetrically with transparent pixels until it hits that ratio,
+rather than cropping tighter. Result: all 26 images now render at an
+identical, consistent 112mm effective width, with padding trimmed to
+a small, uniform margin instead of wildly differing amounts.
+
+**Verification.** Rendered every affected image original-vs-cropped
+at matched physical size before touching the real files (caught the
+first pass's aspect-ratio regression this way, before it ever reached
+assets/); recomputed the effective-width numbers directly from the
+final files (all 112.0mm, none of the earlier variance); re-rendered
+the actual book pages for 6 of the affected cards and confirmed
+visually that the subjects now read as consistently sized flipping
+between cards; re-ran the front/back audit script from the previous
+entry (still 0 mismatches, since front and back share the same
+cropped file via cloneNode). Full validation suite clean. No HTML/CSS/
+JS changed at all -- this was purely an asset edit (16 PNGs cropped in
+place), verified nothing else references their old pixel dimensions.
+
+**Lesson**: "same CSS box" does not mean "looks the same size" when
+the content filling that box (here, artwork with wildly different
+amounts of internal padding) isn't itself consistent -- this is a
+different failure mode from every other consistency bug this session
+(which were all geometry/layout), worth remembering that the fix
+sometimes lives in the asset, not the code around it.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
