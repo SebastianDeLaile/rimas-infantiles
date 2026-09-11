@@ -3035,6 +3035,41 @@ long-verse, "matching" each other perfectly). The right audit checks
 each rule against its own stated threshold, not just whether two
 independently-wrong things happen to agree.
 
+## Las mañanitas: title translation + bigger text — September 2026
+
+Sebastian: "las mananitas isnt translated, and i think make the text
+bigger so there is less gap." The verse itself WAS already translated
+("These are the morning songs..."); only the card's title had been
+left as "Las Mañanitas" (just re-capitalized) rather than given an
+actual English title. Translated it to "The Morning Song," matching
+the verse's own opening line.
+
+For the "less gap" ask: introduced a new `big-verse` modifier class
+(font-size 8.5mm vs the default tier's 6.9mm) alongside the existing
+long-verse/very-long-verse tiers, applied to this card's front
+`.sheet-body`. Had to add one line propagating the class from front to
+back in the print-generation JS (the same front/back split that caused
+the stray-tier bugs two entries back applies to any per-card class,
+not just the auto-computed tiers) -- confirmed via computed
+`getComputedStyle` font-size on both sides (32.126px each) after an
+initial visual comparison misleadingly looked uneven (a composite-image
+artifact from downscaling two crops of different line-wrap lengths
+side by side, not a real discrepancy -- worth remembering that a
+computed-style check is more trustworthy than eyeballing a shrunk
+screenshot when two things "look" different but the numbers say
+otherwise).
+
+Verified: full 150-page overflow scan (front AND back this time, using
+the more complete `review_overflow_scan.js` variant instead of the
+100-page front-only one used earlier this session) -- 0 flagged; stray-tier
+audit still 0; front/back mismatch audit still 0.
+
+This was a one-card, deliberately targeted fix (not applied to other
+short-verse cards) since that's specifically what was asked -- the
+`big-verse` class is reusable if the same "still a bit gappy" feedback
+comes up for Aserrín aserrán, Cabeza hombros, or others now sized up
+from the stray-tier fix.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

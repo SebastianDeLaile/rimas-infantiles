@@ -940,6 +940,7 @@ h1, h2, h3, .display {
   margin-bottom: auto;
 }
 
+.sheet-body.big-verse .verse { font-size: 8.5mm; line-height: 1.4; }
 .sheet-body.long-verse { gap: 3.5mm; }
 .sheet-body.long-verse .illus { width: 68mm; max-height: 62mm; }
 .sheet-body.long-verse .verse { font-size: 5.95mm; line-height: 1.32; }
@@ -2568,7 +2569,7 @@ se duerman otra vez!)</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Las mañanitas</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body">
+      <div class="sheet-body big-verse">
         <img class="illus painting" src="assets/mananitas.png" alt="Un niño feliz mirando un pastel de cumpleaños con velas mientras un pajarito canta a su lado">
         <div class="verse">Estas son las mañanitas
 que cantaba el rey David;
@@ -3764,7 +3765,7 @@ at four, off to the theater they go…
 they all fall back asleep!)`
   },
   {
-    title: "Las Mañanitas",
+    title: "The Morning Song",
     verse: `These are the morning songs
 that King David used to sing;
 today, because it's your saint's day,
@@ -4901,6 +4902,7 @@ fronts.forEach((front, index) => {
     verse.textContent = copy.verse;
     body.append(verse);
     if (!noAutoShrink && frontVerse) pairVerseTier(frontBody, body, frontVerse.textContent, copy.verse);
+    if (frontBody.classList.contains("big-verse")) body.classList.add("big-verse");
   }
   front.after(back);
 });
