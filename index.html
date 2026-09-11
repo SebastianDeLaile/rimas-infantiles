@@ -912,11 +912,17 @@ h1, h2, h3, .display {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  /* one gap value, and the same value as padding-top, so the
-     heading->image gap and the image->text gap are identical. */
+  /* space-evenly + equal top/bottom padding + the same gap value means
+     the three vertical spaces on a card -- heading->image, image->text,
+     and text->bottom -- are always equal to each other. On a card whose
+     verse fills the page they're all the 6mm minimum. On a short verse,
+     where the illustration has already grown to its cap and still can't
+     absorb the slack, the leftover is split three ways instead of being
+     dumped entirely below the text (which left up to 91mm of void at the
+     bottom of the shortest cards and read as top-heavy). */
+  justify-content: space-evenly;
   gap: 6mm;
-  padding: 6mm 5mm 2mm;
+  padding: 6mm 5mm 6mm;
   text-align: center;
 }
 .illus { width: 86mm; height: auto; max-height: 86mm; object-fit: contain; }

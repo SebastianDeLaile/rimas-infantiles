@@ -3133,6 +3133,43 @@ that bottoms out at ~53mm and reads a little lost. If either bothers
 Sebastian the levers are: raise ILLUS_MAX_W (costs dpi), or let type
 shrink a little earlier to buy the picture back some room.
 
+## Spacing: leftover split three ways — September 2026
+
+Sebastian on the first cut of the new layout: "the image sizing looks
+good, but the spacing is still a bit odd," with a screenshot of "Un
+elefante" -- heading, picture and 4-line verse all packed into the top
+60% of the card and a void below.
+
+Measured the scale of it rather than guessing: 30 of 74 cards carried
+30mm+ of bottom slack, worst 91mm, and every one of them was already
+pinned at the 135mm illustration cap -- so the picture genuinely could
+not absorb any more (to swallow 91mm it would need to be 263mm wide on
+a 210mm page). The slack is unavoidable; the only question was where to
+put it.
+
+Considered and rejected centering the content block: it balances the
+page but makes the heading->image gap 6mm on a full card and 45mm on a
+short one, which breaks the uniform-gap requirement outright.
+
+Landed on reading "uniform" as the three vertical spaces on a card
+matching EACH OTHER, and distributing leftover evenly between them:
+`justify-content: space-evenly` with equal top/bottom padding and the
+same gap value. Heading->image, image->text and text->bottom are now
+always identical -- 6mm on a card whose verse fills the page, expanding
+in step up to ~35mm on the shortest. Verified across all 148 verse
+pages: the spread between the three spaces is 0.0mm on every single one,
+and the set of heading->image gap values is exactly the set of
+image->text gap values.
+
+Everything from the previous entry still holds afterwards: 0/150 pages
+overflow, 0 front/back mismatches, 70 of 74 cards at the standard 6.9mm
+body size.
+
+**Tradeoff:** the picture's distance below the heading now varies with
+verse length again (6mm to ~35mm), where the previous cut pinned it.
+That's the price of not leaving a void at the bottom; the gaps stay
+uniform within each card either way.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
