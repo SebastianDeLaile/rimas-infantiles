@@ -3070,6 +3070,69 @@ short-verse cards) since that's specifically what was asked -- the
 comes up for Aserrín aserrán, Cabeza hombros, or others now sized up
 from the stray-tier fix.
 
+## Card layout: one text size, flexing illustration — September 2026
+
+Sebastian proposed: "text should be up to half of the page length, but
+capped at a max size, and the gaps between heading and image and text
+should be uniform," and asked for pushback if I disagreed.
+
+Agreed on uniform gaps. Pushed back on auto-scaling the text: verse
+lengths here run 4 to 29 lines, so sizing type to fill a fixed share of
+the page makes font size roughly inversely proportional to line count --
+even with a max cap, the middle of that range would still swing ~2x, and
+body copy would visibly change size on nearly every page. That cuts
+against the consistency work of the preceding rounds, and a fixed text
+size matters more in a book a child reads along with. Proposed instead:
+fix the text, and let the ILLUSTRATION take up the slack -- pictures
+varying in size is normal in an illustrated book, body type varying is
+not. Sebastian: "yes try it."
+
+**What replaced what.** Deleted the three verse-length tiers
+(long-verse, very-long-verse, and the one-off big-verse), each of which
+set its own font size, gap AND illustration size, plus the
+`no-auto-shrink` opt-out and the verse auto-margin centering. In their
+place: one gap (6mm, used for BOTH `padding-top` and the flex `gap`, so
+heading->image and image->text finally match), one body size (6.9mm),
+and `fitCardPair()`, which measures both sides of a card and sets a
+single illustration width that fills whatever the verse leaves, clamped
+to 50-135mm. 135mm is a print-resolution limit, not a taste one: the
+narrowest painting is 1256px, which at 135mm still prints ~236dpi.
+
+Text drops below 6.9mm only when a verse cannot otherwise fit, found by
+binary search rather than a proportional guess (shrinking type re-wraps
+the text and tightens the leading, so height isn't linear in the size
+requested). Measured outcome: **70 of 74 cards sit at exactly 6.9mm**;
+three shrink 5-8% (imperceptible), and only "El señor don Gato" -- 29
+lines, which needs 284mm of column in a 233mm page -- drops meaningfully
+to 5.12mm.
+
+**Two bugs found by measuring rather than eyeballing.** First pass put
+73 of 74 cards at the 5mm floor: browse mode sets `display:none` on
+every card but the selected one, so at load time they all measured as
+zero-height boxes. Fixed by forcing the pair laid out for the duration
+of the measurement. Second pass still overflowed 21 cards: `.sheet-body`
+is `flex:1` with flex's default `min-height:auto`, so an oversized card
+GROWS past the page rather than staying at its allotted height -- which
+meant measuring the box returned the content's height, not the space
+available, and slack computed as exactly 0 on every card. Added
+`min-height:0`, which both fixes the measurement and stops a too-tall
+card silently spilling off the page.
+
+Verified: 0 of 150 pages flagged by the overflow scan; 0 front/back
+mismatches; heading->image and image->text gaps both exactly 6mm on
+every card; illustration range 53-135mm.
+
+**Known tradeoffs, not yet addressed.** (1) Very short verses still
+leave real white space at the bottom -- the illustration can only grow
+to 135mm before print resolution suffers, and aspect ratio means it
+can't absorb ~187mm of slack. (2) Long-verse cards now have noticeably
+SMALLER illustrations than before, because they no longer shrink the
+text to buy the picture room -- the picture absorbs all of it. On the
+icon-illustrated cards ("Buenos días su señoría", "El señor don Gato")
+that bottoms out at ~53mm and reads a little lost. If either bothers
+Sebastian the levers are: raise ILLUS_MAX_W (costs dpi), or let type
+shrink a little earlier to buy the picture back some room.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

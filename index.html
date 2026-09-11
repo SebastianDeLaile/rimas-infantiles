@@ -903,12 +903,20 @@ h1, h2, h3, .display {
 
 .sheet-body {
   flex: 1;
+  /* Without this, flex's default min-height:auto lets an oversized card
+     grow PAST the page instead of staying at its allotted height -- which
+     also meant measuring this box reported the content's height rather
+     than the space available, so the fitting code below saw zero slack on
+     every card and never shrank anything. */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 5mm;
-  padding: 7mm 5mm 2mm;
+  /* one gap value, and the same value as padding-top, so the
+     heading->image gap and the image->text gap are identical. */
+  gap: 6mm;
+  padding: 6mm 5mm 2mm;
   text-align: center;
 }
 .illus { width: 86mm; height: auto; max-height: 86mm; object-fit: contain; }
@@ -935,23 +943,19 @@ h1, h2, h3, .display {
    children (verse, movement list, verse) that already fill the page
    on their own and would center unevenly with only the first one
    getting the auto margins. */
-.sheet-body:not(.movement-body) > .verse {
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
-.sheet-body.big-verse .verse { font-size: 8.5mm; line-height: 1.4; }
-.sheet-body.long-verse { gap: 3.5mm; }
-.sheet-body.long-verse .illus { width: 68mm; max-height: 62mm; }
-.sheet-body.long-verse .verse { font-size: 5.95mm; line-height: 1.32; }
-/* long-verse's single fixed size only fits up to ~20 lines (verified by
-   measuring actual rendered clearance against the frame, not guessed --
-   a 20-line card was 10px short, a 29-line card was 238px short at the
-   same font/illus size, since the tier doesn't scale with how much
-   longer the verse actually is). This tier kicks in past that point. */
-.sheet-body.very-long-verse { gap: 2.5mm; }
-.sheet-body.very-long-verse .illus { width: 50mm; max-height: 42mm; }
-.sheet-body.very-long-verse .verse { font-size: 5.2mm; line-height: 1.22; }
+/* The three verse-length tiers that used to live here (long-verse,
+   very-long-verse, and a one-off big-verse) each set their OWN font
+   size, gap and illustration size, so body type changed size from card
+   to card and the heading->image gap never matched the image->text gap.
+   Replaced with one rule, applied book-wide by fitCardPair() below:
+   ONE body text size everywhere, ONE gap everywhere, and the
+   ILLUSTRATION takes up the slack instead -- growing on short verses,
+   shrinking on long ones. A picture that's a bit bigger on one card
+   than another reads as normal for an illustrated book; body copy that
+   changes size page to page reads as a mistake, and is worse for a
+   child following the words. Text only shrinks below the standard size
+   when a verse physically cannot fit otherwise (measured: exactly one
+   card in the book, "El señor don Gato" at 29 lines). */
 .movement-body { justify-content: flex-start; gap: 3.5mm; padding-top: 5mm; }
 .movement-body .illus { width: 92mm; max-height: 57mm; }
 .movement-body .chorus { font-size: 6mm; line-height: 1.25; }
@@ -1038,7 +1042,7 @@ h1, h2, h3, .display {
     <div class="a4-sheet__content">
       <div class="band"><h2>Los pollitos dicen</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body no-auto-shrink">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/los-pollitos.png" alt="Tres pollitos se acurrucan bajo las alas de su mamá gallina">
         <div class="verse">Los pollitos dicen
 pío, pío, pío
@@ -1158,7 +1162,7 @@ no llora ni hace así.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Sana, sana &amp; Que llueva</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body no-auto-shrink">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/sana-sana.png" alt="Una niña con impermeable amarillo y su amigo rana le venda la rodilla">
         <div class="verse">Sana, sana,
 colita de rana,
@@ -1291,7 +1295,7 @@ Me pregunto qué serás.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>El patio de mi casa</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/patio-casa.png" alt="Cuatro niños sentados juntos, felices bajo la lluvia">
         <div class="verse">El patio de mi casa
 es particular,
@@ -1321,7 +1325,7 @@ Chocolate, molinillo,
     <div class="a4-sheet__content">
       <div class="band"><h2>Barco chiquitito</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/barco-chiquitito.png" alt="Un niño y su perrito navegan en un barquito de vela con una gaviota volando cerca">
         <div class="verse">Había una vez un barco chiquitito,
 había una vez un barco chiquitito,
@@ -1486,7 +1490,7 @@ una prenda.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Huachí toritó</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M120 20 l7 16 l17 2 l-13 12 l4 17 l-15 -9 l-15 9 l4 -17 l-13 -12 l17 -2 z" fill="#d9b23c"/>
           <g stroke="#8a5a2f" stroke-width="4">
@@ -1535,7 +1539,7 @@ torito del corralito.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Buenos días su señoría</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M90 175 l0 -60 q30 -20 60 0 l0 60 z" fill="#9a5fa8"/>
           <path d="M90 175 q30 15 60 0" fill="none" stroke="#7a4188" stroke-width="2"/>
@@ -1579,7 +1583,7 @@ mantantirulirulá.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Mi gallito</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <circle cx="90" cy="90" r="46" fill="none" stroke="#2f6b4f" stroke-width="3"/>
           <path d="M60 60 Q90 40 120 60 Q100 70 90 90 Q80 70 60 60 Z" fill="#8fae9c" opacity=".6"/>
@@ -1617,7 +1621,7 @@ y también dice: ¡quiriquiquí!</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Los cinco patitos</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M10 150 q20 -12 40 0 q20 -12 40 0 q20 -12 40 0 q20 -12 40 0 q20 -12 40 0 q20 -12 40 0" fill="none" stroke="#4a90a4" stroke-width="3"/>
           <g fill="#d9b23c">
@@ -1671,7 +1675,7 @@ regresaron todos a jugar.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Doña Blanca</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <circle cx="120" cy="110" r="55" fill="none" stroke="#c07a8a" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round"/>
           <circle cx="120" cy="105" r="20" fill="#fbf6ea" stroke="#d9b23c" stroke-width="3"/>
@@ -1867,7 +1871,7 @@ subió, subió, subió.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Vamos a contar mentiras</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/vamos-mentiras.png" alt="Una liebre corre sobre el mar mientras unas sardinas atraviesan la montaña">
         <div class="verse">Ahora que vamos despacio,
 vamos a contar mentiras, ¡tralará!
@@ -1926,7 +1930,7 @@ pim, pam, pum,
     <div class="a4-sheet__content">
       <div class="band"><h2>Los diez perritos</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M60 30 l6 14 l14 2 l-11 10 l3 15 l-12 -8 l-12 8 l3 -15 l-11 -10 l14 -2 z" fill="#bfe3df"/>
           <g fill="#b8834a">
@@ -1976,7 +1980,7 @@ enseguida los llamé,
     <div class="a4-sheet__content">
       <div class="band"><h2>San Serenín</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M50 130 q0 -20 20 -22 l70 0 q10 0 10 12 l0 10 q0 10 -10 10 l-70 0 q-20 0 -20 -14 z" fill="#2a7a8a"/>
           <rect x="55" y="118" width="90" height="8" fill="#1f5f6d"/>
@@ -2093,7 +2097,7 @@ y en el toronjil.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Lobo, ¿estás?</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/lobo-estas.png" alt="El lobo se pone el chaleco y el sombrero mientras dos niños lo espían desde detrás de un árbol">
         <div class="verse">Jugaremos en el bosque
 mientras el lobo no está,
@@ -2123,7 +2127,7 @@ a todos nos comerá.
     <div class="a4-sheet__content">
       <div class="band"><h2>Martín Pescador</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M60 150 q0 -75 60 -75" fill="none" stroke="#3a7ca5" stroke-width="14" stroke-linecap="round"/>
           <path d="M180 150 q0 -75 -60 -75" fill="none" stroke="#c98a4e" stroke-width="14" stroke-linecap="round"/>
@@ -2266,7 +2270,7 @@ y no se lava el pie porque no quiere.
     <div class="a4-sheet__content">
       <div class="band"><h2>Caballito blanco</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <ellipse cx="120" cy="120" rx="55" ry="28" fill="#fbf6ea" stroke="#a8672e" stroke-width="3"/>
           <path d="M165 105 q25 -10 30 5 q-14 2 -20 10 z" fill="#fbf6ea" stroke="#a8672e" stroke-width="3"/>
@@ -2411,7 +2415,7 @@ vuelve a la línea de salida.)</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Arriba Juan</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <circle cx="190" cy="40" r="20" fill="#d9b23c"/>
           <g stroke="#d9b23c" stroke-width="3">
@@ -2569,7 +2573,7 @@ se duerman otra vez!)</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Las mañanitas</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body big-verse">
+      <div class="sheet-body">
         <img class="illus painting" src="assets/mananitas.png" alt="Un niño feliz mirando un pastel de cumpleaños con velas mientras un pajarito canta a su lado">
         <div class="verse">Estas son las mañanitas
 que cantaba el rey David;
@@ -2592,7 +2596,7 @@ la luna ya se metió.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Mambrú se fue a la guerra</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M10 160 q110 -20 220 0" fill="none" stroke="#8a672e" stroke-width="4" stroke-dasharray="6 8"/>
           <rect x="105" y="95" width="30" height="45" rx="4" fill="#6a7a8a"/>
@@ -2632,7 +2636,7 @@ o por la Trinidad.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>El señor don Gato</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <polygon points="60,90 120,50 180,90" fill="#8a2035"/>
           <rect x="70" y="90" width="100" height="10" fill="#6a1a28"/>
@@ -2813,7 +2817,7 @@ una patica para andar.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>El coquí</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <path d="M90 175 l0 -25 q30 -18 60 0 l0 25 z" fill="#5a8a4a"/>
           <ellipse cx="120" cy="115" rx="34" ry="26" fill="#4fa863"/>
@@ -2885,7 +2889,7 @@ al que fue.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Saco una manita</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180">
           <rect x="90" y="80" width="60" height="80" rx="16" fill="#e0b23a"/>
           <circle cx="120" cy="55" r="24" fill="#f2c9a0"/>
@@ -2950,7 +2954,7 @@ y las vuelvo a guardar.</div>
     <div class="a4-sheet__content">
       <div class="band"><h2>Tunupan samiripa</h2></div>
       <div class="scallop"></div>
-      <div class="sheet-body long-verse">
+      <div class="sheet-body">
         <svg class="illus" viewBox="0 0 240 180" aria-label="A weaver at a loom beneath Mount Tunupa">
           <path d="M18 150 L92 55 L150 126 L195 77 L224 150Z" fill="#d5a07a"/>
           <circle cx="185" cy="42" r="17" fill="#f3ca64"/>
@@ -3080,7 +3084,7 @@ y las vuelvo a guardar.</div>
   <!-- 66. TORTUGUITA CONCHA -->
   <section class="a4-sheet frame-crosshatch-bi" style="--accent:#3f8a6a" data-punch="left" data-country="El Salvador">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>Tortuguita Concha</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>Tortuguita Concha</h2></div><div class="scallop"></div><div class="sheet-body">
       <img class="illus painting" src="assets/tortuguita-concha.png" alt="Tortuguita Concha rechaza la escoba pero mira con picardía un cuenco de fruta">
       <div class="verse">Tortuguita Concha, ven a barrer.<br>No tengo manos, no tengo pies.<br><br>Tortuguita Concha, ven a limpiar.<br>No tengo manos, no tengo pies.<br><br>Tortuguita Concha, ven a bailar.<br>No tengo manos, no tengo pies.<br><br>Tortuguita Concha, ven a comer.<br>Sí tengo manos, sí tengo pies.</div>
     </div></div></div>
@@ -3098,7 +3102,7 @@ y las vuelvo a guardar.</div>
   <!-- 68. SE ME HA PERDIDO UNA NIÑA -->
   <section class="a4-sheet frame-teardrop-bi" style="--accent:#6a78b8" data-punch="left" data-country="Paraguay">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>Se me ha perdido una niña</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>Se me ha perdido una niña</h2></div><div class="scallop"></div><div class="sheet-body">
       <svg class="illus" viewBox="0 0 240 180" aria-label="Children playing a circle game in a garden"><path d="M25 145q38-72 74 0q35-72 76 0" fill="#8fc26f"/><circle cx="120" cy="54" r="19" fill="#f3ca64"/><path d="M86 118q34-36 68 0" fill="none" stroke="#6a78b8" stroke-width="8"/><g fill="#f2c9a0"><circle cx="62" cy="116" r="11"/><circle cx="178" cy="116" r="11"/></g><path d="M52 139v-15 M188 139v-15" stroke="#2b2440" stroke-width="7" stroke-linecap="round"/></svg>
       <div class="verse">Se me ha perdido una niña,<br>cataplín, cataplín, cataplero,<br>se me ha perdido una niña<br>en el fondo del jardín.<br><br>Yo se la he encontrado,<br>cataplín, cataplín, cataplero,<br>yo se la he encontrado<br>en el fondo del jardín.<br><br>Haga el favor de entregarla,<br>cataplín, cataplín, cataplero,<br>haga el favor de entregarla<br>del fondo del jardín.</div>
     </div></div></div>
@@ -3107,7 +3111,7 @@ y las vuelvo a guardar.</div>
   <!-- 69. LOS POLLOS DE MI CAZUELA -->
   <section class="a4-sheet frame-ticks-bi" style="--accent:#bf7e34" data-punch="left" data-country="Nicaragua">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>Los pollos de mi cazuela</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>Los pollos de mi cazuela</h2></div><div class="scallop"></div><div class="sheet-body">
       <svg class="illus" viewBox="0 0 240 180" aria-label="Three chicks beside a cooking pot"><path d="M58 126h124l-11 28H69z" fill="#bf7e34" stroke="#2b2440" stroke-width="3"/><path d="M79 125q41-32 82 0" fill="none" stroke="#2b2440" stroke-width="4"/><g fill="#f2d24e"><circle cx="84" cy="91" r="19"/><circle cx="120" cy="79" r="21"/><circle cx="156" cy="92" r="19"/></g><g fill="#e08a34"><path d="M96 91l11 5-11 5z"/><path d="M132 79l11 5-11 5z"/><path d="M168 92l11 5-11 5z"/></g></svg>
       <div class="verse">Los pollos de mi cazuela<br>no sirven para comer,<br>solo para las viuditas<br>que lo saben componer.<br><br>Compone, niña, compone,<br>ya llega tu marinero<br>con este bonito traje<br>que parece un carpintero.<br><br>Anoche yo te vi<br>a la orilla de tu jardín,<br>moviendo la cinturita<br>para allá y para acá.</div>
     </div></div></div>
@@ -3125,7 +3129,7 @@ y las vuelvo a guardar.</div>
   <!-- 71. ALMA LLANERA -->
   <section class="a4-sheet frame-plus-bi" style="--accent:#5b7c48" data-punch="left" data-country="Venezuela · Los Llanos">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>Alma Llanera</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>Alma Llanera</h2></div><div class="scallop"></div><div class="sheet-body">
       <svg class="illus" viewBox="0 0 240 180" aria-label="A heron over the Venezuelan plains"><path d="M20 145q42-51 85-9q37-56 115-3v32H20z" fill="#90bc6f"/><circle cx="52" cy="46" r="19" fill="#f2ca5a"/><path d="M146 42q23 32 1 67l-9 37" fill="none" stroke="#f7eee0" stroke-width="8" stroke-linecap="round"/><path d="M148 42l23 8-20 7" fill="#f7eee0"/><path d="M132 91l-31 13 M145 102l30 13" stroke="#f7eee0" stroke-width="6" stroke-linecap="round"/></svg>
       <div class="verse">Yo nací en esta ribera<br>del Arauca vibrador,<br>soy hermana de la espuma,<br>de las garzas, de las rosas<br>y del sol, y del sol.<br><br>Me arrulló la viva diana<br>de la brisa en el palmar,<br>y por eso tengo el alma<br>como el alma primorosa<br>del cristal, del cristal.<br><br>Joropo de Venezuela.<br>Música: Pedro Elías Gutiérrez.<br>Letra: Rafael Bolívar Coronado.</div>
     </div></div></div>
@@ -3134,7 +3138,7 @@ y las vuelvo a guardar.</div>
   <!-- 72. LAS ESTRELLITAS -->
   <section class="a4-sheet frame-square-bi" style="--accent:#b85c7a" data-punch="left" data-country="El Salvador">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>Las estrellitas</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>Las estrellitas</h2></div><div class="scallop"></div><div class="sheet-body">
       <img class="illus painting" src="assets/las-estrellitas.png" alt="La maestra Luna enseña a unas estrellitas en una escuela nocturna">
       <div class="verse">Corre, corre, niño,<br>pajarito, vuela,<br>que las estrellitas<br>ya están en la escuela.<br><br>La maestra Luna<br>dicta la lección<br>y las estrellitas<br>ponen atención.<br><br>Una estrella chica<br>se pinta de tiza<br>y las estrellitas<br>se mueren de risa.<br><br>¡Ja, ja, ja, ja, ja!<br>¡Jo, jo, jo, jo, jo!</div>
     </div></div></div>
@@ -3152,7 +3156,7 @@ y las vuelvo a guardar.</div>
   <!-- 74. DOÑA ANA -->
   <section class="a4-sheet frame-star-bi" style="--accent:#d16b42" data-punch="left" data-country="Nicaragua">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>Doña Ana</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>Doña Ana</h2></div><div class="scallop"></div><div class="sheet-body">
       <img class="illus painting" src="assets/dona-ana.png" alt="Dos niños preguntan por Doña Ana en un jardín lleno de rosas y claveles">
       <div class="verse">Doña Ana no está aquí,<br>está en su vergel,<br>abriendo la rosa,<br>cerrando el clavel.<br><br>¿Dónde está Doña Ana?<br><br>—Se está bañando.<br>—Está cocinando.<br>—Se está peinando.<br>—Está durmiendo…<br><br>En cada vuelta del corro,<br>la criada inventa<br>una nueva respuesta.</div>
     </div></div></div>
@@ -3161,7 +3165,7 @@ y las vuelvo a guardar.</div>
   <!-- 75. LA PÁJARA PINTA -->
   <section class="a4-sheet frame-arches-bi" style="--accent:#3d82b8" data-punch="left" data-country="Honduras">
     <div class="a4-page"><div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
-    <div class="a4-sheet__content"><div class="band"><h2>La pájara pinta</h2></div><div class="scallop"></div><div class="sheet-body long-verse">
+    <div class="a4-sheet__content"><div class="band"><h2>La pájara pinta</h2></div><div class="scallop"></div><div class="sheet-body">
       <img class="illus painting" src="assets/pajara-pinta.png" alt="Una pájara de colores bajo la sombra de un limonero verde">
       <div class="verse">Estaba la pájara pinta<br>a la sombra de un verde limón;<br>con las alas cortaba las hojas,<br>con el pico cortaba la flor.<br><br>¡Ay, ay! ¿Cuándo veré a mi amor?<br>¡Ay, ay! ¿Cuándo lo veré yo?<br><br>Me arrodillo a los pies de mi amor:<br>dame la mano, dame la otra,<br>dame un besito<br>que sea de tu boca.</div>
     </div></div></div>
@@ -4793,64 +4797,126 @@ function addFrame(sheet, page, accentHex) {
     addFrameStrips(page);
   }
 }
-function verseTier(verseText) {
-  const lines = verseText.trim().split(/\n/).length;
-  if (lines > 22) return "very-long-verse";
-  if (lines > 10) return "long-verse";
-  return "";
+// --- Card fitting -----------------------------------------------------
+// Body text is ONE size book-wide (VERSE_MM). The illustration is what
+// flexes to take up whatever vertical slack a given verse leaves, within
+// a fixed range. Text only drops below VERSE_MM when a verse genuinely
+// cannot fit even with the illustration already at its smallest.
+//
+// ILLUS_MAX_W is a print-resolution limit, not an aesthetic one: the
+// narrowest painting in assets/ is 1256px, which at 135mm still prints
+// at ~236dpi. Going wider than this to chase the last of the white space
+// on very short verses would start to look soft on paper.
+const VERSE_MM = 6.9;          // the one body size
+const VERSE_LINE_HEIGHT = 1.42;
+const VERSE_MIN_MM = 5.0;      // only ever used when a verse can't otherwise fit
+const ILLUS_MAX_W_MM = 135;
+const ILLUS_MIN_W_MM = 50;
+const ILLUS_MIN_H_MM = 40;
+const GAP_MM = 6;              // must match the .sheet-body gap/padding-top in CSS
+
+function pxPerMm() {
+  const ref = document.createElement("div");
+  ref.style.cssText = "position:absolute;visibility:hidden;height:100mm;width:0;";
+  document.body.appendChild(ref);
+  const px = ref.getBoundingClientRect().height / 100;
+  ref.remove();
+  return px;
 }
-const VERSE_TIER_RANK = { "": 0, "long-verse": 1, "very-long-verse": 2 };
-function sizeVerseForLength(body, verseText) {
-  if (!body || body.classList.contains("very-long-verse")) return;
-  // Only ever upgrades to a smaller tier based on literal newline count --
-  // never removes an existing long-verse, since some cards need it for
-  // long individual lines that wrap to extra visual lines (not captured
-  // by a \n count) rather than for having many literal lines.
-  const tier = verseTier(verseText);
-  if (tier === "very-long-verse") {
-    body.classList.remove("long-verse");
-    body.classList.add("very-long-verse");
-  } else if (tier === "long-verse") {
-    body.classList.add("long-verse");
+function illusAspect(el) {
+  if (!el) return null;
+  if (el.naturalWidth) return el.naturalWidth / el.naturalHeight;
+  const vb = el.viewBox?.baseVal;
+  if (vb && vb.height) return vb.width / vb.height;
+  const r = el.getBoundingClientRect();
+  return r.height ? r.width / r.height : null;
+}
+// Vertical space a side has left for its illustration, once its verse is
+// set at `fontMm`. Returns null for sides this pass doesn't own
+// (movement cards, or anything without a single plain verse).
+// Leading tightens as type shrinks -- at 5mm the 1.42 leading that suits
+// full-size body text is loose enough to cost several extra mm of height
+// on a long verse, which is exactly the case where the height is scarce.
+function leadingFor(fontMm) {
+  if (fontMm >= VERSE_MM) return VERSE_LINE_HEIGHT;
+  const t = (fontMm - VERSE_MIN_MM) / (VERSE_MM - VERSE_MIN_MM);
+  return 1.25 + Math.max(0, Math.min(1, t)) * (VERSE_LINE_HEIGHT - 1.25);
+}
+function measureSide(body, mm, fontMm) {
+  if (!body || body.classList.contains("movement-body")) return null;
+  const verse = body.querySelector(":scope > .verse");
+  const illus = body.querySelector(":scope > .illus");
+  if (!verse || !illus) return null;
+  verse.style.fontSize = fontMm + "mm";
+  verse.style.lineHeight = leadingFor(fontMm);
+  const cs = getComputedStyle(body);
+  const track = body.getBoundingClientRect().height
+    - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+  const verseH = verse.getBoundingClientRect().height;
+  return {
+    verse, illus,
+    trackMm: track / mm,
+    verseMm: verseH / mm,
+    roomMm: (track - verseH) / mm - GAP_MM,
+  };
+}
+// Sizes one card's front and back together so both always match -- the
+// tighter side decides, the same way the old tier system had to once
+// front/back drift was found (17 of 75 cards) and fixed.
+function fitCardPair(frontBody, backBody) {
+  // Browse mode hides every card except the selected one, so at load time
+  // all but one measure as a zero-height box -- which silently drove every
+  // card to the minimum type size the first time this ran. Force the pair
+  // laid out for the duration of the measurement, then put it back.
+  const sheets = [frontBody, backBody].map(b => b?.closest(".a4-sheet")).filter(Boolean);
+  const priorDisplay = sheets.map(s => s.style.display);
+  sheets.forEach(s => { s.style.display = "flex"; });
+  try {
+    fitCardPairMeasured(frontBody, backBody);
+  } finally {
+    sheets.forEach((s, i) => { s.style.display = priorDisplay[i]; });
   }
 }
-// Front and back used to size themselves independently -- the front from
-// its own (Spanish) verse text plus whatever static tier class it was
-// authored with, the back from the English translation's own line count,
-// starting from a class-less body every time. Since a translation's line
-// count routinely differs from the original's, and a static override on
-// the front never had anywhere to travel TO on the dynamically-built
-// back, the two sides frequently landed in different tiers -- different
-// illustration size, different font size, on the front and back of the
-// SAME card (found via audit: 17 of 75 cards, after Sebastian caught it
-// on "Tengo una muñeca"). Fixed by computing ONE tier per card from BOTH
-// texts (plus any static override already on the front) and applying it
-// to both sides identically -- whichever side needed the smaller/more
-// compact tier now determines it for both, which only ever makes the
-// OTHER side more conservative (smaller content, more headroom), never
-// less, so this can't introduce a new overflow.
-function pairVerseTier(frontBody, backBody, frontText, backText) {
-  const existing = frontBody.classList.contains("very-long-verse") ? "very-long-verse"
-    : frontBody.classList.contains("long-verse") ? "long-verse" : "";
-  const winner = [existing, verseTier(frontText), verseTier(backText)]
-    .reduce((best, t) => VERSE_TIER_RANK[t] > VERSE_TIER_RANK[best] ? t : best, "");
-  if (!winner) return;
-  for (const body of [frontBody, backBody]) {
-    body.classList.remove("long-verse", "very-long-verse");
-    body.classList.add(winner);
+function fitCardPairMeasured(frontBody, backBody) {
+  const mm = pxPerMm();
+  let fontMm = VERSE_MM;
+  let sides = [measureSide(frontBody, mm, fontMm), measureSide(backBody, mm, fontMm)].filter(Boolean);
+  if (!sides.length) return;
+
+  // Does the tighter side still leave room for the smallest illustration?
+  // If not, shrink type (both sides equally) by just enough that it does.
+  // Binary search rather than one proportional guess: shrinking the type
+  // re-wraps the text and tightens the leading, so the resulting height
+  // isn't a linear function of the size we asked for.
+  if (Math.min(...sides.map(s => s.roomMm)) < ILLUS_MIN_H_MM) {
+    let lo = VERSE_MIN_MM, hi = VERSE_MM, best = VERSE_MIN_MM;
+    for (let i = 0; i < 12; i++) {
+      const mid = (lo + hi) / 2;
+      const trial = [measureSide(frontBody, mm, mid), measureSide(backBody, mm, mid)].filter(Boolean);
+      if (Math.min(...trial.map(s => s.roomMm)) >= ILLUS_MIN_H_MM) { best = mid; lo = mid; }
+      else { hi = mid; }
+    }
+    fontMm = best;
+    sides = [measureSide(frontBody, mm, fontMm), measureSide(backBody, mm, fontMm)].filter(Boolean);
+  }
+
+  const room = Math.min(...sides.map(s => s.roomMm));
+  const ar = illusAspect(sides[0].illus) || 1.333;
+  let h = Math.max(ILLUS_MIN_H_MM, Math.min(room, ILLUS_MAX_W_MM / ar));
+  let w = Math.min(ILLUS_MAX_W_MM, Math.max(ILLUS_MIN_W_MM, h * ar));
+  for (const s of sides) {
+    s.illus.style.width = w.toFixed(2) + "mm";
+    s.illus.style.maxHeight = "none";
+    s.illus.style.height = "auto";
   }
 }
+const cardPairs = [];
 fronts.forEach((front, index) => {
   const accent = front.style.getPropertyValue("--accent");
   addFrame(front, front.querySelector(".a4-page"), accent);
   const frontBody = front.querySelector(".sheet-body");
-  const frontVerse = front.querySelector(".verse");
-  const noAutoShrink = frontBody?.classList.contains("no-auto-shrink");
   const copy = translations[index];
-  if (!copy) {
-    if (frontVerse && !noAutoShrink) sizeVerseForLength(frontBody, frontVerse.textContent);
-    return;
-  }
+  if (!copy) return;
   const art = front.querySelector(".illus")?.cloneNode(true);
   const medallion = front.querySelector(".medallion")?.cloneNode(true);
   const frameClass = [...front.classList].find(c => c.startsWith("frame-"));
@@ -4901,11 +4967,24 @@ fronts.forEach((front, index) => {
     verse.className = "verse";
     verse.textContent = copy.verse;
     body.append(verse);
-    if (!noAutoShrink && frontVerse) pairVerseTier(frontBody, body, frontVerse.textContent, copy.verse);
-    if (frontBody.classList.contains("big-verse")) body.classList.add("big-verse");
   }
   front.after(back);
+  cardPairs.push([frontBody, body]);
 });
+
+// Sizing has to run once the DOM is laid out AND the paintings have
+// decoded -- illusAspect() needs naturalWidth, and measureSide() needs
+// real rendered heights, neither of which exist while the page is still
+// parsing. Sized once up front rather than on resize: every length here
+// is in mm against a fixed A4 page, so nothing depends on the viewport.
+function fitAllCards() {
+  cardPairs.forEach(([frontBody, backBody]) => fitCardPair(frontBody, backBody));
+}
+const pendingArt = [...document.querySelectorAll("img.illus")]
+  .filter(img => !img.complete)
+  .map(img => new Promise(res => { img.addEventListener("load", res); img.addEventListener("error", res); }));
+if (pendingArt.length) Promise.all(pendingArt).then(fitAllCards);
+else fitAllCards();
 
 const shell = document.querySelector(".site-shell");
 const search = document.querySelector(".rhyme-search");
