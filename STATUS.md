@@ -3213,6 +3213,111 @@ unchanged.
 rendered nowhere), a printed index plus card numbers for finding things
 in the folder, and a per-card QR to a YouTube search for the tune.
 
+## Palette, thematic borders, and a card-history tool — September 2026
+
+Sebastian asked for a style review, then took three of the suggestions:
+fix the title contrast, consolidate the palette, re-assign accents to
+suit each picture, and match borders to the songs. He also asked to
+document the decisions, and whether seeing each card's evolution was
+still possible.
+
+### Colour
+
+**The problem was contrast, not variety.** The 75 cards had 75 distinct
+one-off hexes, but they already shared a character (HSV saturation
+median 57%, lightness median 43%) -- it read as a palette without anyone
+having defined one. The real defect: **30 of 75 failed WCAG AA for the
+white title text**, worst at 3.1:1. That matters more here than on a
+normal site, because the title is what has to carry when a card is
+pinned on a blackboard across a room.
+
+**Twelve colours, derived not invented.** Clustered the existing 75 hues
+to see where they actually sat, then spaced twelve entries so no two are
+confusable (the raw clusters put three near-identical blues within 25°
+of each other, which would defeat the point of telling cards apart in a
+folder). Kept the existing warm weighting -- five warm, two green, three
+cool, plum, charcoal -- since the artwork is warm. Saturation is tuned
+per band (warm 0.58 down to violet 0.36) because identical HSV
+saturation reads far more electric at indigo than at ochre. Each
+colour's darkness is then *solved* rather than chosen: search down the
+value axis until it clears 4.6:1 against white. Result: every one of the
+75 cards now passes AA (range 4.58-4.67:1), where 30 previously failed.
+
+**Accents assigned to suit each picture.** For every card, extracted the
+artwork's hues -- from the PNG for the 26 paintings, from the inline
+`fill`/`stroke` attributes for the 49 SVG cards -- and deliberately
+*dropped the dominant bin*, which is almost always the warm ochre ground
+or skin tone. Matching on that would have collapsed most of the book to
+browns. Matching on the secondary notes (the frog's green, the dress's
+red, the boat's blue) gets harmony without monotony. Assignment is
+greedy over the 12, scored by hue distance to the nearest secondary art
+hue, penalised for over-use and for repeating the previous card's
+colour. Outcome: usage 5-7 per colour, and cards whose band picks up a
+colour genuinely present in the picture went from **53/71 to 70/71**.
+
+**Rejected: regenerating the artwork to match the borders.** Sebastian
+offered. It's the better of the two directions (deriving accents from
+art would collapse the palette, as above), but it spends 26 image
+regenerations plus a re-run of the crop/framing pipeline on art that's
+already good, and risks the pictures looking artificially tinted. The
+same harmony was available by moving the accent, which is free and
+reversible. Also worth recording: the art can't simply be recoloured in
+either direction -- the chick has to stay yellow and the frog green.
+
+### Borders
+
+Patterns had been assigned mechanically -- **exactly five uses of each of
+the fifteen**, a perfect round-robin, so nobody had ever matched motif
+to meaning. Re-assigned 18 cards to patterns that already existed and
+obviously fit: spiral for *Caracol, col, col*, star for both
+*Estrellita* cards and *Sale el sol*, wave for *Barco chiquitito* /
+*Pasará mi barquito* / *La mar estaba serena*, teardrop-as-rain for *La
+araña pequeñita* / *Que llueva* / *El patio de mi casa*, zigzag for *A
+la víbora de la mar*, scallop for the frog and toad songs, dots for
+*Los pollitos*. Zero new geometry, so zero new corner-alignment
+surface. The remaining cards were filled to keep usage even (still
+exactly 5 each) with only one adjacent repeat in 75.
+
+**Deliberately NOT done: bespoke motifs for all 75.** Two reasons, both
+earned. First, this session's own history -- every new pattern needed
+per-corner mirroring, exact seam alignment and renderer-specific checks,
+and we hit those bugs on crosshatch, diamond, teardrop, square, xmarks,
+plus and scallop, repeatedly. Seventy-five of those is a lot of rope.
+Second, the strip is 4mm tall and tiles ~40 times a page: an abstract
+diamond survives that, a recognisable chick doesn't, and a narrating
+border competes with the illustration, which is the thing that should
+carry meaning.
+
+### scripts/card_history.js
+
+"Would be cool to see the evolution of the cards" -- not too late, and
+nothing needed to have been captured in advance: git already holds every
+version of the markup, stylesheet and artwork. The script walks the 104
+commits that touched index.html, checks each into a throwaway worktree,
+renders the named card from THAT commit's own HTML/CSS/JS, and writes a
+PNG per commit plus a contact sheet.
+
+Two things it got wrong first and why the fix is what it is: clipping
+the page to the card's bounding box mis-registered (the card's contents
+sat outside the box), and manually hiding the screen chrome shifted the
+layout underneath the measurement. Both went away by rendering through
+the site's own print stylesheet -- which already reveals every card and
+hides screen-only chrome -- and taking an element screenshot rather than
+a page clip. Output is gitignored, since it's regenerable on demand.
+
+### Known regression, not yet fixed
+
+Dropping the cream sheet exposed something it had been hiding: **ten of
+the paintings have fully opaque painted grounds** (caracol,
+debajo-boton, vamos-mentiras, sapo-no-lava, periquito,
+tortuguita-concha, las-estrellitas, sale-el-sol, dona-ana,
+pajara-pinta). They predate the transparent-background pass. Against the
+old cream they blended invisibly; against white they read as beige
+panels floating on the page. Their grounds are painted and textured, not
+flat (the fraction of pixels matching the corner colour ranges 7% to
+72%), so a colour-key or flood-fill won't cleanly lift them. The honest
+fix is regenerating those ten with transparent backgrounds.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

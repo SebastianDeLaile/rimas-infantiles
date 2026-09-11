@@ -1,3 +1,6 @@
 .env
 node_modules/
 packs/
+
+# card_history.js output (regenerable from git at any time)
+history/
