@@ -17,7 +17,12 @@
   --hole-spacing: 80mm;
   --hole-dia: 6mm;
   --hole-inset: 12mm;
-  --sheet-bg: #fbf6ea;
+  /* White, not the old cream (#fbf6ea): the sheet fill printed as
+     edge-to-edge colour on every A4 page, which is slow and expensive
+     on a home printer, tends to band on plain paper, and never matched
+     the paper white anyway. The coloured title band and frame carry the
+     warmth instead. */
+  --sheet-bg: #ffffff;
   --sheet-ink: #2b2440;
   --sheet-radius: 0mm;
   --preview-backdrop: #e7e9ee;
@@ -931,7 +936,7 @@ h1, h2, h3, .display {
 .verse {
   white-space: pre-line;
   font-family: "Arial Rounded MT Bold", "Avenir Next Rounded", "SF Pro Rounded", "Trebuchet MS", sans-serif;
-  font-size: 6.9mm;
+  font-size: 8mm;
   line-height: 1.42;
   color: #2b2440;
   max-width: 130mm;
@@ -962,9 +967,12 @@ h1, h2, h3, .display {
    child following the words. Text only shrinks below the standard size
    when a verse physically cannot fit otherwise (measured: exactly one
    card in the book, "El señor don Gato" at 29 lines). */
-.movement-body { justify-content: flex-start; gap: 3.5mm; padding-top: 5mm; }
+/* Movement cards keep their own tighter gap (they stack five things, not
+   two), but share the same even distribution and body size as every other
+   card, so they don't sit top-crammed with a void underneath. */
+.movement-body { justify-content: space-evenly; gap: 3.5mm; }
 .movement-body .illus { width: 92mm; max-height: 57mm; }
-.movement-body .chorus { font-size: 6mm; line-height: 1.25; }
+.movement-body .chorus { font-size: 8mm; line-height: 1.25; }
 .movement-intro { margin: 0; font-size: 3.7mm; color: rgba(43,36,64,.65); }
 .movement-list {
   width: 116mm;
@@ -4813,7 +4821,7 @@ function addFrame(sheet, page, accentHex) {
 // narrowest painting in assets/ is 1256px, which at 135mm still prints
 // at ~236dpi. Going wider than this to chase the last of the white space
 // on very short verses would start to look soft on paper.
-const VERSE_MM = 6.9;          // the one body size
+const VERSE_MM = 8;            // the one body size
 const VERSE_LINE_HEIGHT = 1.42;
 const VERSE_MIN_MM = 5.0;      // only ever used when a verse can't otherwise fit
 const ILLUS_MAX_W_MM = 135;

@@ -3170,6 +3170,49 @@ verse length again (6mm to ~35mm), where the previous cut pinned it.
 That's the price of not leaving a void at the bottom; the gaps stay
 uniform within each card either way.
 
+## White sheet, 8mm body text — September 2026
+
+Asked what else I'd change with the real use case in mind (printed A4,
+kept in a folder, pinned to a blackboard with magnets). Of the things
+raised, Sebastian took two: "drop the cream i didnt even realise that
+was a thing, and also bump text to 8mm, and scale down as needed for
+the longer ones."
+
+**Cream dropped.** `--sheet-bg` was `#fbf6ea`, painted edge-to-edge on
+every sheet and printed with `printBackground: true` -- i.e. full-
+coverage ink on all 150 A4 pages, which is slow and costly on a home
+printer, bands on plain paper, and never matches the paper white
+anyway. Now `#ffffff`. The preview backdrop is a separate variable
+(`--preview-backdrop`, grey) so cards still read fine on screen. The
+paintings' `mix-blend-mode: multiply` is effectively a no-op against
+white and was left alone; they already have real alpha so nothing
+changed in how they sit.
+
+**Body size 6.9mm -> 8mm.** Chosen from measurement rather than taste:
+at 8mm, 128 of 148 pages still hold the standard size; 8.5mm drops that
+to 104 and 9mm to 91. Actual result after the fit ran: **62 of 74 cards
+at exactly 8mm**, eight more within 8% of it (7.35-7.95mm, not visible
+side by side), and only four meaningfully smaller -- Barco chiquitito
+and Tunupan samiripa at 6.62, Buenos días su señoría at 6.36, and El
+señor don Gato at 5.04. The existing fit already handled the scaling
+down, so this was a one-constant change plus the CSS fallback.
+
+**Movement cards brought in line.** Chuchuwa was the last page still
+using `flex-start`, so it sat top-crammed with a void beneath while
+every other card distributed evenly, and its chorus was pinned at its
+own 6mm while the book moved to 8mm. Now `space-evenly` (keeping its
+tighter 3.5mm gap, since it stacks five elements rather than two) and
+the shared 8mm.
+
+Verified: 0 of 150 pages overflow, three-spaces-equal still holds on
+148/148, 0 front/back mismatches, 150 pages generated, div balance
+unchanged.
+
+**Still on the table** from that review, not done: surfacing the
+`data-country` tags (63 of 75 cards carry one, ~19 countries, currently
+rendered nowhere), a printed index plus card numbers for finding things
+in the folder, and a per-card QR to a YouTube search for the tune.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
