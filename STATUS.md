@@ -3305,18 +3305,34 @@ the site's own print stylesheet -- which already reveals every card and
 hides screen-only chrome -- and taking an element screenshot rather than
 a page clip. Output is gitignored, since it's regenerable on demand.
 
-### Known regression, not yet fixed
+### Opaque-ground paintings, regenerated
 
-Dropping the cream sheet exposed something it had been hiding: **ten of
-the paintings have fully opaque painted grounds** (caracol,
-debajo-boton, vamos-mentiras, sapo-no-lava, periquito,
-tortuguita-concha, las-estrellitas, sale-el-sol, dona-ana,
-pajara-pinta). They predate the transparent-background pass. Against the
-old cream they blended invisibly; against white they read as beige
-panels floating on the page. Their grounds are painted and textured, not
-flat (the fraction of pixels matching the corner colour ranges 7% to
-72%), so a colour-key or flood-fill won't cleanly lift them. The honest
-fix is regenerating those ten with transparent backgrounds.
+Dropping the cream sheet exposed something it had been hiding: ten of the
+paintings had fully opaque painted grounds (caracol, debajo-boton,
+vamos-mentiras, sapo-no-lava, periquito, tortuguita-concha,
+las-estrellitas, sale-el-sol, dona-ana, pajara-pinta) -- they predate the
+transparent-background pass. Against cream they blended invisibly;
+against white they read as beige panels floating on the page. Their
+grounds were painted and textured rather than flat (the share of pixels
+matching the corner colour ranged 7% to 72%), so a colour-key or
+flood-fill would not have lifted them cleanly.
+
+Regenerated all ten through `scripts/generate_illustration.py`, each
+prompt rebuilt from the card's own `alt` text so the subject stays
+faithful (the snail under its leaf, the toad and his unused washbasin,
+Teacher Moon and her class of stars), with the house style spelled out
+and the background explicitly forbidden: no backdrop panel, no sky fill,
+no ground plane, no framing rectangle, no drop shadow. Then run through
+the same crop/pad pipeline as the rest of assets/ -- content bbox plus a
+6% margin, padded to at least 112:84 -- so they render at the same capped
+width as every other illustration. Verified per file: alpha present, zero
+opaque corners, aspect >= 1.33.
+
+Because the accents had been matched to the OLD artwork's colours, the
+six of the ten whose palette choice no longer suited the new picture were
+re-assigned by the same rule (harmony with the art's secondary hues,
+penalised for over-use and for matching a neighbour). Usage stays even
+across the twelve and all 75 still clear AA.
 
 ## Suggested next steps
 
