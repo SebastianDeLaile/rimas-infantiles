@@ -3334,6 +3334,54 @@ re-assigned by the same rule (harmony with the art's secondary hues,
 penalised for over-use and for matching a neighbour). Usage stays even
 across the twelve and all 75 still clear AA.
 
+## Arches symmetry and scallop corner gap — September 2026
+
+Two screenshots: "teh chu chu wa pattern is a bit off i think it needs to
+be symmetrical i.e. all facing either in or out" and "the cucu frog one
+corners should be bigger to remove the gap". After the border
+re-assignment those two cards carry `arches` and `scallop` respectively.
+
+**Arches (Chuchuwa).** The pattern only ever defined `top` and `left`
+tiles; `addConnectedBgFrame` falls back to `tiles.bottom || tiles.top`
+and `tiles.right || tiles.left`, so bottom and right reused those tiles
+UNMIRRORED. Since a div's local y=0 is always its visual top regardless
+of whether CSS positioned it from the top or the bottom, the reused tile
+bulged toward the page interior on the bottom/right edges while top/left
+bulged outward -- half the border facing each way. Exactly the bug
+scallop was fixed for earlier; it stayed invisible here only because
+nobody had looked at all four edges of an arches card side by side.
+
+Added explicit mirrored `bottom` and `right` tiles. Rendering all four
+edges together then showed a second, older problem: the vertical tiles
+put their chord on the strip's OUTER edge while the horizontal ones used
+the INNER edge, so the left/right arches sat a whole band-width further
+out than the top/bottom ones, and the four runs didn't meet at the
+corners. Moved both vertical tiles onto the inner edge to match. With
+that, the four baselines meet at each corner and the border closes as one
+continuous scalloped rectangle -- which also resolves the "arches has a
+small gap at its top-right corner" item that had been sitting in this
+file unexplained since the connected-pattern pass. Arches still has no
+corner piece, and now genuinely doesn't need one.
+
+**Scallop (Cucú).** Self-inflicted, by the earlier thinning pass. That
+work reduced bump depth 20 -> 14 and rebuilt the corner as
+seam -> shelf -> radius-14 arc -> shelf -> seam. The shelf segments sit at
+zero depth, so between where the corner's arc ended (14 units along each
+edge) and where the strip's first dome began (at 20, the seam) there were
+6 units with nothing drawn -- a real gap, and the one in the screenshot.
+Restored the corner to the original vertex-centred radius-20 quarter
+disc, which terminates exactly on both seam points. The corner is now
+fuller than the 14-deep strip domes, but it reads as a deliberate corner
+anchor and, more to the point, there is no gap. Verified on all four
+corners.
+
+Also added `scripts/check_overflow.js`. The overflow check had been
+living in /tmp and was lost twice to tmp cleanup; it is the check that
+catches this layout's most likely regression (a verse that stops fitting
+after a font, spacing or illustration change), so it now lives in the
+repo, takes a `--min` threshold and exits non-zero so it can gate a
+release.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

@@ -4290,10 +4290,10 @@ const BORDER_IMAGE_EXPLICIT_EDGES = {
   // thinner strips instead of standing out as a much bigger blob.
   scallop: {
     size: 80,
-    cornerTL: "M20,0 L14,0 A14,14 0 0 1 0,14 L0,20 L0,0 Z",
-    cornerTR: "M60,0 L66,0 A14,14 0 0 0 80,14 L80,20 L80,0 Z",
-    cornerBL: "M20,80 L14,80 A14,14 0 0 0 0,66 L0,60 L0,80 Z",
-    cornerBR: "M60,80 L66,80 A14,14 0 0 1 80,66 L80,60 L80,80 Z",
+    cornerTL: "M20,0 A20,20 0 0 1 0,20 L0,0 Z",
+    cornerTR: "M60,0 A20,20 0 0 0 80,20 L80,0 Z",
+    cornerBL: "M20,80 A20,20 0 0 0 0,60 L0,80 Z",
+    cornerBR: "M60,80 A20,20 0 0 1 80,60 L80,80 Z",
     edgeTop: "M20,0 A20,20 0 0 0 60,0 Z",
     edgeBottom: "M20,80 A20,20 0 0 1 60,80 Z",
     edgeLeft: "M0,20 A20,20 0 0 1 0,60 Z",
@@ -4672,9 +4672,24 @@ const CONNECTED_EDGE_TILES = {
     left: { d: "M15,0 C5,0 5,10 10,11.25 C15,12.5 15,22.5 7.5,22.5 C15,22.5 15,32.5 10,33.75 C5,35 5,45 15,45", vb: "0 0 20 45" },
     right: { d: "M5,0 C15,0 15,10 10,11.25 C5,12.5 5,22.5 12.5,22.5 C5,22.5 5,32.5 10,33.75 C15,35 15,45 5,45", vb: "0 0 20 45" },
   },
+  // arches used to define only top/left, so bottom and right reused those
+  // tiles UNMIRRORED. A div's local y=0 is always its visual top, so the
+  // reused tile bulged toward the page interior on the bottom/right edges
+  // while the top/left ones bulged outward -- half the border facing one
+  // way and half the other (Sebastian: "needs to be symmetrical i.e. all
+  // facing either in or out"). Same latent bug scallop had, and invisible
+  // on zigzag/wave/loop only because those have no obvious "round side".
+  // Bottom and right are now explicit mirrors of top and left.
   arches: {
     top: { d: "M0,20 A10,10 0 0 1 20,20", vb: "0 0 20 20" },
-    left: { d: "M0,0 A10,10 0 0 0 0,20", vb: "0 0 20 20" },
+    bottom: { d: "M0,0 A10,10 0 0 0 20,0", vb: "0 0 20 20" },
+    // both vertical tiles put their chord on the strip's INNER edge and bow
+    // outward, matching what top/bottom already did -- previously the
+    // vertical arches sat a whole band-width further out than the
+    // horizontal ones, so the four edges didn't line up even once they
+    // faced the same way.
+    left: { d: "M20,0 A10,10 0 0 1 20,20", vb: "0 0 20 20" },
+    right: { d: "M0,0 A10,10 0 0 0 0,20", vb: "0 0 20 20" },
   },
   // scallop's top/left tiles are filled semicircle bumps, not thin
   // strokes -- unlike the 4 patterns above, reusing them unflipped for
