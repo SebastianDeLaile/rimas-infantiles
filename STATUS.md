@@ -3425,6 +3425,55 @@ deliberate append-only decision log, and its size is the record, not a
 defect -- pruning it would throw away the "why," which is the whole
 point documented in the header.
 
+## Biguana & Pinto bonus card — September 2026
+
+Sebastian shared 4 photos of pages from the published picture book
+*Biguana (and his best friend Pinto)* by Michael Parkin (Flying Eye
+Books), asking for a personal card with one rhyme per side, explicitly
+waiving licensing concern since it's for his own kid, not for sale.
+
+**Held the line on the text anyway.** The rest of this book's rhymes are
+traditional/public-domain; this is a specific, identifiable, currently
+in-print, copyrighted work with a named author and publisher.
+"Personal use, don't worry about licensing" doesn't change that
+transcribing someone else's published verse into a file is a different
+category of thing than what this project otherwise does. Said so
+directly, and wrote two ORIGINAL short rhymes in the same spirit
+instead (Biguana sunning himself before a splash; Pinto convinced his
+scooter counts as flying) -- capturing the two characters' personalities
+without copying a single sentence from the book. Illustrations are
+freshly generated (gpt-image-1) rather than reproductions or close
+imitations of the book's own art.
+
+**Added as card 76, not inserted into the 75.** The front/back mechanism
+everywhere else in the book is generated: a static Spanish front +
+`translations[index]` produces the English back, cloning the front's
+own image. That doesn't fit here -- Biguana and Pinto are two DIFFERENT
+characters needing two different images, not a translation pair. Built
+both sides as static HTML instead (`#biguana-front`, `#pinto-back`),
+appended after all 75 real cards so no existing index shifts, and added
+one small explicit JS block to call `addFrame()` on the hand-authored
+back (the normal `fronts.forEach` loop draws every front's frame
+automatically, but a hand-authored back never gets that call) and
+register the pair with `fitCardPair` so its illustration sizing works
+the same as every other card.
+
+**Caught before shipping:** the sidebar's `fronts` array was captured
+via a bare `.a4-sheet` selector, which was safe only because it used to
+run before any `.translation` section existed anywhere in the DOM (they
+were all generated later, dynamically). Since Pinto's side is a STATIC
+`.translation` section, it was already present at that point and got
+counted as its OWN independent front card -- 77 sidebar entries instead
+of 76. Fixed the selector to explicitly exclude `.translation`, which is
+the correct general form regardless of whether a translation happens to
+be static or dynamic. Verified via a headless console-error check (0
+errors, sidebar count back to 76) and confirmed the fix didn't leave
+Pinto's frame double-drawn (4 corners + 4 strips, not 8).
+
+Verified: `check_overflow.js` reports 152/152 clear (150 + the new
+pair), full generation still produces 152 pages, div balance unchanged
+in shape.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of

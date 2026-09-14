@@ -2702,6 +2702,28 @@ y las vuelvo a guardar.</div>
     </div></div></div>
   </section>
 
+  <!-- 76. BIGUANA & PINTO (bonus card -- original characters, original
+       rhymes; NOT one of the 75 traditional rhymes above. See
+       HANDOVER.md / STATUS.md "Biguana & Pinto bonus card" for why this
+       text is original rather than transcribed from its source book. -->
+  <section id="biguana-front" class="a4-sheet frame-wave-bi" style="--accent:#447e83" data-punch="left">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Biguana</h2></div><div class="sheet-body">
+      <img class="illus painting" src="assets/biguana.png" alt="A cheerful green iguana wearing a snorkel mask, splashing happily in shallow water with a little striped fish">
+      <div class="verse">Down by the shore,<br>the warm sand gleams,<br>Biguana suns himself<br>and dreams.<br>Spiky and green<br>from tail to snout,<br>with one big splash<br>he's diving out!</div>
+    </div></div></div>
+  </section>
+
+  <section id="pinto-back" class="a4-sheet translation frame-wave-bi" style="--accent:#447e83" data-punch="right">
+    <div class="a4-page">
+    <div class="a4-punch-guide"><span class="a4-punch-guide__hole a4-punch-guide__hole--a"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--b"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--c"></span><span class="a4-punch-guide__hole a4-punch-guide__hole--d"></span></div>
+    <div class="a4-sheet__content"><div class="band"><h2>Pinto</h2></div><div class="sheet-body">
+      <img class="illus painting" src="assets/pinto.png" alt="A cheerful black-and-white penguin wearing round sunglasses, riding a red scooter with flippers stretched out for balance">
+      <div class="verse">Pinto the penguin<br>loves to zoom,<br>scooting fast<br>past the sandy dune.<br>"I may not fly,"<br>he says with glee,<br>"but watch me scoot<br>as fast as can be!"</div>
+    </div></div></div>
+  </section>
+
 </div>
 </main>
 </div>
@@ -3582,7 +3604,15 @@ not a song transcription.`
 ];
 
 const preview = document.querySelector(".a4-preview");
-const fronts = [...preview.querySelectorAll(':scope > .a4-sheet')];
+// :not(.translation) matters now in a way it didn't before: this used to
+// run before any .translation section existed in the DOM (all of them were
+// generated later, in the loop below), so a bare ".a4-sheet" selector was
+// safe by accident. The Biguana/Pinto bonus card's Pinto side is a STATIC
+// .translation section (see its comment further down) -- present in the
+// DOM at this point -- so without the exclusion it got counted as its own
+// independent front card (77 sidebar entries instead of 76, and it would
+// have been run through the fronts.forEach loop below a second time).
+const fronts = [...preview.querySelectorAll(':scope > .a4-sheet:not(.translation)')];
 const phoneLayout = window.matchMedia("(max-width: 760px)");
 
 function fitPagesToPhone() {
@@ -4507,6 +4537,22 @@ fronts.forEach((front, index) => {
   front.after(back);
   cardPairs.push([frontBody, body]);
 });
+
+// Biguana & Pinto (see the HTML comment above the section) is hand-authored
+// rather than generated from translations[], since it's two DIFFERENT
+// characters/images on its two sides, not a translation pair -- the
+// auto-generation above always clones the front's own image, which doesn't
+// fit here. Its front already got addFrame() from the loop above (any
+// .a4-sheet:not(.translation) does); its back needs the same call made for
+// it explicitly, and both need registering with the fitting system.
+{
+  const bonusBack = document.getElementById("pinto-back");
+  const bonusFront = document.getElementById("biguana-front");
+  if (bonusBack && bonusFront) {
+    addFrame(bonusBack, bonusBack.querySelector(".a4-page"), bonusBack.style.getPropertyValue("--accent"));
+    cardPairs.push([bonusFront.querySelector(".sheet-body"), bonusBack.querySelector(".sheet-body")]);
+  }
+}
 
 // Sizing has to run once the DOM is laid out AND the paintings have
 // decoded -- illusAspect() needs naturalWidth, and measureSide() needs
