@@ -3382,6 +3382,49 @@ after a font, spacing or illustration change), so it now lives in the
 repo, takes a `--min` threshold and exits non-zero so it can gate a
 release.
 
+## Dead-code cleanup — September 2026
+
+Sebastian asked whether there was cleanup/consolidation work worth doing.
+Audited rather than guessed: grepped for markup classes and JS fields
+that nothing on any of the 75 cards actually reaches, verified each was
+truly dead (not just rare), then removed and re-verified pixel-identical
+output before calling it done.
+
+Removed, each confirmed unreachable first:
+- **CSS scoped to non-`-bi` frame classes** (`.frame-wave .frame-strip-top`
+  and 64 more) -- the mask-image `background-image`/`border-image` era.
+  Every card uses a `-bi` class today; grepped for a bare
+  `class="a4-sheet frame-X"` with no `-bi` suffix and found none. ~35KB of
+  base64 mask-image data URIs, never painted.
+- **75 inert `<div class="scallop">`** -- `display:none` since the title
+  band became a plain rounded rectangle; the comment beside `.band`
+  already said "now just one plain rounded rectangle" but the 75 divs and
+  the CSS rule were never swept up.
+- **8 unused `edge*` fields** on the `arches`/`scallop` pattern objects --
+  only `cornerTL/TR/BL/BR` are ever read by `addConnectedBgFrame`; these
+  were leftover from an earlier version of that rendering path.
+- **`.illus.small`** -- zero cards use the `small` modifier class.
+- **The medallion badge** (CSS + the two lines that cloned and
+  re-attached it front-to-back) -- STATUS already recorded it as
+  "retired from every card" during the print-pipeline work; the actual
+  CSS and JS plumbing had outlived that decision by several sessions.
+
+**Result:** index.html 276KB -> 229KB (17% smaller), 4609 lines instead
+of 5068. Rendered 12 representative pages (front/back, painting/SVG,
+short/long verse, movement card) before and after and diffed them
+pixel-by-pixel: max channel difference 0 on every one. `check_overflow.js`
+still reports all 150 pages clear; the front/back audit still reports 0
+mismatches.
+
+**Left alone, deliberately:** `BORDER_IMAGE_POLYLINES`,
+`BORDER_IMAGE_CORNER_EDGE`, `BORDER_IMAGE_EXPLICIT_EDGES`, and
+`addFrameStrips` are all still live (each has real callers), just not
+exercised by every pattern -- normal branching, not dead weight. Didn't
+touch STATUS.md itself despite its length (3400+ lines): it's a
+deliberate append-only decision log, and its size is the record, not a
+defect -- pruning it would throw away the "why," which is the whole
+point documented in the header.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
