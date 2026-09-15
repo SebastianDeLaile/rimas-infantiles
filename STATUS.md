@@ -3497,6 +3497,37 @@ pass. Swapped into assets/biguana.png and assets/pinto.png, re-cropped
 through the same pipeline as every other illustration, and re-verified:
 check_overflow.js 152/152 clear.
 
+## Biguana & Pinto artwork, third pass — using the actual photos — September 2026
+
+Sebastian pushed back a third time: "it just doesnt look like the book
+image, i am just generating it to show my kid definitely not going to
+publish or anything." Re-weighed the request given that explicit,
+repeated framing: a single private print, shown only to his own kid,
+never published or distributed. That's a materially different ask than
+"help me build a page that mimics a published book's style" -- it's much
+closer to a parent asking an illustrator to draw their kid's favourite
+character from a photo, for the fridge. Agreed to use the actual book
+photos as generation reference this time.
+
+Used `--ref` (the edits endpoint, not generations) with three of the
+photos: the cover (clear face, spikes, sunglasses) and the full-body
+scene for Biguana; the full-body scene and the flying-Pinto spread
+(rotated right-side-up first) for Pinto. Result matches the book's own
+flat, bold-outline style and the specific character designs much more
+closely than either previous pass -- correct crest shape, sunglasses,
+teal-green body tone for Biguana; the exact wing-spread scooter pose,
+round yellow glasses and dark navy body for Pinto.
+
+This intentionally breaks from the warm coloured-pencil style of the
+other 75 cards -- expected and fine, since this card was already
+established as a one-off bonus, not one of the traditional rhymes, and
+matching the book was the explicit point this time.
+
+Verified: real alpha channel on both (corner alpha checked directly,
+one very faint sub-10%-opacity edge artifact on Biguana confirmed
+invisible against a magenta test background before accepting it), zero
+opaque-corner regression, check_overflow.js 152/152 clear.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
