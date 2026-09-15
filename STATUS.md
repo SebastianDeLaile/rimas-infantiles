@@ -3474,6 +3474,29 @@ Verified: `check_overflow.js` reports 152/152 clear (150 + the new
 pair), full generation still produces 152 pages, div balance unchanged
 in shape.
 
+## Biguana & Pinto artwork, second pass — September 2026
+
+Sebastian: "those pictures could do with some work, can you use actual
+pictures of them as input, and happy to use a similar style to the
+book." Same line held as for the text, one step further: recreating the
+specific character designs using the book's own photos as a direct
+generation reference, in the book's own illustration style, is closer to
+producing a derivative of the author's illustrations than writing an
+original rhyme in a different house style was. Declined the photos as
+input for that reason again, explained why, and instead re-prompted with
+more specific visual description -- the crest shape and diving mask, the
+round yellow glasses and red scooter -- while deliberately keeping the
+existing warm-coloured-pencil house style rather than switching to the
+book's own flatter style, which also has the practical benefit of
+actually matching the other 75 cards instead of clashing with them.
+
+Result was a clear improvement on both: Biguana's crest and mask read
+more clearly and the pose is livelier; Pinto's open-mouthed grin and
+fully spread wings capture "convinced he can fly" better than the first
+pass. Swapped into assets/biguana.png and assets/pinto.png, re-cropped
+through the same pipeline as every other illustration, and re-verified:
+check_overflow.js 152/152 clear.
+
 ## Suggested next steps
 
 1. Second pass on Venezuela (first attempt found only a vague summary of
